@@ -1,0 +1,76 @@
+package model
+
+// Node 节点模型
+type Node struct {
+	ID     int64    `gorm:"primary_key,auto_increment"`
+	Name   string   `gorm:"size:64"`
+	Parent int64    `gorm:"default:0"`
+	Icon   string   `gorm:"size:16"`
+	Path   string   `gorm:"size:255"`
+	Child  []*Node  `gorm:"-"`
+	Groups []*Group `gorm:"many2many:node_groups"`
+}
+
+var (
+	mapNodes = map[int64]*Node{0: &Node{ID: 0}}
+)
+
+func initNodes() error {
+	var (
+		listNodes []*Node
+		db        = db.New()
+	)
+	if db.Order("id").Find(&listNodes).Error != nil {
+		return db.Error
+	}
+	for _, node := range listNodes {
+		mapNodes[node.ID] = node
+	}
+	for _, node := range listNodes {
+		if node.ID > 0 {
+			p := mapNodes[node.Parent]
+			p.Child = append(p.Child, node)
+		}
+	}
+	return nil
+}
+
+// GetNodes 获取节点树
+func GetNodes() []*Node {
+	return mapNodes[0].Child
+}
+
+// GetNodeByPath 根据路径查找节点
+func GetNodeByPath(path string) *Node {
+	for _, node := range mapNodes {
+		if node.Path == path {
+			return node
+		}
+	}
+	return nil
+}
+
+// HasParent 判断父节点是否存在
+func (n *Node) HasParent(id int64) bool {
+	if n == nil {
+		return false
+	}
+	for n.ID != 0 {
+		if n.ID == id {
+			return true
+		}
+		n = mapNodes[n.Parent]
+	}
+	return false
+}
+
+// Group 用户组
+type Group struct {
+	ID   int64  `gorm:"primary_key,auto_increment"`
+	Name string `gorm:"size:64"`
+}
+
+// Create 新建用户组
+func (m *Group) Create() error {
+	return db.New().Create(m).Error
+}
