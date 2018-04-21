@@ -2,52 +2,63 @@ package handler
 
 import (
 	"net/http"
-	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
 )
 
 // Install 安装配置
-func Install(path string, t *mux.Router) http.Handler {
+func Install(path string, route *mux.Router) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			render(w, r, "install.tpl", nil)
 			return
 		}
-		if err := r.ParseForm(); err != nil {
+		err := r.ParseForm()
+		if err != nil {
 			rsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
-		c := &model.Config{
-			Host: r.FormValue("host"),
-			User: r.FormValue("user"),
-			Pass: r.FormValue("pass"),
-			Name: r.FormValue("name"),
+		conf := &model.Config{
+			Type: strings.ToLower(r.PostForm.Get("type")),
+			Host: r.PostForm.Get("host"),
+			User: r.PostForm.Get("user"),
+			Pass: r.PostForm.Get("pass"),
+			Name: r.PostForm.Get("name"),
 		}
-		if err := model.Open(c); err != nil {
+		if conf.Port, err = strconv.ParseUint(r.PostForm.Get("port"), 10, 16); err != nil {
 			rsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
-		if err := c.Save(filepath.Join(path, "config.json")); err != nil {
+		if err = model.Open(conf); err != nil {
 			rsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
-		u := &model.Admin{
-			Username: r.FormValue("username"),
-			Password: r.FormValue("password"),
-			Email:    r.FormValue("email"),
+		if err = model.InitNodes(path); err != nil {
+			rsp(w, http.StatusInternalServerError, err.Error(), nil)
+			return
+		}
+		if err = conf.Save(path); err != nil {
+			rsp(w, http.StatusInternalServerError, err.Error(), nil)
+			return
+		}
+		user := &model.Admin{
+			Email:    r.PostForm.Get("email"),
+			Password: r.PostForm.Get("password"),
+			Salt:     randString(10),
 			Group:    model.Group{Name: "超级管理员"},
 		}
-		if err := u.Group.Create(); err != nil {
+		if err = user.Group.Create(); err != nil {
 			rsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
-		if err := u.Create(); err != nil {
+		if err = user.Create(); err != nil {
 			rsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
-		Route(t)
+		Route(route)
 		rsp(w, http.StatusOK, "安装成功", "/login")
 	})
 }

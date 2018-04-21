@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -21,11 +22,10 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 func Login(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessName)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if _, exist := session.Values["user"]; exist {
+		log.Printf("login session err(%s)", err.Error())
+	} else if _, exist := session.Values["user"]; exist {
 		http.Redirect(w, r, "/admin/", http.StatusFound)
+		return
 	}
 	if r.Method == http.MethodGet {
 		t.ExecuteTemplate(w, "login.tpl", nil)

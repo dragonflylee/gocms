@@ -5,12 +5,14 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 // Config 数据库配置项
 type Config struct {
+	Type string `json:"type"`
 	Host string `json:"host,omitempty"`
-	Port int    `json:"port,omitempty"`
+	Port uint64 `json:"port,omitempty"`
 	User string `json:"user,omitempty"`
 	Pass string `json:"pass,omitempty"`
 	Name string `json:"name"`
@@ -18,7 +20,7 @@ type Config struct {
 
 // Load 加载配置
 func (m *Config) Load(path string) error {
-	data, err := ioutil.ReadFile(path)
+	data, err := ioutil.ReadFile(filepath.Join(path, "config.json"))
 	if err != nil {
 		log.Printf("failed load config (%s)", err.Error())
 		return err
@@ -36,5 +38,6 @@ func (m *Config) Save(path string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(path, data, os.ModeType)
+	return ioutil.WriteFile(filepath.Join(path, "config.json"),
+		data, os.ModePerm)
 }

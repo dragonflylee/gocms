@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	c    model.Config
+	conf model.Config
 	r    = mux.NewRouter()
 	addr = flag.String("addr", ":8080", "server listen address")
 )
@@ -33,10 +33,10 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
 		http.FileServer(http.Dir(filepath.Join(path, "static")))))
 	// 加载配置文件
-	if err := c.Load(filepath.Join(path, "config.json")); err != nil {
+	if err = conf.Load(path); err != nil {
 		r.Handle("/", handler.Install(path, r)).Name("index")
 	} else {
-		model.Open(&c)
+		model.Open(&conf)
 		handler.Route(r)
 	}
 	log.Panic(http.ListenAndServe(*addr, r))

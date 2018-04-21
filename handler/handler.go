@@ -3,9 +3,11 @@ package handler
 import (
 	"encoding/json"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
@@ -20,7 +22,7 @@ const (
 var (
 	t         = template.New("")
 	emptyData = map[string]interface{}{"list": nil, "page": nil}
-	store     = sessions.NewCookieStore([]byte("something-very-secret"))
+	store     = sessions.NewCookieStore([]byte(randString(20)))
 )
 
 func rsp(w http.ResponseWriter, code int64, message string, data interface{}) {
@@ -29,6 +31,7 @@ func rsp(w http.ResponseWriter, code int64, message string, data interface{}) {
 		"code": code, "msg": message, "data": data})
 }
 
+// render 渲染模板
 func render(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
 	session, err := store.Get(r, sessName)
 	if err != nil {
@@ -44,6 +47,17 @@ func render(w http.ResponseWriter, r *http.Request, name string, data interface{
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+// randString 生成随机字符串
+func randString(l int) string {
+	bytes := []byte("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	result := []byte{}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < l; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	return string(result)
 }
 
 // Start 初始化控制层
@@ -77,7 +91,7 @@ func Route(r *mux.Router) {
 	s.Use(func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if session, err := store.Get(r, sessName); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Redirect(w, r, "/login", http.StatusFound)
 			} else if session.IsNew || len(session.Values) < 1 {
 				http.Redirect(w, r, "/login", http.StatusFound)
 			} else {
