@@ -17,22 +17,24 @@ import (
 const (
 	defaultMaxMemory = 32 << 20 // 32 MB
 	sessName         = "gocms"  // Session 名称
+	indexPath        = "/admin"
+	loginPath        = "/login"
 )
 
 var (
 	t         = template.New("")
 	emptyData = map[string]interface{}{"list": nil, "page": nil}
-	store     = sessions.NewCookieStore([]byte(randString(20)))
+	store     = sessions.NewFilesystemStore(".", []byte(randString(15)))
 )
 
-func rsp(w http.ResponseWriter, code int64, message string, data interface{}) {
+func jRsp(w http.ResponseWriter, code int64, message string, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"code": code, "msg": message, "data": data})
 }
 
 // render 渲染模板
-func render(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
+func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
 	session, err := store.Get(r, sessName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -84,22 +86,22 @@ func Route(r *mux.Router) {
 		r.HandleFunc("/", Login)
 	}
 	// 登录相关
-	r.HandleFunc("/login", Login)
+	r.HandleFunc(loginPath, Login)
 	r.HandleFunc("/logout", Logout)
 	// 后台主页
-	s := r.PathPrefix("/admin").Subrouter()
+	s := r.PathPrefix(indexPath).Subrouter()
 	s.Use(func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if session, err := store.Get(r, sessName); err != nil {
-				http.Redirect(w, r, "/login", http.StatusFound)
+				http.Redirect(w, r, loginPath, http.StatusFound)
 			} else if session.IsNew || len(session.Values) < 1 {
-				http.Redirect(w, r, "/login", http.StatusFound)
+				http.Redirect(w, r, loginPath, http.StatusFound)
 			} else {
 				h.ServeHTTP(w, r)
 			}
 		})
 	})
-	s.HandleFunc("/", Home).Methods(http.MethodGet)
 	// 个人中心
 	s.HandleFunc("/profile", Profile)
+	s.HandleFunc("", Home).Methods(http.MethodGet)
 }

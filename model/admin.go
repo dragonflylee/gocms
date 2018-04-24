@@ -30,6 +30,16 @@ func (m *Admin) Create() error {
 	return db.New().Create(m).Error
 }
 
+// UpdatePasswd 修改用户密码
+func (m *Admin) UpdatePasswd(oldpass, newpass, salt string) error {
+	if m.Password != encryptPass(oldpass, m.Salt) {
+		return errors.New("密码不正确")
+	}
+	m.Salt = salt
+	m.Password = encryptPass(newpass, m.Salt)
+	return db.New().Model(m).Select("password, salt").Update(m).Error
+}
+
 // Login 用户登录
 func Login(email, passwd, ip string) (*Admin, error) {
 	var (
@@ -48,13 +58,10 @@ func Login(email, passwd, ip string) (*Admin, error) {
 	if encryptPass(passwd, user.Salt) != user.Password {
 		return nil, errors.New("密码不正确")
 	}
-	update := map[string]interface{}{
-		"last_ip": ip, "last_login": time.Now(),
-	}
-	if err := db.Model(&user).Updates(update).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
+	err := db.Model(&user).Select("last_ip", "last_login").Updates(&Admin{
+		ID: user.ID, LastIP: ip, LastLogin: time.Now(),
+	}).Error
+	return &user, err
 }
 
 // AdminLog 操作日志
@@ -63,6 +70,7 @@ type AdminLog struct {
 	AdminID   int64  `gorm:"not null"`
 	Path      string `gorm:"size:255;not null"`
 	Commit    string `gorm:"type:text"`
+	UA        string `gorm:"size:255"`
 	IP        string `gorm:"size:16"`
 	CreatedAt time.Time
 }

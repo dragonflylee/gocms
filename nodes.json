@@ -1,7 +1,7 @@
 [
     {
         "name": "仪表盘",
-        "path": "/admin/",
+        "path": "/admin",
         "icon": "fa fa-dashboard"
     }
 ]

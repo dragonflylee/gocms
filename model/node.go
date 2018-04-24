@@ -23,12 +23,9 @@ var (
 )
 
 func loadNodes() error {
-	var (
-		list []*Node
-		db   = db.New()
-	)
-	if db.Order("id").Find(&list).Error != nil {
-		return db.Error
+	var list []*Node
+	if err := db.New().Order("id").Find(&list).Error; err != nil {
+		return err
 	}
 	for _, node := range list {
 		mapNodes[node.ID] = node
@@ -57,13 +54,13 @@ func InitNodes(path string) error {
 	}
 	db := db.New().Begin()
 	for _, n := range list {
-		if db.Create(n).Error != nil {
+		if err = db.Create(n).Error; err != nil {
 			db.Rollback()
-			return db.Error
+			return err
 		}
 	}
-	if db.Commit().Error != nil {
-		return db.Error
+	if err = db.Commit().Error; err != nil {
+		return err
 	}
 	return loadNodes()
 }

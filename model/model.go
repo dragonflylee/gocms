@@ -36,7 +36,10 @@ func Open(conf *Config) error {
 		return err
 	}
 	// 同步数据库
-	db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{})
+	if err = db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{}).Error; err != nil {
+		log.Printf("failed migrate (%s)", err.Error())
+		return err
+	}
 	// 加载节点数据
 	if err = loadNodes(); err != nil {
 		log.Printf("failed init nodes (%s)", err.Error())

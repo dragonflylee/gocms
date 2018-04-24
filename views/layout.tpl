@@ -25,7 +25,7 @@
 
 {{define "navbar"}}
   <header class="main-header">
-    <a href="/admin/" class="logo">
+    <a href="/admin" class="logo">
       <span class="logo-mini"><b>后</b></span>
       <span class="logo-lg"><b>后台管理</b></span>
     </a>
@@ -125,7 +125,7 @@
     <div class="pull-right hidden-xs">
       Powered by <b>{{version}}</b>
     </div>
-    <strong>版权所有 &copy; 2018 <a href="http://github.com/dragonflylee/gocms">Gocmd</a>.</strong>
+    <strong>版权所有 &copy; 2018 <a href="http://github.com/dragonflylee/gocms">GoCMS</a>.</strong>
   </footer>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -153,7 +153,7 @@
       <small>{{.node.Remark}}</small>
     </h1>
     <ol class="breadcrumb">
-      <li><a href="/admin/"><i class="fa fa-dashboard"></i> 首页</a></li>
+      <li><a href="/admin"><i class="fa fa-dashboard"></i> 首页</a></li>
     {{range .node.Parents}}
       <li><a href="{{.Path}}"> {{.Name}}</a></li>
     {{end}}
@@ -163,14 +163,14 @@
 {{end}}
 
 {{define "modal"}}
-  <div class="modal modal-remote" id="modal-edit">
+  <div class="modal" id="modal-edit">
     <div class="modal-dialog">
       <div class="modal-content">
       </div>
     </div>
   </div>
 
-  <div class="modal modal-href" id="modal-confirm">
+  <div class="modal" id="modal-confirm">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
         <div class="modal-header">
