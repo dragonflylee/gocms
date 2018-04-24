@@ -14,6 +14,7 @@ type Node struct {
 	Icon   string   `gorm:"size:16;not null"`
 	Path   string   `gorm:"size:255;not null"`
 	Remark string   `gorm:"type:text"`
+	Status bool     `gorm:"default:false;not null"`
 	Child  []*Node  `gorm:"-"`
 	Groups []*Group `gorm:"many2many:node_groups"`
 }
@@ -28,10 +29,14 @@ func loadNodes() error {
 		return err
 	}
 	for _, node := range list {
+		err := db.Model(node).Association("Groups").Find(&node.Groups).Error
+		if err != nil {
+			return err
+		}
 		mapNodes[node.ID] = node
 	}
 	for _, node := range list {
-		if node.ID > 0 {
+		if node.ID > 0 && node.Status {
 			p := mapNodes[node.Parent]
 			p.Child = append(p.Child, node)
 		}
@@ -102,6 +107,19 @@ func (n *Node) Parents() []*Node {
 		list = append(list, n)
 	}
 	return list
+}
+
+// HasGroup 判断指定节点是否能被某角色访问
+func (n *Node) HasGroup(id int64) bool {
+	if n == nil {
+		return true
+	}
+	for _, role := range n.Groups {
+		if role.ID == id {
+			return true
+		}
+	}
+	return false
 }
 
 // Group 用户组

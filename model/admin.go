@@ -30,6 +30,14 @@ func (m *Admin) Create() error {
 	return db.New().Create(m).Error
 }
 
+// Access 该用户能否访问指定节点
+func (m *Admin) Access(path string) bool {
+	if node := GetNodeByPath(path); node != nil {
+		return node.HasGroup(m.GroupID)
+	}
+	return false
+}
+
 // UpdatePasswd 修改用户密码
 func (m *Admin) UpdatePasswd(oldpass, newpass, salt string) error {
 	if m.Password != encryptPass(oldpass, m.Salt) {
@@ -46,14 +54,11 @@ func Login(email, passwd, ip string) (*Admin, error) {
 		user Admin
 		db   = db.New()
 	)
-	if db.Where("email = ?", email).First(&user).RecordNotFound() {
+	if db.Where("email = ?", email).First(&user).Error != nil {
 		return nil, errors.New("用户不存在")
 	}
-	if db.Model(&user).Related(&user.Group).RecordNotFound() {
+	if db.Model(&user).Related(&user.Group).Error != nil {
 		return nil, errors.New("用户组不存在")
-	}
-	if db.Error != nil {
-		return nil, db.Error
 	}
 	if encryptPass(passwd, user.Salt) != user.Password {
 		return nil, errors.New("密码不正确")

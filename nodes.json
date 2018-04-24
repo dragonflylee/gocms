@@ -2,6 +2,7 @@
     {
         "name": "仪表盘",
         "path": "/admin",
-        "icon": "fa fa-dashboard"
+        "icon": "fa fa-dashboard",
+        "status": true
     }
 ]
