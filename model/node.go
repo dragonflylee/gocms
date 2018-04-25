@@ -11,8 +11,8 @@ type Node struct {
 	ID     int64    `gorm:"primary_key;auto_increment"`
 	Name   string   `gorm:"size:64;not null"`
 	Parent int64    `gorm:"default:0;not null"`
-	Icon   string   `gorm:"size:16;not null"`
-	Path   string   `gorm:"size:255;not null"`
+	Icon   string   `gorm:"size:16;default:null"`
+	Path   string   `gorm:"size:255"`
 	Remark string   `gorm:"type:text"`
 	Status bool     `gorm:"default:false;not null"`
 	Child  []*Node  `gorm:"-"`
@@ -20,7 +20,7 @@ type Node struct {
 }
 
 var (
-	mapNodes = map[int64]*Node{0: &Node{ID: 0}}
+	mapNodes map[int64]*Node
 )
 
 func loadNodes() error {
@@ -28,6 +28,7 @@ func loadNodes() error {
 	if err := db.New().Order("id").Find(&list).Error; err != nil {
 		return err
 	}
+	mapNodes = map[int64]*Node{0: &Node{ID: 0}}
 	for _, node := range list {
 		err := db.Model(node).Association("Groups").Find(&node.Groups).Error
 		if err != nil {
@@ -44,8 +45,8 @@ func loadNodes() error {
 	return nil
 }
 
-// InitNodes 初始化节点
-func InitNodes(path string) error {
+// Install 初始化节点
+func Install(path string) error {
 	var (
 		list []*Node
 		data []byte
@@ -58,12 +59,19 @@ func InitNodes(path string) error {
 		return err
 	}
 	db := db.New().Begin()
+	role := &Group{Name: "超级管理员"}
+	if err = db.Create(role).Error; err != nil {
+		db.Rollback()
+		return err
+	}
 	for _, n := range list {
+		n.Groups = append(n.Groups, role)
 		if err = db.Create(n).Error; err != nil {
 			db.Rollback()
 			return err
 		}
 	}
+
 	if err = db.Commit().Error; err != nil {
 		return err
 	}
@@ -131,4 +139,8 @@ type Group struct {
 // Create 新建用户组
 func (m *Group) Create() error {
 	return db.New().Create(m).Error
+}
+
+func (m *Group) String() string {
+	return m.Name
 }

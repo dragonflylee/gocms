@@ -8,23 +8,13 @@ import (
 	"github.com/dragonflylee/gocms/model"
 )
 
-// Home 首页
-func Home(w http.ResponseWriter, r *http.Request) {
-	rLayout(w, r, "index.tpl", nil)
-}
-
-// Profile 个人中心
-func Profile(w http.ResponseWriter, r *http.Request) {
-	rLayout(w, r, "profile.tpl", nil)
-}
-
 // Login 登录页
 func Login(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessName)
 	if err != nil {
 		log.Printf("login session err(%s)", err.Error())
 	} else if _, exist := session.Values["user"]; exist {
-		http.Redirect(w, r, indexPath, http.StatusFound)
+		http.Redirect(w, r, "/admin", http.StatusFound)
 		return
 	}
 	if r.Method == http.MethodGet {
@@ -45,7 +35,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	session.Values["user"] = user
 	session.Save(r, w)
-	jRsp(w, http.StatusOK, "登录成功", indexPath)
+	jRsp(w, http.StatusOK, "登录成功", "/admin")
 }
 
 // Logout 登出
@@ -59,5 +49,5 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		delete(session.Values, key)
 	}
 	session.Save(r, w)
-	http.Redirect(w, r, loginPath, http.StatusFound)
+	http.Redirect(w, r, "/login", http.StatusFound)
 }

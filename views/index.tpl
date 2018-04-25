@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" "后台管理"}}
+  {{template "header" .node.Name}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">

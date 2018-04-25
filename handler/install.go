@@ -13,7 +13,7 @@ import (
 func Install(path string, route *mux.Router) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			rLayout(w, r, "install.tpl", nil)
+			t.ExecuteTemplate(w, "install.tpl", nil)
 			return
 		}
 		err := r.ParseForm()
@@ -36,7 +36,7 @@ func Install(path string, route *mux.Router) http.Handler {
 			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
-		if err = model.InitNodes(path); err != nil {
+		if err = model.Install(path); err != nil {
 			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
@@ -47,18 +47,13 @@ func Install(path string, route *mux.Router) http.Handler {
 		user := &model.Admin{
 			Email:    r.PostForm.Get("email"),
 			Password: r.PostForm.Get("password"),
-			Salt:     randString(10),
-			Group:    model.Group{Name: "超级管理员"},
-		}
-		if err = user.Group.Create(); err != nil {
-			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
-			return
+			GroupID:  1,
 		}
 		if err = user.Create(); err != nil {
 			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
 		Route(route)
-		jRsp(w, http.StatusOK, "安装成功", loginPath)
+		jRsp(w, http.StatusOK, "安装成功", "/login")
 	})
 }

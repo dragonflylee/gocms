@@ -1,22 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" "个人中心"}}
+  {{template "header" .node.Name}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   {{template "navbar" .}}
   <div class="content-wrapper">
-    <section class="content-header">
-      <h1>
-        个人中心
-        <small>密码修改</small>
-      </h1>
-      <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> 首页</a></li>
-        <li class="active">个人中心</li>
-      </ol>
-    </section>
+    {{template "title" .}}
 
     <section class="content">
       <div class="row">

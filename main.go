@@ -20,6 +20,8 @@ var (
 )
 
 func main() {
+	flag.Parse()
+
 	path, err := exec.LookPath(os.Args[0])
 	if err != nil {
 		log.Panicf("gocms service path (%s)", err.Error())

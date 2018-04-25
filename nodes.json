@@ -1,8 +1,36 @@
 [
     {
+        "id": 1,
         "name": "仪表盘",
         "path": "/admin",
         "icon": "fa fa-dashboard",
+        "status": true
+    },
+    {
+        "id": 2,
+        "name": "个人中心",
+        "path": "/admin/profile",
+        "status": false
+    },
+    {
+        "id": 3,
+        "name": "系统管理",
+        "path": "#",
+        "icon": "fa fa-gears",
+        "status": true
+    },
+    {
+        "id": 4,
+        "parent": 3,
+        "name": "日志查看",
+        "path": "/admin/logs",
+        "status": true
+    },
+    {
+        "id": 5,
+        "parent": 3,
+        "name": "用户管理",
+        "path": "/admin/users",
         "status": true
     }
 ]

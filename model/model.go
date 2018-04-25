@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 
@@ -12,7 +13,8 @@ import (
 )
 
 var (
-	db *gorm.DB
+	db    *gorm.DB
+	debug = flag.Bool("d", false, "debug mode")
 )
 
 // Open 连接数据库
@@ -30,10 +32,12 @@ func Open(conf *Config) error {
 	} else {
 		return errors.New("数据库类型不支持")
 	}
-
 	if db, err = gorm.Open(conf.Type, source); err != nil {
 		log.Printf("failed to connect database (%s)", err.Error())
 		return err
+	}
+	if debug != nil {
+		db.LogMode(*debug)
 	}
 	// 同步数据库
 	if err = db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{}).Error; err != nil {

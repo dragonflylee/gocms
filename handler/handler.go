@@ -3,11 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"html/template"
-	"math/rand"
 	"net/http"
 	"path/filepath"
 	"runtime"
-	"time"
 
 	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
@@ -17,14 +15,12 @@ import (
 const (
 	defaultMaxMemory = 32 << 20 // 32 MB
 	sessName         = "gocms"  // Session 名称
-	indexPath        = "/admin"
-	loginPath        = "/login"
 )
 
 var (
 	t         = template.New("")
 	emptyData = map[string]interface{}{"list": nil, "page": nil}
-	store     = sessions.NewFilesystemStore(".", []byte(randString(15)))
+	store     = sessions.NewFilesystemStore(".", []byte("gocms"))
 )
 
 func jRsp(w http.ResponseWriter, code int64, message string, data interface{}) {
@@ -35,31 +31,38 @@ func jRsp(w http.ResponseWriter, code int64, message string, data interface{}) {
 
 // render 渲染模板
 func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
-	session, err := store.Get(r, sessName)
-	if err != nil {
+	if session, err := store.Get(r, sessName); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = t.ExecuteTemplate(w, name, map[string]interface{}{
-		"menu": model.GetNodes(),
-		"node": model.GetNodeByPath(r.URL.Path),
-		"user": session.Values["user"],
-		"form": r.Form,
-		"data": data})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		t.ExecuteTemplate(w, name, map[string]interface{}{
+			"menu": model.GetNodes(),
+			"node": model.GetNodeByPath(r.URL.Path),
+			"user": session.Values["user"],
+			"form": r.Form,
+			"data": data})
 	}
 }
 
-// randString 生成随机字符串
-func randString(l int) string {
-	bytes := []byte("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	result := []byte{}
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	for i := 0; i < l; i++ {
-		result = append(result, bytes[r.Intn(len(bytes))])
-	}
-	return string(result)
+func checkLogin(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if session, err := store.Get(r, sessName); err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+		} else if session.IsNew || len(session.Values) < 1 {
+			http.Redirect(w, r, "/login", http.StatusFound)
+		} else if user, ok := session.Values["user"].(*model.Admin); !ok {
+			http.Redirect(w, r, "/login", http.StatusFound)
+		} else if c := mux.CurrentRoute(r); c == nil {
+			http.NotFound(w, r)
+		} else if tpl, err := c.GetPathTemplate(); err != nil {
+			http.NotFound(w, r)
+		} else if user.Access(tpl) {
+			h.ServeHTTP(w, r)
+		} else if r.Header.Get("X-Requested-With") != "" {
+			jRsp(w, http.StatusForbidden, "无权操作", nil)
+		} else {
+			http.Error(w, "<h1>Forbidden</h1>", http.StatusForbidden)
+		}
+	})
 }
 
 // Start 初始化控制层
@@ -86,22 +89,16 @@ func Route(r *mux.Router) {
 		r.HandleFunc("/", Login)
 	}
 	// 登录相关
-	r.HandleFunc(loginPath, Login)
+	r.HandleFunc("/login", Login)
 	r.HandleFunc("/logout", Logout)
 	// 后台主页
-	s := r.PathPrefix(indexPath).Subrouter()
-	s.Use(func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if session, err := store.Get(r, sessName); err != nil {
-				http.Redirect(w, r, loginPath, http.StatusFound)
-			} else if session.IsNew || len(session.Values) < 1 {
-				http.Redirect(w, r, loginPath, http.StatusFound)
-			} else {
-				h.ServeHTTP(w, r)
-			}
-		})
-	})
+	s := r.PathPrefix("/admin").Subrouter()
+	// 检查登陆状态
+	s.Use(checkLogin)
+	// 系统管理
+	s.HandleFunc("/users", Users).Methods(http.MethodGet)
+	s.HandleFunc("/logs", Logs).Methods(http.MethodGet)
 	// 个人中心
-	s.HandleFunc("/profile", Profile)
+	s.HandleFunc("/profile", Profile).Methods(http.MethodGet)
 	s.HandleFunc("", Home).Methods(http.MethodGet)
 }
