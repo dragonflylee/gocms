@@ -22,6 +22,8 @@
                   </span>
                 </div>
               </div>
+
+              <a class="btn bg-purple btn-sm" data-target="#modal-add" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
             </form>
           </div>
         </div>
@@ -41,7 +43,7 @@
               <tr>
                 <td>{{.ID}}</td>
                 <td>{{.Email}}</td>
-                <td></td>
+                <td>{{.Group.Name}}</td>
                 <td>{{.CreatedAt.Format "2006-01-02 15:04:05"}}</td>
                 <td>{{.LastLogin.Format "2006-01-02 15:04:05"}} / {{.LastIP}}</td>
                 <td>
@@ -64,6 +66,43 @@
       {{end}}
       </div>
     </section>
+  </div>
+  <div class="modal" id="modal-add">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form action="/admin/user/add" method="post" class="form-horizontal" enctype="multipart/form-data">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span></button>
+            <h4 class="modal-title">添加管理员</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="col-sm-3 control-label">邮箱</label>
+              <div class="col-sm-5">
+                <input type="email" class="form-control" name="email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">用户组</label>
+              <div class="col-sm-5">
+                <select name="group" class="form-control">
+              {{range $id, $name := .data.groups}}
+                {{if lt $.user.GroupID $id}}
+                  <option value="{{$id}}">{{$name}}</option>
+                {{end}}
+              {{end}}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-default" data-dismiss="modal">取消</a>
+            <button type="submit" class="btn bg-purple">新增</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   {{template "footer"}}
 </div>

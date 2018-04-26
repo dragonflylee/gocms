@@ -24,7 +24,7 @@ type Admin struct {
 	LastLogin time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Group     Group
+	Group     Group `gorm:"-"`
 }
 
 func (m *Admin) String() string {

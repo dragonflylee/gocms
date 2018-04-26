@@ -144,3 +144,18 @@ func (m *Group) Create() error {
 func (m *Group) String() string {
 	return m.Name
 }
+
+// GetGroups 获取角色列表
+func GetGroups() (map[int64]string, error) {
+	var (
+		list []*Group
+		hash = make(map[int64]string)
+	)
+	if err := db.New().Order("id").Find(&list).Error; err != nil {
+		return nil, err
+	}
+	for _, v := range list {
+		hash[v.ID] = v.Name
+	}
+	return hash, nil
+}

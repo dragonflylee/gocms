@@ -46,8 +46,16 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	groups, err := model.GetGroups()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for _, u := range users {
+		u.Group.Name = groups[u.GroupID]
+	}
 	rLayout(w, r, "users.tpl", map[string]interface{}{
-		"list": users, "page": p})
+		"list": users, "groups": groups, "page": p})
 }
 
 // Logs 操作日志
