@@ -51,3 +51,8 @@ func Open(conf *Config) error {
 	}
 	return nil
 }
+
+// IsOpen 数据库是否连接
+func IsOpen() bool {
+	return nil != db
+}

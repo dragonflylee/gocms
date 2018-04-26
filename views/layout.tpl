@@ -41,16 +41,16 @@
         <ul class="nav navbar-nav">
           <li class="dropdown user user-menu">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <img src="{{.user.Headpic}}" class="user-image" alt="用户头像">
+              <img src="{{.user.Headpic}}" class="user-image" alt="{{.user.Email}}">
               <span class="hidden-xs">{{.user.Email}}</span>
             </a>
             <ul class="dropdown-menu">
               <li class="user-header">
-                  <img src="{{.user.Headpic}}" class="img-circle" alt="用户头像">
+                  <img src="{{.user.Headpic}}" class="img-circle" alt="{{.user.Email}}">
                 <p>
-                    {{.user.Email}}
-                    <small>{{.user.Group.Name}}</small>
-                    <small>上次登录 {{.user.LastLogin.Format "2006-01-02 15:04:05"}}</small>
+                  {{.user.Email}}
+                  <small>{{.user.Group.Name}}</small>
+                  <small>上次登录 {{.user.LastLogin.Format "2006-01-02 15:04:05"}}</small>
                 </p>
               </li>
               <li class="user-footer">
@@ -143,7 +143,7 @@
   <script src="http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/i18n/zh-CN.js"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/js/lightbox.min.js"></script>
  
-  <script src="/static/js/global.min.js?v=20180422" type="text/javascript"></script>
+  <script src="/static/js/global.min.js?v=20180424" type="text/javascript"></script>
 {{end}}
 
 {{define "title"}}

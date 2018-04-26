@@ -22,8 +22,9 @@
                   </span>
                 </div>
               </div>
-
+            {{if and (.user.Access "/admin/user/add") (lt .user.GroupID (.data.groups|len))}}
               <a class="btn bg-purple btn-sm" data-target="#modal-add" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
+            {{end}}
             </form>
           </div>
         </div>
@@ -44,13 +45,13 @@
                 <td>{{.ID}}</td>
                 <td>{{.Email}}</td>
                 <td>{{.Group.Name}}</td>
-                <td>{{.CreatedAt.Format "2006-01-02 15:04:05"}}</td>
-                <td>{{.LastLogin.Format "2006-01-02 15:04:05"}} / {{.LastIP}}</td>
+                <td>{{date .CreatedAt}}</td>
+                <td>{{date .LastLogin}} / {{.LastIP}}</td>
                 <td>
                 {{if .Status}}
-                  <label class="btn btn-xs btn-success">已激活</label>
+                  <label class="btn btn-xs bg-maroon disabled">已激活</label>
                 {{else}}
-                  <label class="btn btn-xs btn-danger">未激活</label>
+                  <label class="btn btn-xs bg-navy disabled">未激活</label>
                 {{end}}
                 </td>
               </tr>
@@ -67,10 +68,11 @@
       </div>
     </section>
   </div>
+  {{if and (.user.Access "/admin/user/add") (lt .user.GroupID (.data.groups|len))}}
   <div class="modal" id="modal-add">
     <div class="modal-dialog">
       <div class="modal-content">
-        <form action="/admin/user/add" method="post" class="form-horizontal" enctype="multipart/form-data">
+        <form action="/admin/user/add" method="post" class="form-horizontal">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">×</span></button>
@@ -104,6 +106,7 @@
       </div>
     </div>
   </div>
+  {{end}}
   {{template "footer"}}
 </div>
 </body>

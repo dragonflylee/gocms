@@ -43,7 +43,7 @@
                 <td>{{.Email}}</td>
                 <td>{{.Path}}</td>
                 <td>{{.Commit}}</td>
-                <td>{{.CreatedAt.Format "2006-01-02 15:04:05"}}</td>
+                <td>{{date .CreatedAt}}</td>
                 <td>{{.IP}}</td>
               </tr>
             {{end}}

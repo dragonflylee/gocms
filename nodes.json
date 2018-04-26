@@ -32,5 +32,11 @@
         "name": "用户管理",
         "path": "/admin/users",
         "status": true
+    },
+    {
+        "id": 6,
+        "parent": 5,
+        "name": "用户添加",
+        "path": "/admin/user/add"
     }
 ]

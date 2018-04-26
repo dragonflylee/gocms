@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Tomasen/realip"
 	"github.com/dragonflylee/gocms/model"
 )
 
@@ -28,7 +29,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	user, err := model.Login(
 		strings.ToLower(r.PostForm.Get("username")),
 		strings.ToLower(r.PostForm.Get("password")),
-		r.RemoteAddr)
+		realip.FromRequest(r))
 	if err != nil {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return

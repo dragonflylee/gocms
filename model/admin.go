@@ -39,6 +39,18 @@ func (m *Admin) Create() error {
 	return db.New().Create(m).Error
 }
 
+// UpdatePasswd 更新密码
+func (m *Admin) UpdatePasswd(v ...interface{}) error {
+	m.Salt = randString(10)
+	m.Password = encryptPass(m.Password, m.Salt)
+	v = append(v, "salt")
+	if !m.Status {
+		m.Status = true
+		v = append(v, "status")
+	}
+	return db.New().Model(m).Select("password", v...).Updates(m).Error
+}
+
 // Access 该用户能否访问指定节点
 func (m *Admin) Access(tpl string) bool {
 	if node := GetNodeByPath(tpl); node != nil {
@@ -50,11 +62,11 @@ func (m *Admin) Access(tpl string) bool {
 // Login 用户登录
 func Login(email, passwd, ip string) (*Admin, error) {
 	var (
-		user Admin
 		db   = db.New()
+		user Admin
+		err  error
 	)
-	err := db.Where("email = ?", email).First(&user).Error
-	if err != nil {
+	if err = db.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, errors.New("用户不存在")
 	}
 	if err = db.Model(&user).Related(&user.Group).Error; err != nil {

@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"path/filepath"
 	"runtime"
+	"time"
 
+	"github.com/Tomasen/realip"
 	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -23,13 +25,27 @@ var (
 	store     = sessions.NewFilesystemStore(".", []byte("gocms"))
 )
 
+func aLog(r *http.Request, message string) error {
+	var log model.AdminLog
+	if session, err := store.Get(r, sessName); err != nil {
+		return err
+	} else if user, ok := session.Values["user"].(*model.Admin); ok {
+		log.AdminID = user.ID
+	}
+	log.Path = r.URL.String()
+	log.UA = r.UserAgent()
+	log.IP = realip.FromRequest(r)
+	log.Commit = message
+	return log.Create()
+}
+
 func jRsp(w http.ResponseWriter, code int64, message string, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"code": code, "msg": message, "data": data})
 }
 
-// render 渲染模板
+// rLayout 渲染模板
 func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
 	if session, err := store.Get(r, sessName); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -43,14 +59,17 @@ func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface
 	}
 }
 
-func checkLogin(h http.Handler) http.Handler {
+// Check 检查用户登录
+func Check(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if session, err := store.Get(r, sessName); err != nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
-		} else if session.IsNew || len(session.Values) < 1 {
+		} else if cookie, exist := session.Values["user"]; !exist {
 			http.Redirect(w, r, "/login", http.StatusFound)
-		} else if user, ok := session.Values["user"].(*model.Admin); !ok {
+		} else if user, ok := cookie.(*model.Admin); !ok {
 			http.Redirect(w, r, "/login", http.StatusFound)
+		} else if !user.Status && r.URL.Path != "/admin/profile" {
+			http.Redirect(w, r, "/admin/profile", http.StatusFound)
 		} else if c := mux.CurrentRoute(r); c == nil {
 			http.NotFound(w, r)
 		} else if tpl, err := c.GetPathTemplate(); err != nil {
@@ -60,7 +79,7 @@ func checkLogin(h http.Handler) http.Handler {
 		} else if r.Header.Get("X-Requested-With") != "" {
 			jRsp(w, http.StatusForbidden, "无权操作", nil)
 		} else {
-			http.Error(w, "<h1>Forbidden</h1>", http.StatusForbidden)
+			http.NotFound(w, r)
 		}
 	})
 }
@@ -71,6 +90,9 @@ func Start(path string) {
 	pattern := filepath.Join(path, "views", "*.tpl")
 	// 注册自定义函数
 	t.Funcs(template.FuncMap{
+		"date": func(t time.Time) string {
+			return t.Format("2006-01-02 15:04:05")
+		},
 		"html": func(s string) template.HTML {
 			return template.HTML(s)
 		},
@@ -79,26 +101,4 @@ func Start(path string) {
 		},
 	})
 	t = template.Must(t.ParseGlob(pattern))
-}
-
-// Route 初始化路由
-func Route(r *mux.Router) {
-	if t := r.Get("index"); t != nil {
-		t.HandlerFunc(Login)
-	} else {
-		r.HandleFunc("/", Login)
-	}
-	// 登录相关
-	r.HandleFunc("/login", Login)
-	r.HandleFunc("/logout", Logout)
-	// 后台主页
-	s := r.PathPrefix("/admin").Subrouter()
-	// 检查登陆状态
-	s.Use(checkLogin)
-	// 系统管理
-	s.HandleFunc("/users", Users).Methods(http.MethodGet)
-	s.HandleFunc("/logs", Logs).Methods(http.MethodGet)
-	// 个人中心
-	s.HandleFunc("/profile", Profile).Methods(http.MethodGet)
-	s.HandleFunc("", Home).Methods(http.MethodGet)
 }

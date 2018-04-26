@@ -8,7 +8,7 @@
   {{template "navbar" .}}
   <div class="content-wrapper">
     {{template "title" .}}
-
+    
     <section class="content">
       <div class="row">
         <div class="col-md-3">
@@ -36,58 +36,39 @@
         </div>
 
         <div class="col-md-9">
-          <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#password" data-toggle="tab">密码安全</a></li>
-              <li><a href="#avatar" data-toggle="tab">修改头像</a></li>
-            </ul>
-            <div class="tab-content">
-              <div class="active tab-pane" id="password">
-                <form class="form-horizontal" action="#" method="post">
-                  <div class="form-group">
-                    <label class="col-sm-2 control-label">原密码</label>
-                    <div class="col-sm-8">
-                      <input name="password" type="password" class="form-control input-medium" placeholder="请输入原密码" required>
+          <div class="box box-warning">
+            <div class="box-header with-border">
+              <h3 class="box-title">密码安全</h3>
+            </div>
+            <div class="box-body">
+              <form class="form-horizontal" action="/password" method="post">
+              {{if not .user.Status}}
+                <div class="form-group">
+                  <div class="col-sm-6 col-sm-offset-2">
+                    <div class="callout callout-warning">
+                      <i class="icon fa fa-warning"></i> 请修改密码激活管理员账户
                     </div>
                   </div>
-                  <div class="form-group">
-                    <label class="col-sm-2 control-label">新密码</label>
-                    <div class="col-sm-8">
-                      <input name="npassword" type="password" id="register_password" class="form-control input-medium" placeholder="请输入新密码" required>
-                    </div>
+                </div>
+              {{end}}
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">新密码</label>
+                  <div class="col-sm-5">
+                    <input name="passwd" type="password" id="register_password" class="form-control input-medium" placeholder="请输入新密码" data-rule="{'regexPasswd':true}" required>
                   </div>
-                  <div class="form-group">
-                    <label class="col-sm-2 control-label">确认新密码</label>
-                    <div class="col-sm-8">
-                      <input name="rppassword" type="password" class="form-control input-medium" data-rule="{'equalTo':'#register_password'}" data-message="{'equalTo':'两次输入的密码不一致'}" placeholder="请再次输入新密码" required>
-                    </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">确认密码</label>
+                  <div class="col-sm-5">
+                    <input name="rpasswd" type="password" class="form-control input-medium" data-rule="{'equalTo':'#register_password'}" data-message="{'equalTo':'两次输入的密码不一致'}" placeholder="请再次输入新密码" required>
                   </div>
-                  <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-8">
-                      <button type="submit" class="btn btn-danger">修改</button>
-                    </div>
+                </div>
+                <div class="form-group">
+                  <div class="col-sm-offset-2 col-sm-8">
+                    <button type="submit" class="btn btn-danger">修改</button>
                   </div>
-                </form>
-              </div>
-              <div class="tab-pane" id="avatar">
-                <form>
-                  <div class="form-group">
-                    <div class="fileinput fileinput-new" data-provides="fileinput">
-                      <div class="fileinput-new thumbnail">
-                        <img src="{{.user.Headpic}}" alt="">
-                      </div>
-                      <div class="fileinput-preview fileinput-exists thumbnail"></div>
-                      <div>
-                        <span class="btn btn-default btn-file">
-                        <span class="fileinput-new">浏览</span>
-                        <span class="fileinput-exists">更换</span>
-                        <input type="file" name="avatar"></span>
-                        <a href="#" class="btn btn-default fileinput-exists" data-dismiss="fileinput">删除</a>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>

@@ -35,11 +35,31 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
 		http.FileServer(http.Dir(filepath.Join(path, "static")))))
 	// 加载配置文件
-	if err = conf.Load(path); err != nil {
-		r.Handle("/", handler.Install(path, r)).Name("index")
-	} else {
+	if err = conf.Load(path); err == nil {
 		model.Open(&conf)
-		handler.Route(r)
 	}
+	r.Use(func(h http.Handler) http.Handler {
+		if model.IsOpen() {
+			return h
+		}
+		return handler.Install(path, r)
+	})
+	// 登录相关
+	r.HandleFunc("/", handler.Login)
+	r.HandleFunc("/login", handler.Login)
+	r.HandleFunc("/logout", handler.Logout)
+	r.HandleFunc("/password", handler.Password).Methods(http.MethodPost)
+	// 后台主页
+	s := r.PathPrefix("/admin").Subrouter()
+	// 检查登陆状态
+	s.Use(handler.Check)
+	// 系统管理
+	s.HandleFunc("/users", handler.Users).Methods(http.MethodGet)
+	s.HandleFunc("/user/add", handler.UserAdd).Methods(http.MethodPost)
+	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
+	// 个人中心
+	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
+	s.HandleFunc("", handler.Home).Methods(http.MethodGet)
+
 	log.Panic(http.ListenAndServe(*addr, r))
 }
