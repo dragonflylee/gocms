@@ -25,15 +25,11 @@ var (
 
 func loadNodes() error {
 	var list []*Node
-	if err := db.New().Order("id").Find(&list).Error; err != nil {
+	if err := db.New().Order("id").Preload("Groups").Find(&list).Error; err != nil {
 		return err
 	}
 	mapNodes = map[int64]*Node{0: &Node{ID: 0}}
 	for _, node := range list {
-		err := db.Model(node).Association("Groups").Find(&node.Groups).Error
-		if err != nil {
-			return err
-		}
 		mapNodes[node.ID] = node
 	}
 	for _, node := range list {
@@ -48,30 +44,21 @@ func loadNodes() error {
 // Install 初始化节点
 func Install(path string) error {
 	var (
-		list []*Node
+		role = &Group{Name: "超级管理员"}
 		data []byte
 		err  error
 	)
 	if data, err = ioutil.ReadFile(filepath.Join(path, "nodes.json")); err != nil {
 		return err
 	}
-	if err = json.Unmarshal(data, &list); err != nil {
+	if err = json.Unmarshal(data, &role.Nodes); err != nil {
 		return err
 	}
 	db := db.New().Begin()
-	role := &Group{Name: "超级管理员"}
 	if err = db.Create(role).Error; err != nil {
 		db.Rollback()
 		return err
 	}
-	for _, n := range list {
-		n.Groups = append(n.Groups, role)
-		if err = db.Create(n).Error; err != nil {
-			db.Rollback()
-			return err
-		}
-	}
-
 	if err = db.Commit().Error; err != nil {
 		return err
 	}
@@ -132,8 +119,9 @@ func (n *Node) HasGroup(id int64) bool {
 
 // Group 用户组
 type Group struct {
-	ID   int64  `gorm:"primary_key;auto_increment"`
-	Name string `gorm:"size:64;not null"`
+	ID    int64   `gorm:"primary_key;auto_increment"`
+	Name  string  `gorm:"size:64;not null"`
+	Nodes []*Node `gorm:"many2many:node_groups"`
 }
 
 // Create 新建用户组

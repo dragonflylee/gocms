@@ -40,7 +40,7 @@
             {{range .data.list}}
               <tr>
                 <td>{{.ID}}</td>
-                <td>{{.Email}}</td>
+                <td>{{.Admin.Email}}</td>
                 <td>{{.Path}}</td>
                 <td>{{.Commit}}</td>
                 <td>{{date .CreatedAt}}</td>

@@ -22,7 +22,7 @@
                   </span>
                 </div>
               </div>
-            {{if and (.user.Access "/admin/user/add") (lt .user.GroupID (.data.groups|len))}}
+            {{if .user.Access "/admin/user/add"}}
               <a class="btn bg-purple btn-sm" data-target="#modal-add" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
             {{end}}
             </form>
@@ -49,9 +49,9 @@
                 <td>{{date .LastLogin}} / {{.LastIP}}</td>
                 <td>
                 {{if .Status}}
-                  <label class="btn btn-xs bg-maroon disabled">已激活</label>
+                  <span class="text-maroon">已激活</span>
                 {{else}}
-                  <label class="btn btn-xs bg-navy disabled">未激活</label>
+                  <span class="text-navy">未激活</span>
                 {{end}}
                 </td>
               </tr>
@@ -68,7 +68,7 @@
       </div>
     </section>
   </div>
-  {{if and (.user.Access "/admin/user/add") (lt .user.GroupID (.data.groups|len))}}
+  {{if .user.Access "/admin/user/add"}}
   <div class="modal" id="modal-add">
     <div class="modal-dialog">
       <div class="modal-content">

@@ -48,14 +48,19 @@ func jRsp(w http.ResponseWriter, code int64, message string, data interface{}) {
 // rLayout 渲染模板
 func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
 	if session, err := store.Get(r, sessName); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		t.ExecuteTemplate(w, name, map[string]interface{}{
-			"menu": model.GetNodes(),
-			"node": model.GetNodeByPath(r.URL.Path),
-			"user": session.Values["user"],
-			"form": r.Form,
-			"data": data})
+		http.NotFound(w, r)
+	} else if s := mux.CurrentRoute(r); s == nil {
+		http.NotFound(w, r)
+	} else if tpl, err := s.GetPathTemplate(); err != nil {
+		http.NotFound(w, r)
+	} else if err = t.ExecuteTemplate(w, name, map[string]interface{}{
+		"menu": model.GetNodes(),
+		"node": model.GetNodeByPath(tpl),
+		"user": session.Values["user"],
+		"form": r.Form,
+		"data": data,
+	}); err != nil {
+		w.Write([]byte(err.Error()))
 	}
 }
 

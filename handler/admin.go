@@ -35,6 +35,8 @@ func Password(w http.ResponseWriter, r *http.Request) {
 	} else if err = user.UpdatePasswd(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 	} else {
+		session.Values["user"] = user
+		session.Save(r, w)
 		aLog(r, "修改管理员密码")
 		jRsp(w, http.StatusOK, "修改成功", nil)
 	}
@@ -110,6 +112,16 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 	}
 	aLog(r, fmt.Sprintf("添加管理员 (%s)", user.Email))
 	jRsp(w, http.StatusOK, "添加成功", nil)
+}
+
+// Groups 角色管理
+func Groups(w http.ResponseWriter, r *http.Request) {
+	groups, err := model.GetGroups()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	rLayout(w, r, "groups.tpl", groups)
 }
 
 // Logs 操作日志

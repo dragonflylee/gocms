@@ -50,7 +50,7 @@
                 <p>
                   {{.user.Email}}
                   <small>{{.user.Group.Name}}</small>
-                  <small>上次登录 {{.user.LastLogin.Format "2006-01-02 15:04:05"}}</small>
+                  <small>上次登录 {{date .user.LastLogin}}</small>
                 </p>
               </li>
               <li class="user-footer">

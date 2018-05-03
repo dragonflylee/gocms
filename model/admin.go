@@ -66,7 +66,7 @@ func Login(email, passwd, ip string) (*Admin, error) {
 		user Admin
 		err  error
 	)
-	if err = db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err = db.First(&user, "email = ?", email).Error; err != nil {
 		return nil, errors.New("用户不存在")
 	}
 	if err = db.Model(&user).Related(&user.Group).Error; err != nil {
@@ -103,7 +103,7 @@ type AdminLog struct {
 	UA        string `gorm:"size:255"`
 	IP        string `gorm:"size:16"`
 	CreatedAt time.Time
-	Email     string `gorm:"-"`
+	Admin     *Admin
 }
 
 // Create 插入日志
@@ -114,9 +114,9 @@ func (m *AdminLog) Create() error {
 // GetLogs 获取日志列表
 func GetLogs(page, offset int, filter ...func(*gorm.DB) *gorm.DB) (list []*AdminLog, err error) {
 	err = db.Scopes(filter...).Limit(page).Offset(offset).
-		Select("admin_logs.*, admins.email").
-		Joins("INNER JOIN admins ON admin_logs.admin_id = admins.id").
-		Order("id desc").Find(&list).Error
+		Preload("Admin", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, email")
+		}).Order("id desc").Find(&list).Error
 	return list, err
 }
 

@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 
 	"github.com/dragonflylee/gocms/handler"
 	"github.com/dragonflylee/gocms/model"
@@ -31,15 +32,19 @@ func main() {
 	log.Printf("gocms starting from (%s)", path)
 	// 初始化模板
 	handler.Start(path)
+	static := http.StripPrefix("/static/",
+		http.FileServer(http.Dir(filepath.Join(path, "static"))))
 	// 静态文件
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
-		http.FileServer(http.Dir(filepath.Join(path, "static")))))
+	r.PathPrefix("/static/").Handler(static)
 	// 加载配置文件
 	if err = conf.Load(path); err == nil {
 		model.Open(&conf)
 	}
 	r.Use(func(h http.Handler) http.Handler {
 		if model.IsOpen() {
+			return h
+		}
+		if reflect.ValueOf(h).Pointer() == reflect.ValueOf(static).Pointer() {
 			return h
 		}
 		return handler.Install(path, r)
@@ -56,6 +61,7 @@ func main() {
 	// 系统管理
 	s.HandleFunc("/users", handler.Users).Methods(http.MethodGet)
 	s.HandleFunc("/user/add", handler.UserAdd).Methods(http.MethodPost)
+	s.HandleFunc("/groups", handler.Groups).Methods(http.MethodGet)
 	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
 	// 个人中心
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)

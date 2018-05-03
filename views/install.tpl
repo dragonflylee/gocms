@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" "系统初始化"}}
+  {{template "header" "系统安装"}}
   <style type="text/css">
     footer {
       margin-left: 0px !important;
@@ -14,13 +14,12 @@
 <body class="hold-transition register-page">
 <div class="register-box" style="width: 600px">
   <div class="register-logo">
-    <a href="#"><b>Go</b>CMS</a>
+    <a href="#">系统安装</a>
   </div>
   <div class="register-box-body box">
     <form action="/" method="post">
       <div class="row">
         <div class="col-md-6">
-          <p class="login-box-msg">配置数据库参数</p>
           <div class="form-group has-feedback">
             <select name="type" class="form-control"></select>
           </div>
