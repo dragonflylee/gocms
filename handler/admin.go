@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/dragonflylee/gocms/model"
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
 
@@ -50,9 +51,17 @@ func Users(w http.ResponseWriter, r *http.Request) {
 	}
 	filter := func(db *gorm.DB) *gorm.DB {
 		if email := strings.TrimSpace(r.Form.Get("email")); email != "" {
-			db = db.Where("admins.email = ?", strings.ToLower(email))
+			db = db.Where("email = ?", strings.ToLower(email))
+		}
+		if group, err := strconv.ParseInt(r.Form.Get("group"), 10, 64); err == nil {
+			db = db.Where("group_id = ?", group)
 		}
 		return db
+	}
+	groups, err := model.GetGroups()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	// 获取用户总数
 	nums, err := model.GetAdminNum(filter)
@@ -61,7 +70,7 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if nums <= 0 {
-		rLayout(w, r, "users.tpl", emptyData)
+		rLayout(w, r, "users.tpl", map[string]interface{}{"list": nil, "group": groups, "page": nil})
 		return
 	}
 	p := NewPaginator(r, nums)
@@ -70,16 +79,11 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	groups, err := model.GetGroups()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	for _, u := range users {
 		u.Group.Name = groups[u.GroupID]
 	}
 	rLayout(w, r, "users.tpl", map[string]interface{}{
-		"list": users, "groups": groups, "page": p})
+		"list": users, "group": groups, "page": p})
 }
 
 // UserAdd 用户添加
@@ -114,14 +118,29 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 	jRsp(w, http.StatusOK, "添加成功", nil)
 }
 
-// Groups 角色管理
-func Groups(w http.ResponseWriter, r *http.Request) {
-	groups, err := model.GetGroups()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+// GroupEdit 角色管理
+func GroupEdit(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars    = mux.Vars(r)
+		id, err = strconv.ParseInt(vars["id"], 10, 64)
+	)
+	if r.Method == http.MethodGet {
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		} else if nodes, err := model.GetNodeAllNodes(); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			t.ExecuteTemplate(w, "group.tpl", map[string]interface{}{
+				"id": id, "node": nodes})
+		}
 		return
 	}
-	rLayout(w, r, "groups.tpl", groups)
+	jRsp(w, http.StatusBadRequest, "无权操作", nil)
+}
+
+// GroupAdd 添加角色
+func GroupAdd(w http.ResponseWriter, r *http.Request) {
+	jRsp(w, http.StatusBadRequest, "无权操作", nil)
 }
 
 // Logs 操作日志
@@ -143,7 +162,7 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if nums <= 0 {
-		rLayout(w, r, "logs.tpl", emptyData)
+		rLayout(w, r, "logs.tpl", map[string]interface{}{"list": nil, "page": nil})
 		return
 	}
 	p := NewPaginator(r, nums)

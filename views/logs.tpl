@@ -54,7 +54,9 @@
           {{template "paginator" .data}}
         </div>
       {{else}}
-        <div class="box-body">无数据</div>
+        <div class="box-body">
+          <p class="lead text-center">无数据</p>
+        </div>
       {{end}}
       </div>
     </section>

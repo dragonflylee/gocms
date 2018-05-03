@@ -43,8 +43,7 @@
         "id": 7,
         "parent": 3,
         "name": "角色管理",
-        "path": "/admin/groups",
-        "status": true
+        "path": "/admin/group/{id:[0-9]+}"
     },
     {
         "id": 8,

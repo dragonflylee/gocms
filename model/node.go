@@ -11,9 +11,9 @@ type Node struct {
 	ID     int64    `gorm:"primary_key;auto_increment"`
 	Name   string   `gorm:"size:64;not null"`
 	Parent int64    `gorm:"default:0;not null"`
-	Icon   string   `gorm:"size:16;default:null"`
-	Path   string   `gorm:"size:255"`
+	Icon   string   `gorm:"size:16;default:'fa fa-circle-o'"`
 	Remark string   `gorm:"type:text"`
+	Path   string   `gorm:"size:255"`
 	Status bool     `gorm:"default:false;not null"`
 	Child  []*Node  `gorm:"-"`
 	Groups []*Group `gorm:"many2many:node_groups"`
@@ -70,6 +70,22 @@ func GetNodes() []*Node {
 	return mapNodes[0].Child
 }
 
+// GetNodeAllNodes 根据用户组获取节点
+func GetNodeAllNodes() (list []*Node, err error) {
+	if err = db.New().Order("id").Find(&list).Error; err != nil {
+		return nil, err
+	}
+	dict := map[int64]*Node{0: &Node{ID: 0}}
+	for _, node := range list {
+		dict[node.ID] = node
+	}
+	for _, node := range list {
+		p := dict[node.Parent]
+		p.Child = append(p.Child, node)
+	}
+	return dict[0].Child, nil
+}
+
 // GetNodeByPath 根据路径查找节点
 func GetNodeByPath(path string) *Node {
 	for _, node := range mapNodes {
@@ -102,6 +118,11 @@ func (n *Node) Parents() []*Node {
 		list = append(list, n)
 	}
 	return list
+}
+
+// Assign 用于递归生成菜单
+func (n *Node) Assign(list []*Node, user *Admin) map[string]interface{} {
+	return map[string]interface{}{"node": n, "menu": list, "user": user}
 }
 
 // HasGroup 判断指定节点是否能被某角色访问

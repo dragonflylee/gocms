@@ -20,9 +20,8 @@ const (
 )
 
 var (
-	t         = template.New("")
-	emptyData = map[string]interface{}{"list": nil, "page": nil}
-	store     = sessions.NewFilesystemStore(".", []byte("gocms"))
+	t     = template.New("")
+	store = sessions.NewFilesystemStore(".", []byte("gocms"))
 )
 
 func aLog(r *http.Request, message string) error {

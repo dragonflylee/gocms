@@ -61,7 +61,8 @@ func main() {
 	// 系统管理
 	s.HandleFunc("/users", handler.Users).Methods(http.MethodGet)
 	s.HandleFunc("/user/add", handler.UserAdd).Methods(http.MethodPost)
-	s.HandleFunc("/groups", handler.Groups).Methods(http.MethodGet)
+	s.HandleFunc("/group/{id:[0-9]+}", handler.GroupEdit)
+	s.HandleFunc("/group/add", handler.GroupAdd).Methods(http.MethodPost)
 	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
 	// 个人中心
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
