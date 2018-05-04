@@ -20,10 +20,10 @@
 
               <ul class="list-group list-group-unbordered">
                 <li class="list-group-item">
-                  <b>注册时间</b> <a class="pull-right">{{.user.CreatedAt.Format "2006-01-02 15:04:05"}}</a>
+                  <b>注册时间</b> <a class="pull-right">{{date .user.CreatedAt}}</a>
                 </li>
                 <li class="list-group-item">
-                  <b>上次登录</b> <a class="pull-right">{{.user.LastLogin.Format "2006-01-02 15:04:05"}}</a>
+                  <b>上次登录</b> <a class="pull-right">{{date .user.LastLogin}}</a>
                 </li>
                 <li class="list-group-item">
                   <b>上次IP</b> <a class="pull-right">{{.user.LastIP}}</a>

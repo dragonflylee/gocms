@@ -28,12 +28,10 @@
 
 {{define "nodetree"}}
   {{range .}}
+    <li data-jstree='{"opened":true,"selected":true,"icon":"{{.Icon}}"}'>{{.Name}}
     {{if .Child}}
-      <li class="jstree-open">{{.Name}}
-        <ul>{{template "nodetree" .Child}}</ul>
-      </li>
-    {{else}}
-      <li>{{.Name}}</li>
+      <ul>{{template "nodetree" .Child}}</ul>
     {{end}}
+    </li>
   {{end}}
 {{end}}

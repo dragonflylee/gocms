@@ -11,7 +11,7 @@ type Node struct {
 	ID     int64    `gorm:"primary_key;auto_increment"`
 	Name   string   `gorm:"size:64;not null"`
 	Parent int64    `gorm:"default:0;not null"`
-	Icon   string   `gorm:"size:16;default:'fa fa-circle-o'"`
+	Icon   string   `gorm:"size:32;default:null"`
 	Remark string   `gorm:"type:text"`
 	Path   string   `gorm:"size:255"`
 	Status bool     `gorm:"default:false;not null"`
@@ -115,14 +115,14 @@ func (n *Node) Parents() []*Node {
 	list := make([]*Node, 0)
 	for n.Parent != 0 {
 		n = mapNodes[n.Parent]
-		list = append(list, n)
+		list = append([]*Node{n}, list...)
 	}
 	return list
 }
 
 // Assign 用于递归生成菜单
-func (n *Node) Assign(list []*Node, user *Admin) map[string]interface{} {
-	return map[string]interface{}{"node": n, "menu": list, "user": user}
+func (n *Node) Assign(list []*Node, id int64) map[string]interface{} {
+	return map[string]interface{}{"node": n, "menu": list, "group": id}
 }
 
 // HasGroup 判断指定节点是否能被某角色访问

@@ -10,7 +10,7 @@
         "id": 2,
         "name": "个人中心",
         "path": "/admin/profile",
-        "status": false
+        "icon": "fa fa-user-o"
     },
     {
         "id": 3,
@@ -24,6 +24,7 @@
         "parent": 3,
         "name": "日志查看",
         "path": "/admin/logs",
+        "icon": "fa fa-sticky-note-o",
         "status": true
     },
     {
@@ -31,24 +32,28 @@
         "parent": 3,
         "name": "用户管理",
         "path": "/admin/users",
+        "icon": "fa fa-users",
         "status": true
     },
     {
         "id": 6,
         "parent": 5,
         "name": "用户添加",
-        "path": "/admin/user/add"
+        "path": "/admin/user/add",
+        "icon": "fa fa-user-plus"
     },
     {
         "id": 7,
         "parent": 3,
         "name": "角色管理",
-        "path": "/admin/group/{id:[0-9]+}"
+        "path": "/admin/group/{id:[0-9]+}",
+        "icon": "fa fa-users"
     },
     {
         "id": 8,
         "parent": 7,
         "name": "角色添加",
-        "path": "/admin/group/add"
+        "path": "/admin/group/add",
+        "icon": "fa fa-address-book-o"
     }
 ]
