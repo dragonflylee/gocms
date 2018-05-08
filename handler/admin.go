@@ -50,7 +50,7 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filter := func(db *gorm.DB) *gorm.DB {
-		if email := strings.TrimSpace(r.Form.Get("email")); email != "" {
+		if email := strings.TrimSpace(r.Form.Get("email")); len(email) > 0 {
 			db = db.Where("email = ?", strings.ToLower(email))
 		}
 		if group, err := strconv.ParseInt(r.Form.Get("group"), 10, 64); err == nil {
@@ -58,32 +58,24 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		}
 		return db
 	}
-	groups, err := model.GetGroups()
-	if err != nil {
+	var (
+		data = make(map[string]interface{})
+		err  error
+	)
+	if data["group"], err = model.GetGroups(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// 获取用户总数
-	nums, err := model.GetAdminNum(filter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if nums, err := model.GetAdminNum(filter); err == nil && nums > 0 {
+		p := NewPaginator(r, nums)
+		if data["list"], err = model.GetAdmins(p.PerPageNums, p.Offset(), filter); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		data["page"] = p
 	}
-	if nums <= 0 {
-		rLayout(w, r, "users.tpl", map[string]interface{}{"list": nil, "group": groups, "page": nil})
-		return
-	}
-	p := NewPaginator(r, nums)
-	users, err := model.GetAdmins(p.PerPageNums, p.Offset(), filter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	for _, u := range users {
-		u.Group.Name = groups[u.GroupID]
-	}
-	rLayout(w, r, "users.tpl", map[string]interface{}{
-		"list": users, "group": groups, "page": p})
+	rLayout(w, r, "users.tpl", data)
 }
 
 // UserAdd 用户添加
@@ -121,11 +113,10 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 // GroupEdit 角色管理
 func GroupEdit(w http.ResponseWriter, r *http.Request) {
 	var (
-		vars    = mux.Vars(r)
-		id, err = strconv.ParseInt(vars["id"], 10, 64)
+		vars = mux.Vars(r)
 	)
 	if r.Method == http.MethodGet {
-		if err != nil {
+		if id, err := strconv.ParseInt(vars["id"], 10, 64); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		} else if nodes, err := model.GetNodeAllNodes(); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -150,27 +141,20 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filter := func(db *gorm.DB) *gorm.DB {
-		if email := strings.TrimSpace(r.Form.Get("email")); email != "" {
-			db = db.Where("admins.email = ?", strings.ToLower(email))
+		if id, err := strconv.ParseInt(r.Form.Get("id"), 10, 64); err == nil {
+			db = db.Where("admin_id = ?", id)
 		}
 		return db
 	}
+	data := make(map[string]interface{})
 	// 获取用户总数
-	nums, err := model.GetLogNum(filter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if nums, err := model.GetLogNum(filter); err == nil && nums > 0 {
+		p := NewPaginator(r, nums)
+		if data["list"], err = model.GetLogs(p.PerPageNums, p.Offset(), filter); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		data["page"] = p
 	}
-	if nums <= 0 {
-		rLayout(w, r, "logs.tpl", map[string]interface{}{"list": nil, "page": nil})
-		return
-	}
-	p := NewPaginator(r, nums)
-	logs, err := model.GetLogs(p.PerPageNums, p.Offset(), filter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	rLayout(w, r, "logs.tpl", map[string]interface{}{
-		"list": logs, "page": p})
+	rLayout(w, r, "logs.tpl", data)
 }

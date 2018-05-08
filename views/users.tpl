@@ -74,7 +74,7 @@
                   <tr>
                     <td>{{.ID}}</td>
                     <td>{{.Email}}</td>
-                    <td><a class="btn btn-xs" data-href="/admin/group/{{.GroupID}}" data-target="#modal-edit" data-toggle="modal">{{.Group.Name}}</a></td>
+                    <td><a data-href="/admin/group/{{.GroupID}}" data-target="#modal-edit" data-toggle="modal">{{index $.data.group .GroupID}}</a></td>
                     <td>{{date .CreatedAt}}</td>
                     <td>{{date .LastLogin}} / {{.LastIP}}</td>
                     <td>
@@ -168,7 +168,12 @@
     </div>
   </div>
   {{end}}
-  {{template "modal"}}
+  <div class="modal" id="modal-edit">
+    <div class="modal-dialog">
+      <div class="modal-content box">
+      </div>
+    </div>
+  </div>
   {{template "footer"}}
 </div>
 </body>

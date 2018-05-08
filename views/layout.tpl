@@ -2,6 +2,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>{{.}}</title>
+  <meta content="noarchive" name="robots">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -11,11 +12,12 @@
   <link href="//cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/skins/all.css" rel="stylesheet">
   <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css" rel="stylesheet">
   <link href="//cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/css/lightbox.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker3.min.css" rel="stylesheet">
   <link href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default/style.min.css" rel="stylesheet">
 
   <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.3/css/AdminLTE.min.css" rel="stylesheet">
   <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.3/css/skins/_all-skins.min.css" rel="stylesheet">
-  <link href="/static/css/custom.min.css?v=20180501" rel="stylesheet" type="text/css">
+  <link href="/static/css/custom.min.css?v=20180422" rel="stylesheet" type="text/css">
   
   {{html "<!--[if lt IE 9]>"}}
   <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -41,16 +43,16 @@
         <ul class="nav navbar-nav">
           <li class="dropdown user user-menu">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-              <img src="{{.user.Headpic}}" class="user-image" alt="{{.user.Email}}">
+              <img src="{{.user.Headpic}}" class="user-image" alt="用户头像">
               <span class="hidden-xs">{{.user.Email}}</span>
             </a>
             <ul class="dropdown-menu">
               <li class="user-header">
-                  <img src="{{.user.Headpic}}" class="img-circle" alt="{{.user.Email}}">
+                  <img src="{{.user.Headpic}}" class="img-circle" alt="用户头像">
                 <p>
-                  {{.user.Email}}
-                  <small>{{.user.Group.Name}}</small>
-                  <small>上次登录 {{date .user.LastLogin}}</small>
+                    {{.user.Email}}
+                    <small>{{.user.Group.Name}}</small>
+                    <small>上次登录 {{date .user.LastLogin}}</small>
                 </p>
               </li>
               <li class="user-footer">
@@ -79,46 +81,19 @@
           <a href="#" title="{{.user.Email}}"><i class="fa fa-circle text-success"></i> 在线</a>
         </div>
       </div>
-      <form action="#" method="get" class="sidebar-form">
+      <form class="sidebar-form">
         <div class="input-group">
-          <input type="text" Username="q" class="form-control" placeholder="搜索...">
-              <span class="input-group-btn">
-                <button type="submit" Username="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
-                </button>
-              </span>
+          <input type="text" name="q" class="form-control" placeholder="搜索...">
+          <span class="input-group-btn">
+            <button type="submit" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i></button>
+          </span>
         </div>
       </form>
       <ul class="sidebar-menu" data-widget="tree">
-        {{template "sidebar" .node.Assign .menu $.user.GroupID}}
+        {{template "sidebar" .menu.Assign .user.GroupID .node}}
       </ul>
     </section>
   </aside>
-{{end}}
-
-{{define "sidebar"}}
-  {{range .menu}}
-    {{if not (.HasGroup $.group)}}
-    {{else if .Child}}
-      <li class="treeview {{if $.node.HasParent .ID}}active{{end}}">
-        <a href="#">
-          <i class="{{.Icon}}"></i> <span>{{.Name}}</span>
-          <span class="pull-right-container">
-            <i class="fa fa-angle-left pull-right"></i>
-          </span>
-        </a>
-        <ul class="treeview-menu">
-          {{template "sidebar" $.node.Assign .Child $.group}}
-        </ul>
-      </li>
-    {{else}}
-      <li {{if $.node.HasParent .ID}}class="active"{{end}}>
-        <a href="{{.Path}}">
-          <i class="{{.Icon}}"></i>
-          <span>{{.Name}}</span>
-        </a>
-      </li>
-    {{end}}  
-  {{end}}
 {{end}}
 
 {{define "footer"}}
@@ -133,9 +108,11 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/jQuery-slimScroll/1.3.8/jquery.slimscroll.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.3/js/adminlte.min.js"></script>
+
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
 
   <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
@@ -143,9 +120,37 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/i18n/zh-CN.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/lightbox2/2.10.0/js/lightbox.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/jstree.min.js"></script>
- 
-  <script src="/static/js/global.min.js?v=20180425" type="text/javascript"></script>
+  
+  <script src="/static/js/global.min.js?v=20180507" type="text/javascript"></script>
+{{end}}
+
+{{define "sidebar"}}
+  {{range .m}}
+    {{if not (.HasGroup $.group)}}
+    {{else if .Child}}
+      <li class="treeview {{if $.node.HasParent .ID}}active{{end}}">
+        <a href="#">
+          <i class="{{.Icon}}"></i> <span>{{.Name}}</span>
+          <span class="pull-right-container">
+            <i class="fa fa-angle-left pull-right"></i>
+          </span>
+        </a>
+        <ul class="treeview-menu">
+          {{template "sidebar" .Child.Assign $.group $.node}}
+        </ul>
+      </li>
+    {{else}}
+      <li {{if $.node.HasParent .ID}}class="active"{{end}}>
+        <a href="{{.Path}}">
+          <i class="{{.Icon}}"></i>
+          <span>{{.Name}}</span>
+        </a>
+      </li>
+    {{end}}  
+  {{end}}
 {{end}}
 
 {{define "title"}}
@@ -165,8 +170,8 @@
 {{end}}
 
 {{define "modal"}}
-  <div class="modal" id="modal-edit">
-    <div class="modal-dialog">
+  <div class="modal" id="modal-detail">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
       </div>
     </div>
@@ -189,7 +194,10 @@
 {{end}}
 
 {{define "paginator"}}
-  {{if and .page .page.HasPages}}
+  {{if and . .page}}
+  <span style="padding-left: 10px;">共 {{.page.Nums}} 条记录</span>
+  {{end}}
+  {{if and . .page .page.HasPages}}
   <ul class="pagination pagination-sm no-margin pull-right">
     {{if .page.HasPrev}}
       <li><a href="{{.page.PageLinkFirst}}"><i class="fa fa-angle-double-left"></i></a></li>

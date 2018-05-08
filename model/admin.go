@@ -4,8 +4,10 @@ import (
 	"crypto/md5"
 	"encoding/gob"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -15,24 +17,35 @@ import (
 type Admin struct {
 	ID        int64  `gorm:"primary_key;auto_increment"`
 	Email     string `gorm:"size:255;unique_index;not null"`
-	Password  string `gorm:"size:64;not null"`
-	Salt      string `gorm:"size:10;not null"`
+	Password  string `gorm:"size:64;not null" json:"-"`
+	Salt      string `gorm:"size:10;not null" json:"-"`
 	GroupID   int64  `gorm:"not null"`
 	Headpic   string `gorm:"size:255"`
-	Status    bool   `gorm:"default:false;not null"`
 	LastIP    string `gorm:"size:16"`
+	Status    bool   `gorm:"default:false;not null"`
 	LastLogin time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Group     Group `gorm:"-"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
+	Group     Group     `gorm:"-"`
 }
 
 func (m *Admin) String() string {
 	return m.Email
 }
 
+// GobEncode 序列化
+func (m *Admin) GobEncode() ([]byte, error) {
+	return json.Marshal(m)
+}
+
+// GobDecode 反序列化
+func (m *Admin) GobDecode(data []byte) error {
+	return json.Unmarshal(data, m)
+}
+
 // Create 注册新用户
 func (m *Admin) Create() error {
+	m.Email = strings.ToLower(m.Email)
 	m.Salt = randString(10)
 	m.Password = encryptPass(m.Password, m.Salt)
 	m.Headpic = "/static/img/avatar.png"

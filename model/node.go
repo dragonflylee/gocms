@@ -15,8 +15,16 @@ type Node struct {
 	Remark string   `gorm:"type:text"`
 	Path   string   `gorm:"size:255"`
 	Status bool     `gorm:"default:false;not null"`
-	Child  []*Node  `gorm:"-"`
+	Child  Menu     `gorm:"-"`
 	Groups []*Group `gorm:"many2many:node_groups"`
+}
+
+// Menu 菜单
+type Menu []*Node
+
+// Assign 用于递归生成菜单
+func (m Menu) Assign(group int64, node *Node) map[string]interface{} {
+	return map[string]interface{}{"m": m, "group": group, "node": node}
 }
 
 var (
@@ -66,12 +74,12 @@ func Install(path string) error {
 }
 
 // GetNodes 获取节点树
-func GetNodes() []*Node {
+func GetNodes() Menu {
 	return mapNodes[0].Child
 }
 
 // GetNodeAllNodes 根据用户组获取节点
-func GetNodeAllNodes() (list []*Node, err error) {
+func GetNodeAllNodes() (list Menu, err error) {
 	if err = db.New().Order("id").Find(&list).Error; err != nil {
 		return nil, err
 	}
@@ -118,11 +126,6 @@ func (n *Node) Parents() []*Node {
 		list = append([]*Node{n}, list...)
 	}
 	return list
-}
-
-// Assign 用于递归生成菜单
-func (n *Node) Assign(list []*Node, id int64) map[string]interface{} {
-	return map[string]interface{}{"node": n, "menu": list, "group": id}
 }
 
 // HasGroup 判断指定节点是否能被某角色访问
