@@ -187,7 +187,7 @@ var Admin = {
 }
 
 // 模态框内分页
-$(document).on("click", ".modal-content .pagination a", function(e) {
+$(document).on("click", ".modal-content .pagination a,.modal-content .nav-tabs a", function(e) {
   e.preventDefault();
   $(e.target).parents('.modal-content').load($(e.target).attr('href'));
 })

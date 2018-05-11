@@ -13,16 +13,7 @@
         <div class="box-header with-border">
           <h3 class="box-title">日志列表</h3>
           <div class="box-tools">
-            <form class="form-inline">
-              <div class="form-group">
-                <div class="input-group input-group-sm">
-                  <input type="email" class="form-control" placeholder="请输入管理员邮箱" name="email" value="{{.form.Get "email"}}" required>
-                  <span class="input-group-btn">
-                    <button type="submit" class="btn btn-info btn-sm" title="搜索"><i class="fa fa-search"></i></button>
-                  </span>
-                </div>
-              </div>
-            </form>
+            <a class="btn bg-olive btn-sm btn-export" href="?export=xls" title="导出">导出 <i class="fa fa-file-excel-o"></i></a>
           </div>
         </div>
       {{if .data.list}}

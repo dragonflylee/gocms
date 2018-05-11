@@ -17,6 +17,7 @@ import (
 const (
 	defaultMaxMemory = 32 << 20 // 32 MB
 	sessName         = "gocms"  // Session 名称
+	dateFormate      = "2006-01-02"
 )
 
 var (

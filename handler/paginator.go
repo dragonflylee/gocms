@@ -158,10 +158,12 @@ func (p *Paginator) End() int {
 }
 
 // NewPaginator 创建分页对象
-func NewPaginator(req *http.Request, nums int64) *Paginator {
+func NewPaginator(r *http.Request, nums int64) *Paginator {
 	p := Paginator{}
-	p.Request = req
-	p.PerPageNums = 15
+	p.Request = r
+	if p.PerPageNums, _ = strconv.Atoi(r.FormValue("perPage")); p.PerPageNums <= 0 {
+		p.PerPageNums = 12
+	}
 	p.nums = nums
 	return &p
 }

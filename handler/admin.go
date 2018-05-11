@@ -58,20 +58,17 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		}
 		return db
 	}
-	var (
-		data = make(map[string]interface{})
-		err  error
-	)
-	if data["group"], err = model.GetGroups(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	data := make(map[string]interface{})
+	if groups, err := model.GetGroups(); err == nil {
+		data["group"] = groups
 	}
 	// 获取用户总数
 	if nums, err := model.GetAdminNum(filter); err == nil && nums > 0 {
 		p := NewPaginator(r, nums)
-		if data["list"], err = model.GetAdmins(p.PerPageNums, p.Offset(), filter); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if list, err := model.GetAdmins(func(db *gorm.DB) *gorm.DB {
+			return db.Offset(p.Offset()).Limit(p.PerPageNums)
+		}, filter); err == nil {
+			data["list"] = list
 		}
 		data["page"] = p
 	}
@@ -147,12 +144,20 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		return db
 	}
 	data := make(map[string]interface{})
+	if _, exist := r.Form["export"]; exist {
+		if list, err := model.GetLogs(filter); err == nil {
+			data["日志列表"] = list
+		}
+		exportExcel(data, w)
+		return
+	}
 	// 获取用户总数
 	if nums, err := model.GetLogNum(filter); err == nil && nums > 0 {
 		p := NewPaginator(r, nums)
-		if data["list"], err = model.GetLogs(p.PerPageNums, p.Offset(), filter); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if list, err := model.GetLogs(func(db *gorm.DB) *gorm.DB {
+			return db.Offset(p.Offset()).Limit(p.PerPageNums)
+		}, filter); err == nil {
+			data["list"] = list
 		}
 		data["page"] = p
 	}

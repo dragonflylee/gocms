@@ -170,13 +170,18 @@
 {{end}}
 
 {{define "modal"}}
+  <div class="modal" id="modal-edit">
+    <div class="modal-dialog">
+      <div class="modal-content box">
+      </div>
+    </div>
+  </div>
   <div class="modal" id="modal-detail">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
       </div>
     </div>
   </div>
-
   <div class="modal" id="modal-confirm">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">

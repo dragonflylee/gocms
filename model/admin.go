@@ -95,9 +95,8 @@ func Login(email, passwd, ip string) (*Admin, error) {
 }
 
 // GetAdmins 获取用户列表
-func GetAdmins(page, offset int, filter ...func(*gorm.DB) *gorm.DB) (list []*Admin, err error) {
-	err = db.New().Scopes(filter...).Limit(page).Offset(offset).
-		Order("id").Find(&list).Error
+func GetAdmins(filter ...func(*gorm.DB) *gorm.DB) (list []*Admin, err error) {
+	err = db.New().Scopes(filter...).Order("id").Find(&list).Error
 	return list, err
 }
 
@@ -109,14 +108,14 @@ func GetAdminNum(filter ...func(*gorm.DB) *gorm.DB) (nums int64, err error) {
 
 // AdminLog 操作日志
 type AdminLog struct {
-	ID        int64  `gorm:"primary_key;auto_increment"`
-	AdminID   int64  `gorm:"not null"`
-	Path      string `gorm:"size:255;not null"`
-	Commit    string `gorm:"type:text"`
-	UA        string `gorm:"size:255"`
-	IP        string `gorm:"size:16"`
-	CreatedAt time.Time
-	Admin     *Admin
+	ID        int64     `gorm:"primary_key;auto_increment" xlsx:"-"`
+	AdminID   int64     `gorm:"not null" xlsx:"-"`
+	Admin     *Admin    `xlsx:"用户;field:Email"`
+	Path      string    `gorm:"size:255;not null" xlsx:"路径"`
+	UA        string    `gorm:"size:255" xlsx:"-"`
+	Commit    string    `gorm:"type:text" xlsx:"注释"`
+	IP        string    `gorm:"size:16" xlsx:"IP"`
+	CreatedAt time.Time `xlsx:"时间"`
 }
 
 // Create 插入日志
@@ -125,11 +124,10 @@ func (m *AdminLog) Create() error {
 }
 
 // GetLogs 获取日志列表
-func GetLogs(page, offset int, filter ...func(*gorm.DB) *gorm.DB) (list []*AdminLog, err error) {
-	err = db.Scopes(filter...).Limit(page).Offset(offset).
-		Preload("Admin", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id, email")
-		}).Order("id desc").Find(&list).Error
+func GetLogs(filter ...func(*gorm.DB) *gorm.DB) (list []*AdminLog, err error) {
+	err = db.Scopes(filter...).Preload("Admin", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id, email")
+	}).Order("id desc").Find(&list).Error
 	return list, err
 }
 

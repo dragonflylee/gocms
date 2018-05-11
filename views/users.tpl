@@ -168,12 +168,6 @@
     </div>
   </div>
   {{end}}
-  <div class="modal" id="modal-edit">
-    <div class="modal-dialog">
-      <div class="modal-content box">
-      </div>
-    </div>
-  </div>
   {{template "footer"}}
 </div>
 </body>
