@@ -121,6 +121,14 @@ var Admin = {
             $('.box .overlay').remove();
             Admin.alert({ container: form, message: data.msg, closeInSeconds: 3 });
           }
+        },
+        error: function(xhr, status) {
+          $('.box .overlay').remove();
+          Admin.alert({
+            container: modal ? $(form).find('.modal-footer') : form, 
+            type: 'danger', 
+            message: status
+          });
         }
       }, options);
       $(form).ajaxSubmit(options)
@@ -196,7 +204,7 @@ $(document).ready(function() {
   // 初始化插件
   Admin.init();
   // 表单验证
-  $('.login-box form,.modal-content form,.box-body form').each(function(index, form) {
+  $('.login-box form,.register-box form,.modal-content form,.box-body form').each(function(index, form) {
     Admin.validate($(form));
   })
   // 模态框请求
@@ -216,6 +224,13 @@ $(document).ready(function() {
             message: data.msg 
           });
         }
+      },
+      error: function(xhr, status) {
+        Admin.alert({ 
+          container: $(e.currentTarget).find('.modal-footer'), 
+          type: 'danger',
+          message: status 
+        });
       }
     }
     $(this).find('.modal-title').text('确定'+$(e.relatedTarget).attr('title')+'?');
@@ -237,10 +252,14 @@ $(document).ready(function() {
   });
   // 处理远端加载模态框
   $('#modal-edit,#modal-detail').on('show.bs.modal', function (e) {
-    $(this).find('.modal-content').load($(e.relatedTarget).attr('data-href'), function() {
-      var form = $(e.target).find('form');
-      Admin.init(form);
-      Admin.validate(form);
+    $(this).find('.modal-content').load($(e.relatedTarget).attr('data-href'), function(resp, status) {
+      if (status == 'success') {
+        Admin.init($(e.target));
+        Admin.validate($(e.target).find('form'));
+      } else {
+        $(e.target).find('.modal-content')
+          .html('<div class="jumbotron"><h2 class="text-center">加载失败</h2></div>');
+      }
     }).html('<div class="jumbotron"><h2 class="text-center">加载中</h2></div><div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
   }).on("hide.bs.modal", function() {
     $(this).removeData("bs.modal");

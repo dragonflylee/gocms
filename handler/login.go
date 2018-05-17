@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -34,6 +35,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return
 	}
+	session.ID = fmt.Sprint(user.ID)
 	session.Values["user"] = user
 	session.Save(r, w)
 	jRsp(w, http.StatusOK, "登录成功", "/admin")
@@ -41,14 +43,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 // Logout 登出
 func Logout(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, sessName)
-	if err != nil {
+	if session, err := store.Get(r, sessName); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	} else {
+		session.Options.MaxAge = -1
+		session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusFound)
 	}
-	for key := range session.Values {
-		delete(session.Values, key)
-	}
-	session.Save(r, w)
-	http.Redirect(w, r, "/login", http.StatusFound)
 }

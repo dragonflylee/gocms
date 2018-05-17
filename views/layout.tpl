@@ -124,7 +124,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/jstree.min.js"></script>
   
-  <script src="/static/js/global.min.js?v=20180507" type="text/javascript"></script>
+  <script src="/static/js/global.js?v=20180509" type="text/javascript"></script>
 {{end}}
 
 {{define "sidebar"}}
