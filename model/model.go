@@ -45,7 +45,7 @@ func Open(conf *Config) error {
 		return err
 	}
 	// 加载节点数据
-	if err = loadNodes(); err != nil {
+	if mapNodes, err = loadNodes(); err != nil {
 		log.Printf("failed init nodes (%s)", err.Error())
 		return err
 	}

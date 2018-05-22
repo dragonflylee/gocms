@@ -178,7 +178,7 @@
   </div>
   <div class="modal" id="modal-detail">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content">
+      <div class="modal-content box">
       </div>
     </div>
   </div>

@@ -10,7 +10,7 @@
     {{template "title" .}}
     <section class="content">
       <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-2">
           {{if .user.Access "/admin/group/add"}}
             <a class="btn bg-purple btn-block margin-bottom" data-target="#group-add" data-toggle="modal" title="添加">添加角色 <i class="fa fa-plus"></i></a>
           {{end}}
@@ -25,9 +25,17 @@
             <div class="box-body no-padding">
               <ul class="nav nav-pills nav-stacked">
                 <li {{if not (.form.Get "group")}}class="active"{{end}}><a href="?">所有</a></li>
-              {{range $id, $name := .data.group}}
-                <li {{if eq (print $id) ($.form.Get "group")}}class="active"{{end}}><a href="?group={{$id}}">{{$name}}</a></li>
+            {{range $id, $name := .data.group}}
+              {{if eq (print $id) ($.form.Get "group")}}
+                <li class="active">
+                  <a>{{$name}}
+                    <span class="btn btn-xs bg-navy pull-right" data-href="/admin/group/{{$id}}" data-target="#modal-edit" data-toggle="modal"><i class="fa fa-edit"></i></span>
+                  </a>
+                </li>
+              {{else}}
+                <li><a href="?group={{$id}}">{{$name}}</a></li>
               {{end}}
+            {{end}}
               </ul>
             </div>
           {{else}}
@@ -38,7 +46,7 @@
           </div>
         </div>
 
-        <div class="col-md-9">
+        <div class="col-md-10">
           <div class="box">
             <div class="box-header with-border">
               <h3 class="box-title">用户列表</h3>
@@ -74,7 +82,7 @@
                   <tr>
                     <td>{{.ID}}</td>
                     <td>{{.Email}}</td>
-                    <td><a data-href="/admin/group/{{.GroupID}}" data-target="#modal-edit" data-toggle="modal">{{index $.data.group .GroupID}}</a></td>
+                    <td>{{index $.data.group .GroupID}}</td>
                     <td>{{date .CreatedAt}}</td>
                     <td>{{date .LastLogin}} / {{.LastIP}}</td>
                     <td>
@@ -168,6 +176,12 @@
     </div>
   </div>
   {{end}}
+  <div class="modal" id="modal-edit">
+    <div class="modal-dialog">
+      <div class="modal-content box">
+      </div>
+    </div>
+  </div>
   {{template "footer"}}
 </div>
 </body>

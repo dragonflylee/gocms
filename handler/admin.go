@@ -103,38 +103,78 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
-	aLog(r, fmt.Sprintf("添加管理员 (%s)", user.Email))
+	aLog(r, "添加管理员: %s", user.Email)
 	jRsp(w, http.StatusOK, "添加成功", nil)
 }
 
 // GroupEdit 角色管理
 func GroupEdit(w http.ResponseWriter, r *http.Request) {
 	var (
-		vars = mux.Vars(r)
+		vars  = mux.Vars(r)
+		group model.Group
+		err   error
 	)
 	if r.Method == http.MethodGet {
-		if id, err := strconv.ParseInt(vars["id"], 10, 64); err != nil {
+		if group.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-		} else if nodes, err := model.GetNodeAllNodes(); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		} else {
-			t.ExecuteTemplate(w, "group.tpl", map[string]interface{}{
-				"id": id, "node": nodes})
+			return
 		}
+		data := make(map[string]interface{})
+		if err = group.Select(); err == nil {
+			data["group"] = &group
+		}
+		if nodes, err := model.GetNodeAllNodes(); err == nil {
+			data["node"] = nodes
+		}
+		t.ExecuteTemplate(w, "group.tpl", data)
 		return
 	}
+	if group.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
+		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	if err = r.ParseForm(); err != nil {
+		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	if group.Name = strings.TrimSpace(r.PostForm.Get("name")); len(group.Name) <= 0 {
+		jRsp(w, http.StatusBadRequest, "用户组不能为空", nil)
+		return
+	}
+	if err = group.Update(); err != nil {
+		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+	aLog(r, "修改角色: %s", group.Name)
 	jRsp(w, http.StatusBadRequest, "无权操作", nil)
 }
 
 // GroupAdd 添加角色
 func GroupAdd(w http.ResponseWriter, r *http.Request) {
-	jRsp(w, http.StatusBadRequest, "无权操作", nil)
+	var (
+		group model.Group
+		err   error
+	)
+	if err = r.ParseForm(); err != nil {
+		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	if group.Name = strings.TrimSpace(r.PostForm.Get("name")); len(group.Name) <= 0 {
+		jRsp(w, http.StatusBadRequest, "用户组不能为空", nil)
+		return
+	}
+	if err = group.Create(); err != nil {
+		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+	aLog(r, "新增角色: %s", group.Name)
+	jRsp(w, http.StatusOK, "添加成功", nil)
 }
 
 // Logs 操作日志
 func Logs(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	filter := func(db *gorm.DB) *gorm.DB {

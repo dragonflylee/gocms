@@ -1,4 +1,4 @@
-<form method="POST" action="/admin/group/{{.id}}" class="form-horizontal">
+<form method="POST" action="/admin/group/{{.group.ID}}" class="form-horizontal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
       <span aria-hidden="true">×</span></button>
@@ -8,7 +8,7 @@
     <div class="form-group">
       <label class="col-sm-3 control-label">名称</label>
       <div class="col-sm-5">
-        <input type="text" class="form-control" name="name" required>
+        <input type="text" class="form-control" name="name" value="{{.group.Name}}" required>
       </div>
     </div>
     <div class="form-group">

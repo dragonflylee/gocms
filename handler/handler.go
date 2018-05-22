@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -25,7 +26,7 @@ var (
 	store = sessions.NewFilesystemStore(".", []byte("gocms"))
 )
 
-func aLog(r *http.Request, message string) error {
+func aLog(r *http.Request, format string, a ...interface{}) error {
 	var log model.AdminLog
 	if session, err := store.Get(r, sessName); err != nil {
 		return err
@@ -35,7 +36,7 @@ func aLog(r *http.Request, message string) error {
 	log.Path = r.URL.String()
 	log.UA = r.UserAgent()
 	log.IP = realip.FromRequest(r)
-	log.Commit = message
+	log.Commit = fmt.Sprintf(format, a...)
 	return log.Create()
 }
 
