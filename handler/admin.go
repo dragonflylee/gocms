@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/dragonflylee/gocms/model"
+	"github.com/dragonflylee/gocms/util"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
@@ -64,7 +65,7 @@ func Users(w http.ResponseWriter, r *http.Request) {
 	}
 	// 获取用户总数
 	if nums, err := model.GetAdminNum(filter); err == nil && nums > 0 {
-		p := NewPaginator(r, nums)
+		p := util.NewPaginator(r, nums)
 		if list, err := model.GetAdmins(func(db *gorm.DB) *gorm.DB {
 			return db.Offset(p.Offset()).Limit(p.PerPageNums)
 		}, filter); err == nil {
@@ -188,12 +189,12 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		if list, err := model.GetLogs(filter); err == nil {
 			data["日志列表"] = list
 		}
-		exportExcel(data, w)
+		util.Excel("日志.xls", data, w)
 		return
 	}
 	// 获取用户总数
 	if nums, err := model.GetLogNum(filter); err == nil && nums > 0 {
-		p := NewPaginator(r, nums)
+		p := util.NewPaginator(r, nums)
 		if list, err := model.GetLogs(func(db *gorm.DB) *gorm.DB {
 			return db.Offset(p.Offset()).Limit(p.PerPageNums)
 		}, filter); err == nil {

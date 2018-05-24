@@ -1,15 +1,13 @@
 package model
 
 import (
-	"crypto/md5"
 	"encoding/gob"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"math/rand"
 	"strings"
 	"time"
 
+	"github.com/dragonflylee/gocms/util"
 	"github.com/jinzhu/gorm"
 )
 
@@ -46,16 +44,16 @@ func (m *Admin) GobDecode(data []byte) error {
 // Create 注册新用户
 func (m *Admin) Create() error {
 	m.Email = strings.ToLower(m.Email)
-	m.Salt = randString(10)
-	m.Password = encryptPass(m.Password, m.Salt)
+	m.Salt = util.RandString(10)
+	m.Password = util.Md5Hash(m.Password + util.Md5Hash(m.Salt))
 	m.Headpic = "/static/img/avatar.png"
 	return db.New().Create(m).Error
 }
 
 // UpdatePasswd 更新密码
 func (m *Admin) UpdatePasswd(v ...interface{}) error {
-	m.Salt = randString(10)
-	m.Password = encryptPass(m.Password, m.Salt)
+	m.Salt = util.RandString(10)
+	m.Password = util.Md5Hash(m.Password + util.Md5Hash(m.Salt))
 	v = append(v, "salt")
 	if !m.Status {
 		m.Status = true
@@ -75,23 +73,21 @@ func (m *Admin) Access(tpl string) bool {
 // Login 用户登录
 func Login(email, passwd, ip string) (*Admin, error) {
 	var (
-		db   = db.New()
-		user Admin
-		err  error
+		db  = db.New()
+		m   = new(Admin)
+		err error
 	)
-	if err = db.First(&user, "email = ?", email).Error; err != nil {
+	if err = db.First(m, "email = ?", email).Error; err != nil {
 		return nil, errors.New("用户不存在")
 	}
-	if err = db.Model(&user).Related(&user.Group).Error; err != nil {
+	if err = db.Model(m).Related(&m.Group).Error; err != nil {
 		return nil, errors.New("用户组不存在")
 	}
-	if encryptPass(passwd, user.Salt) != user.Password {
+	if util.Md5Hash(passwd+util.Md5Hash(m.Salt)) != m.Password {
 		return nil, errors.New("密码不正确")
 	}
-	err = db.Model(&user).UpdateColumns(&Admin{
-		LastIP: ip, LastLogin: time.Now(),
-	}).Error
-	return &user, err
+	err = db.Model(m).UpdateColumns(&Admin{LastIP: ip, LastLogin: time.Now()}).Error
+	return m, err
 }
 
 // GetAdmins 获取用户列表
@@ -135,29 +131,6 @@ func GetLogs(filter ...func(*gorm.DB) *gorm.DB) (list []*AdminLog, err error) {
 func GetLogNum(filter ...func(*gorm.DB) *gorm.DB) (nums int64, err error) {
 	err = db.New().Model(&AdminLog{}).Scopes(filter...).Count(&nums).Error
 	return nums, err
-}
-
-// md5Hash 生成32位MD5
-func md5Hash(text string) string {
-	ctx := md5.New()
-	ctx.Write([]byte(text))
-	return hex.EncodeToString(ctx.Sum(nil))
-}
-
-// encryptPass 生成密码串
-func encryptPass(password, salt string) string {
-	return md5Hash(password + md5Hash(salt))
-}
-
-// randString 生成随机字符串
-func randString(l int) string {
-	bytes := []byte("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	result := []byte{}
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	for i := 0; i < l; i++ {
-		result = append(result, bytes[r.Intn(len(bytes))])
-	}
-	return string(result)
 }
 
 func init() {

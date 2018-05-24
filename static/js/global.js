@@ -167,18 +167,6 @@ var Admin = {
         $(this).parents('tr').toggleClass("active");
       });
     }
-    if (jQuery().jstree) {
-      $('.jstree', $container).jstree({
-        "core" : {
-          "themes" : { "variant" : "large" }
-        },
-        "checkbox": {
-          "cascade": "undetermined",
-          "three_state" : false
-        },
-        "plugins" : ["checkbox"]
-      });
-    }
     if (jQuery().bootstrapSwitch) {
       $('.make-switch', $container).bootstrapSwitch({
         onSwitchChange: function(e, state) {

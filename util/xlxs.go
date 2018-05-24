@@ -1,4 +1,4 @@
-package handler
+package util
 
 import (
 	"fmt"
@@ -97,9 +97,8 @@ func xlsxCeil(row *xlsx.Row, v reflect.Value) {
 	}
 }
 
-// exportExcel 导出Excel
-func exportExcel(data map[string]interface{}, w http.ResponseWriter) error {
-	filename := fmt.Sprintf("%s-%d.xlsx", time.Now().Format(dateFormate), time.Now().Unix())
+// Excel 导出Excel
+func Excel(filename string, data map[string]interface{}, w http.ResponseWriter) error {
 	file := xlsx.NewFile()
 
 	for name, page := range data {

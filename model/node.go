@@ -165,7 +165,7 @@ func (m *Group) String() string {
 
 // Select 获取角色
 func (m *Group) Select() error {
-	return db.New().Take(m, m.ID).Preload("Nodes").Error
+	return db.New().Take(m).Error
 }
 
 // Update 更新角色
