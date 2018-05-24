@@ -2,6 +2,7 @@
 <html>
 <head>
   {{template "header" .node.Name}}
+  <style href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default-dark/style.min.css" rel="stylesheet"></style>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -183,6 +184,23 @@
     </div>
   </div>
   {{template "footer"}}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/jstree.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      if (jQuery().jstree) {	
+        $('.jstree', $container).jstree({	
+          "core" : {	
+            "themes" : { "variant" : "large" }	
+          },	
+          "checkbox": {	
+            "cascade": "undetermined",	
+            "three_state" : false	
+          },	
+          "plugins" : ["checkbox"]	
+        });	
+      }
+    });
+  </script>
 </div>
 </body>
 </html>

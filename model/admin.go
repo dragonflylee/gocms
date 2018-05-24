@@ -13,17 +13,17 @@ import (
 
 // Admin 管理员
 type Admin struct {
-	ID        int64  `gorm:"primary_key;auto_increment"`
-	Email     string `gorm:"size:255;unique_index;not null"`
-	Password  string `gorm:"size:64;not null" json:"-"`
-	Salt      string `gorm:"size:10;not null" json:"-"`
-	GroupID   int64  `gorm:"not null"`
-	Headpic   string `gorm:"size:255"`
-	LastIP    string `gorm:"size:16"`
-	Status    bool   `gorm:"default:false;not null"`
-	LastLogin time.Time
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	ID        int64     `gorm:"primary_key;auto_increment"`
+	Email     string    `gorm:"size:255;unique_index;not null"`
+	Password  string    `gorm:"size:64;not null" json:"-"`
+	Salt      string    `gorm:"size:10;not null" json:"-"`
+	GroupID   int64     `gorm:"not null"`
+	Headpic   string    `gorm:"size:255"`
+	LastIP    string    `gorm:"size:16"`
+	Status    bool      `gorm:"default:false;not null"`
+	LastLogin time.Time `gorm:"type(datetime)"`
+	CreatedAt time.Time `gorm:"type(datetime)" json:"-"`
+	UpdatedAt time.Time `gorm:"type(datetime)" json:"-"`
 	Group     Group     `gorm:"-"`
 }
 
@@ -111,7 +111,7 @@ type AdminLog struct {
 	UA        string    `gorm:"size:255" xlsx:"-"`
 	Commit    string    `gorm:"type:text" xlsx:"注释"`
 	IP        string    `gorm:"size:16" xlsx:"IP"`
-	CreatedAt time.Time `xlsx:"时间"`
+	CreatedAt time.Time `gorm:"type(datetime)" xlsx:"时间"`
 }
 
 // Create 插入日志
