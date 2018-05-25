@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/Tomasen/realip"
-	"github.com/dragonflylee/gocms/model"
+	"gocms/model"
 )
 
 var (

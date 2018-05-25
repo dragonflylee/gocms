@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/Tomasen/realip"
-	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"gocms/model"
 )
 
 const (
@@ -22,6 +22,11 @@ const (
 	sessName         = "gocms"  // Session 名称
 	dateFormate      = "2006-01-02"
 )
+
+type select2 struct {
+	ID   string `json:"id"`
+	Name string `json:"text"`
+}
 
 var (
 	t     = template.New("")

@@ -24,7 +24,7 @@ func Open(conf *Config) error {
 		err    error
 	)
 	if conf.Type == "mysql" {
-		source = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&allowOldPasswords=1",
+		source = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&allowOldPasswords=1&parseTime=true",
 			conf.User, conf.Pass, conf.Host, conf.Port, conf.Name)
 	} else if conf.Type == "postgres" {
 		source = fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable",
