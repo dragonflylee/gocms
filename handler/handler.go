@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -11,6 +13,7 @@ import (
 	"github.com/Tomasen/realip"
 	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
 
@@ -22,21 +25,24 @@ const (
 
 var (
 	t     = template.New("")
-	store = sessions.NewFilesystemStore(".", []byte("gocms"))
+	store = sessions.NewFilesystemStore(os.TempDir(), securecookie.GenerateRandomKey(32))
 )
 
-func aLog(r *http.Request, message string) error {
-	var log model.AdminLog
+func aLog(r *http.Request, format string, a ...interface{}) error {
+	m := &model.AdminLog{
+		Path:   r.URL.String(),
+		UA:     r.UserAgent(),
+		IP:     realip.FromRequest(r),
+		Commit: fmt.Sprintf(format, a...),
+	}
 	if session, err := store.Get(r, sessName); err != nil {
 		return err
-	} else if user, ok := session.Values["user"].(*model.Admin); ok {
-		log.AdminID = user.ID
+	} else if cookie, exist := session.Values["user"]; !exist {
+		return http.ErrNoCookie
+	} else if user, ok := cookie.(*model.Admin); ok {
+		m.AdminID = user.ID
 	}
-	log.Path = r.URL.String()
-	log.UA = r.UserAgent()
-	log.IP = realip.FromRequest(r)
-	log.Commit = message
-	return log.Create()
+	return m.Create()
 }
 
 func jRsp(w http.ResponseWriter, code int64, message string, data interface{}) {
@@ -81,8 +87,6 @@ func Check(h http.Handler) http.Handler {
 			http.NotFound(w, r)
 		} else if user.Access(tpl) {
 			h.ServeHTTP(w, r)
-		} else if r.Header.Get("X-Requested-With") != "" {
-			jRsp(w, http.StatusForbidden, "无权操作", nil)
 		} else {
 			http.NotFound(w, r)
 		}

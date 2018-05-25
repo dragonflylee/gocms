@@ -24,7 +24,7 @@ func Open(conf *Config) error {
 		err    error
 	)
 	if conf.Type == "mysql" {
-		source = fmt.Sprintf("%s:%s@%s:%d/%s?charset=utf8",
+		source = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&allowOldPasswords=1",
 			conf.User, conf.Pass, conf.Host, conf.Port, conf.Name)
 	} else if conf.Type == "postgres" {
 		source = fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable",
@@ -45,7 +45,7 @@ func Open(conf *Config) error {
 		return err
 	}
 	// 加载节点数据
-	if err = loadNodes(); err != nil {
+	if mapNodes, err = loadNodes(); err != nil {
 		log.Printf("failed init nodes (%s)", err.Error())
 		return err
 	}

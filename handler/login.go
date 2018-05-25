@@ -1,13 +1,18 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/Tomasen/realip"
 	"github.com/dragonflylee/gocms/model"
+)
+
+var (
+	tokenMap   = make(map[int64]string)
+	tokenMutex sync.Mutex
 )
 
 // Login 登录页
@@ -35,9 +40,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return
 	}
-	session.ID = fmt.Sprint(user.ID)
 	session.Values["user"] = user
-	session.Save(r, w)
+	if _, exist := r.PostForm["remember"]; exist {
+		session.Options.MaxAge = 3600 * 24 * 7
+	}
+	if err = session.Save(r, w); err != nil {
+		jRsp(w, http.StatusForbidden, err.Error(), nil)
+		return
+	}
 	jRsp(w, http.StatusOK, "登录成功", "/admin")
 }
 

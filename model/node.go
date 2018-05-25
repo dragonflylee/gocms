@@ -27,26 +27,25 @@ func (m Menu) Assign(group int64, node *Node) map[string]interface{} {
 	return map[string]interface{}{"m": m, "group": group, "node": node}
 }
 
-var (
-	mapNodes map[int64]*Node
-)
-
-func loadNodes() error {
-	var list []*Node
-	if err := db.New().Order("id").Preload("Groups").Find(&list).Error; err != nil {
-		return err
+func loadNodes() (map[int64]*Node, error) {
+	var (
+		list []*Node
+		m    = map[int64]*Node{0: &Node{ID: 0}}
+	)
+	err := db.New().Order("id").Preload("Groups").Find(&list).Error
+	if err != nil {
+		return nil, err
 	}
-	mapNodes = map[int64]*Node{0: &Node{ID: 0}}
 	for _, node := range list {
-		mapNodes[node.ID] = node
+		m[node.ID] = node
 	}
 	for _, node := range list {
 		if node.ID > 0 && node.Status {
-			p := mapNodes[node.Parent]
+			p := m[node.Parent]
 			p.Child = append(p.Child, node)
 		}
 	}
-	return nil
+	return m, nil
 }
 
 // Install 初始化节点
@@ -70,8 +69,15 @@ func Install(path string) error {
 	if err = db.Commit().Error; err != nil {
 		return err
 	}
-	return loadNodes()
+	if mapNodes, err = loadNodes(); err != nil {
+		return err
+	}
+	return nil
 }
+
+var (
+	mapNodes = make(map[int64]*Node)
+)
 
 // GetNodes 获取节点树
 func GetNodes() Menu {
@@ -144,7 +150,7 @@ func (n *Node) HasGroup(id int64) bool {
 // Group 用户组
 type Group struct {
 	ID    int64   `gorm:"primary_key;auto_increment"`
-	Name  string  `gorm:"size:64;not null"`
+	Name  string  `gorm:"size:64;unique_index;not null"`
 	Nodes []*Node `gorm:"many2many:node_groups"`
 }
 
@@ -155,6 +161,16 @@ func (m *Group) Create() error {
 
 func (m *Group) String() string {
 	return m.Name
+}
+
+// Select 获取角色
+func (m *Group) Select() error {
+	return db.New().Take(m).Error
+}
+
+// Update 更新角色
+func (m *Group) Update() error {
+	return db.New().Model(m).Updates(m).Error
 }
 
 // GetGroups 获取角色列表
