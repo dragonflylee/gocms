@@ -15,7 +15,7 @@
       <label class="col-sm-3 control-label">名称</label>
       <div class="col-sm-5 jstree">
         <ul>
-          {{template "nodetree" .node}}
+          {{template "nodetree" .node.Assign .group.ID nil}}
         </ul>
       </div>
     </div>
@@ -27,10 +27,10 @@
 </form>
 
 {{define "nodetree"}}
-  {{range .}}
-    <li data-jstree='{"opened":true,"selected":true,"icon":"{{.Icon}}"}'>{{.Name}}
+  {{range .m}}
+    <li data-jstree='{"icon":"{{.Icon}}","selected":{{.HasGroup $.group|print}},"opened":false}' id="{{.ID}}">{{.Name}}
     {{if .Child}}
-      <ul>{{template "nodetree" .Child}}</ul>
+      <ul>{{template "nodetree" .Child.Assign $.group nil}}</ul>
     {{end}}
     </li>
   {{end}}

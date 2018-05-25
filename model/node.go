@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/dragonflylee/gocms/util"
 )
 
 // Node 节点模型
@@ -49,20 +51,24 @@ func loadNodes() (map[int64]*Node, error) {
 }
 
 // Install 初始化节点
-func Install(path string) error {
-	var (
-		role = &Group{Name: "超级管理员"}
-		data []byte
-		err  error
-	)
-	if data, err = ioutil.ReadFile(filepath.Join(path, "nodes.json")); err != nil {
+func Install(m *Admin, path string) error {
+	data, err := ioutil.ReadFile(filepath.Join(path, "nodes.json"))
+	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(data, &role.Nodes); err != nil {
+	if err = json.Unmarshal(data, &m.Group.Nodes); err != nil {
 		return err
 	}
 	db := db.New().Begin()
-	if err = db.Create(role).Error; err != nil {
+	if err = db.Create(&m.Group).Error; err != nil {
+		db.Rollback()
+		return err
+	}
+	m.GroupID = m.Group.ID
+	m.Salt = util.RandString(10)
+	m.Password = util.Md5Hash(m.Password + util.Md5Hash(m.Salt))
+	m.Status = true
+	if err = db.Create(m).Error; err != nil {
 		db.Rollback()
 		return err
 	}
@@ -86,7 +92,7 @@ func GetNodes() Menu {
 
 // GetNodeAllNodes 根据用户组获取节点
 func GetNodeAllNodes() (list Menu, err error) {
-	if err = db.New().Order("id").Find(&list).Error; err != nil {
+	if err = db.New().Order("id").Preload("Groups").Find(&list).Error; err != nil {
 		return nil, err
 	}
 	dict := map[int64]*Node{0: &Node{ID: 0}}
@@ -170,7 +176,14 @@ func (m *Group) Select() error {
 
 // Update 更新角色
 func (m *Group) Update() error {
-	return db.New().Model(m).Updates(m).Error
+	err := db.New().Model(m).Updates(m).Error
+	if err != nil {
+		return err
+	}
+	if mapNodes, err = loadNodes(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetGroups 获取角色列表

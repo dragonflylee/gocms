@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -20,24 +19,21 @@ type Config struct {
 
 // Load 加载配置
 func (m *Config) Load(path string) error {
-	data, err := ioutil.ReadFile(filepath.Join(path, "config.json"))
+	f, err := os.Open(filepath.Join(path, "config.json"))
 	if err != nil {
 		log.Printf("failed load config (%s)", err.Error())
 		return err
 	}
-	if err = json.Unmarshal(data, m); err != nil {
-		log.Printf("failed parse config (%s)", err.Error())
-		return err
-	}
-	return nil
+	defer f.Close()
+	return json.NewDecoder(f).Decode(m)
 }
 
 // Save 保存配置
 func (m *Config) Save(path string) error {
-	data, err := json.Marshal(m)
+	f, err := os.Create(filepath.Join(path, "config.json"))
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filepath.Join(path, "config.json"),
-		data, os.ModePerm)
+	defer f.Close()
+	return json.NewEncoder(f).Encode(m)
 }

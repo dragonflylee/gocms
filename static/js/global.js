@@ -98,11 +98,12 @@ var Admin = {
         dataType: 'json',
         beforeSubmit: function(arr, $form, options) {
           for (var i = 0; i < arr.length; i++) {
-            if (arr[i].type == 'password') {
+            if (arr[i].name == 'password') {
               arr[i].value = md5(arr[i].value);
             }
           }
-          $(form).parents('.box').append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
+          $(form).parents('.box').
+            append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
         },
         success: function(data) {
           var modal = $(form).parent().hasClass('modal-content');
@@ -178,6 +179,18 @@ var Admin = {
           }
         }
       });
+    }
+    if (jQuery().jstree) {
+      $('.jstree', $container).jstree({	
+        "core" : {	
+          "themes" : { "variant" : "large" }	
+        },	
+        "checkbox": {	
+          "cascade": "undetermined",	
+          "three_state" : false	
+        },	
+        "plugins" : ["checkbox"]	
+      });	
     }
   }
 }

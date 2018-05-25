@@ -100,6 +100,7 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
+	user.Password = util.Md5Hash(user.Password)
 	if err = user.Create(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 		return

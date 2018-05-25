@@ -36,7 +36,7 @@
             <span class="fa fa-terminal form-control-feedback"></span>
           </div>
           <div class="form-group has-feedback">
-            <input type="text" name="pass" class="form-control" placeholder="数据库密码">
+            <input type="password" name="pass" class="form-control" placeholder="数据库密码">
             <span class="fa fa-key form-control-feedback"></span>
           </div>
           <div class="form-group has-feedback">
@@ -47,16 +47,16 @@
         <div class="col-md-6">
           <p class="login-box-msg">配置管理员账户</p>
           <div class="form-group has-feedback">
-            <input type="email" name="email" class="form-control" placeholder="请输入管理员邮箱" data-rule="{'maxlength':255}" required>
+            <input type="email" name="email" class="form-control" placeholder="请输入邮箱" data-rule="{'maxlength':255}" required>
             <span class="fa fa-envelope form-control-feedback"></span>
           </div>
           <div class="form-group has-feedback">
-            <input type="password" name="password" class="form-control" id="register_password" placeholder="请输入管理员密码" data-rule="{'minlength':6}" required>
+            <input type="password" name="password" class="form-control" placeholder="请输入密码" id="register_password" data-rule="{'minlength':6}" required>
             <span class="fa fa-lock form-control-feedback"></span>
           </div>
-          <div class="form-group has-feedback">
-            <input type="password" class="form-control" placeholder="请重新输入密码" data-rule="{'equalTo':'#register_password'}" data-message="{'equalTo':'两次输入的密码不一致'}" required>
-            <span class="fa fa-check form-control-feedback"></span>
+          <div class="form-group has-feedback">	
+            <input type="password" class="form-control" placeholder="请重新输入密码" data-rule="{'equalTo':'#register_password'}" data-message="{'equalTo':'两次输入的密码不一致'}" required>	
+            <span class="fa fa-check form-control-feedback"></span>	
           </div>
           <div class="row">
             <div class="col-xs-4 pull-right">
