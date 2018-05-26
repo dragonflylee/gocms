@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/Tomasen/realip"
 	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
 )
@@ -22,11 +24,13 @@ func Install(path string, s *mux.Router) http.Handler {
 			return
 		}
 		user := &model.Admin{
-			Email:    strings.ToLower(r.PostForm.Get("email")),
-			Password: strings.ToLower(r.PostForm.Get("password")),
-			Headpic:  "/static/img/avatar.png",
-			Group:    model.Group{Name: "超级管理员"},
-			Status:   true,
+			Email:     strings.ToLower(r.PostForm.Get("email")),
+			Password:  strings.ToLower(r.PostForm.Get("password")),
+			Headpic:   "/static/img/avatar.png",
+			Group:     model.Group{Name: "超级管理员"},
+			LastLogin: time.Now(),
+			LastIP:    realip.FromRequest(r),
+			Status:    true,
 		}
 		conf := &model.Config{
 			Type: strings.ToLower(r.PostForm.Get("type")),

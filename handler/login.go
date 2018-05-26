@@ -3,7 +3,6 @@ package handler
 import (
 	"log"
 	"net/http"
-	"strings"
 	"sync"
 
 	"github.com/Tomasen/realip"
@@ -32,10 +31,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	user, err := model.Login(
-		strings.ToLower(r.PostForm.Get("username")),
-		strings.ToLower(r.PostForm.Get("password")),
-		realip.FromRequest(r))
+	user, err := model.Login(r.PostForm.Get("username"),
+		r.PostForm.Get("password"), realip.FromRequest(r))
 	if err != nil {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return

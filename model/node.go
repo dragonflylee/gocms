@@ -81,10 +81,6 @@ func Install(m *Admin, path string) error {
 	return nil
 }
 
-var (
-	mapNodes = make(map[int64]*Node)
-)
-
 // GetNodes 获取节点树
 func GetNodes() Menu {
 	return mapNodes[0].Child

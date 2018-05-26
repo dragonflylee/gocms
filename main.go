@@ -40,15 +40,17 @@ func main() {
 	if err = conf.Load(path); err == nil {
 		model.Open(&conf)
 	}
-	r.Use(func(h http.Handler) http.Handler {
-		if model.IsOpen() {
-			return h
-		}
-		if reflect.ValueOf(h).Pointer() == reflect.ValueOf(static).Pointer() {
-			return h
-		}
-		return handler.Install(path, r)
-	})
+	if !model.IsOpen() {
+		r.Use(func(h http.Handler) http.Handler {
+			if model.IsOpen() {
+				return h
+			}
+			if reflect.ValueOf(h).Pointer() == reflect.ValueOf(static).Pointer() {
+				return h
+			}
+			return handler.Install(path, r)
+		})
+	}
 	// 登录相关
 	r.HandleFunc("/", handler.Login)
 	r.HandleFunc("/login", handler.Login)
