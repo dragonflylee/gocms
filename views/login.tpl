@@ -18,7 +18,7 @@
   </div>
   <div class="login-box-body box">
     <p class="login-box-msg">登录系统后台</p>
-    <form action="/login" method="post">
+    <form action="/login?refer={{urlquery .}}" method="post">
       <div class="form-group has-feedback">
         <input name="username" type="email" class="form-control" autocomplete="off" placeholder="请输入管理员邮箱" data-message="{'required':'登录名称不能为空'}" required>
         <span class="glyphicon glyphicon-user form-control-feedback"></span>

@@ -13,6 +13,7 @@ import (
 	"github.com/Tomasen/realip"
 	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
 
@@ -24,7 +25,7 @@ const (
 
 var (
 	t     = template.New("")
-	store = sessions.NewFilesystemStore(os.TempDir(), []byte("gocms"))
+	store = sessions.NewFilesystemStore(os.TempDir(), securecookie.GenerateRandomKey(32))
 )
 
 func aLog(r *http.Request, format string, a ...interface{}) error {

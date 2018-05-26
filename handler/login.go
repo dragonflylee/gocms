@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"sync"
 
@@ -17,14 +16,14 @@ var (
 // Login 登录页
 func Login(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessName)
-	if err != nil {
-		log.Printf("login session err(%s)", err.Error())
-	} else if _, exist := session.Values["user"]; exist {
-		http.Redirect(w, r, "/admin", http.StatusFound)
-		return
+	if err == nil {
+		if _, exist := session.Values["user"]; exist {
+			http.Redirect(w, r, "/admin", http.StatusFound)
+			return
+		}
 	}
 	if r.Method == http.MethodGet {
-		t.ExecuteTemplate(w, "login.tpl", nil)
+		t.ExecuteTemplate(w, "login.tpl", r.Referer())
 		return
 	}
 	if err = r.ParseForm(); err != nil {
@@ -45,7 +44,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return
 	}
-	jRsp(w, http.StatusOK, "登录成功", "/admin")
+	jRsp(w, http.StatusOK, "登录成功", r.Form.Get("refer"))
 }
 
 // Logout 登出
