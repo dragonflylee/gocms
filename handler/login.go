@@ -10,7 +10,7 @@ import (
 
 var (
 	tokenMap   = make(map[int64]string)
-	tokenMutex sync.Mutex
+	tokenMutex sync.RWMutex
 )
 
 // Login 登录页
@@ -44,6 +44,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return
 	}
+	tokenMutex.Lock()
+	defer tokenMutex.Unlock()
+	tokenMap[user.ID] = session.ID
 	jRsp(w, http.StatusOK, "登录成功", r.Form.Get("refer"))
 }
 

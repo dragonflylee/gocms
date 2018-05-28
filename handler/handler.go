@@ -79,6 +79,10 @@ func Check(h http.Handler) http.Handler {
 			http.Redirect(w, r, "/login", http.StatusFound)
 		} else if user, ok := cookie.(*model.Admin); !ok {
 			http.Redirect(w, r, "/login", http.StatusFound)
+		} else if token, exist := tokenMap[user.ID]; exist && token != session.ID {
+			session.Options.MaxAge = -1
+			session.Save(r, w)
+			http.Redirect(w, r, "/login", http.StatusFound)
 		} else if !user.Status && r.URL.Path != "/admin/profile" {
 			http.Redirect(w, r, "/admin/profile", http.StatusFound)
 		} else if c := mux.CurrentRoute(r); c == nil {
