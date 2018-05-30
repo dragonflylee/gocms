@@ -107,10 +107,26 @@ func QDStats(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+		c, err := model.GetGroupCoefficient(user.Group.Name)
+		if err != nil {
+			c = &model.GroupCoefficient{
+				Coefficient: 100,
+			}
+		}
 
 		if nums, err := model.TotalInstallRunsByQD(qds); err == nil && nums > 0 {
 			p := util.NewPaginator(r, nums)
 			if qdStats, err := model.InstallRunsByQD(qds, p.PerPageNums, p.Offset()); err == nil {
+				for i := range qdStats {
+					if c.Start != "" && qdStats[i].Date >= c.Start {
+						qdStats[i].InstallStart = qdStats[i].InstallStart * int64(c.Coefficient) / 100
+						qdStats[i].InstallEnd = qdStats[i].InstallEnd * int64(c.Coefficient) / 100
+						qdStats[i].UninstallStart = qdStats[i].UninstallStart * int64(c.Coefficient) / 100
+						qdStats[i].UninstallEnd = qdStats[i].UninstallEnd * int64(c.Coefficient) / 100
+						qdStats[i].MFShow = qdStats[i].MFShow * int64(c.Coefficient) / 100
+						qdStats[i].ServerRun = qdStats[i].ServerRun * int64(c.Coefficient) / 100
+					}
+				}
 				data["list"] = qdStats
 			}
 			data["page"] = p

@@ -17,6 +17,13 @@ type QDInstallRuns struct {
 	ServerRun      int64
 }
 
+type GroupCoefficient struct {
+	ID          int64 `gorm:"primary_key;auto_increment"`
+	GroupName   string
+	Coefficient int
+	Start       string
+}
+
 func AdmindQDs(id int64) ([]string, error) {
 	var qds []string
 	if err := db.New().Model(new(AdminQD)).Select("qd").Where("id = ?", id).Pluck("qd", &qds).Error; err != nil {
@@ -40,13 +47,13 @@ func AllQDs() ([]string, error) {
 	return qds, nil
 }
 
-func InstallRunsByQD(qds []string, limit, offset int) (*[]QDInstallRuns, error) {
+func InstallRunsByQD(qds []string, limit, offset int) ([]QDInstallRuns, error) {
 	var ins []QDInstallRuns
 	if err := db.New().Where("qd in (?)", qds).Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
 		return nil, err
 	}
 
-	return &ins, nil
+	return ins, nil
 }
 
 func TotalInstallRunsByQD(qds []string) (int64, error) {
@@ -56,4 +63,12 @@ func TotalInstallRunsByQD(qds []string) (int64, error) {
 	}
 
 	return total, nil
+}
+
+func GetGroupCoefficient(groupName string) (*GroupCoefficient, error) {
+	var c GroupCoefficient
+	if err := db.New().Model(new(GroupCoefficient)).Where("group_name = ?", groupName).First(&c).Error; err != nil {
+		return nil, err
+	}
+	return &c, nil
 }

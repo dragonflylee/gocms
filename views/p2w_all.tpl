@@ -14,10 +14,12 @@
     <section class="content">
       <div class="box">
         <div class="box-header with-border">
-          <ul class="nav nav-tabs">
-            <li class="active"><a href="/admin/p2w/all" class="text-purple">总体统计</a></li>
-            <li ><a href="/admin/p2w/qd" class="text-orange">渠道统计</a></li>
-          </ul>
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="/admin/p2w/all" class="text-purple">总体统计</a></li>
+              <li ><a href="/admin/p2w/qd" class="text-orange">渠道统计</a></li>
+            </ul>
+          </div>
           <div class="box-tools">
             <form class="form-inline">
               <a class="btn bg-olive btn-sm btn-export" href="?export=xls" title="导出">导出 <i class="fa fa-file-excel-o"></i></a>

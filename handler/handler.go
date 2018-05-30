@@ -113,6 +113,12 @@ func Start(path string) {
 		"version": func() template.HTML {
 			return template.HTML(runtime.Version())
 		},
+		"rate": func(r int64) string {
+			if r == 0 {
+				return "-"
+			}
+			return fmt.Sprintf("%.2f%%", float64(r)/100)
+		},
 	})
 	t = template.Must(t.ParseGlob(pattern))
 }

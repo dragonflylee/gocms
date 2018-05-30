@@ -7,14 +7,20 @@ import (
 	"log"
 
 	"github.com/jinzhu/gorm"
+	"gocms/libraries/mongo"
+	"gocms/libraries/redis"
+	mongodb "gopkg.in/mgo.v2"
 	// 数据库驱动
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var (
-	db    *gorm.DB
-	debug = flag.Bool("d", false, "debug mode")
+	db        *gorm.DB
+	debug     = flag.Bool("d", false, "debug mode")
+	redisPool *redis.RedisPool
+	mgo       *mongodb.Session
+	mgoDBName string
 )
 
 // Open 连接数据库
@@ -49,6 +55,17 @@ func Open(conf *Config) error {
 		log.Printf("failed init nodes (%s)", err.Error())
 		return err
 	}
+
+	// 链接Redis
+	if conf.RedisConf != nil {
+		redisPool = redis.NewPool(conf.RedisConf)
+	}
+
+	if conf.MongoConf != nil {
+		mgo = mongo.NewPool(conf.MongoConf)
+		mgoDBName = conf.MongoConf.DBName
+	}
+
 	return nil
 }
 
