@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dragonflylee/gocms/handler"
-	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
+	"gocms/handler"
+	"gocms/model"
 )
 
 var (
@@ -75,6 +75,18 @@ func main() {
 	// 个人中心
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
 	s.HandleFunc("", handler.Home).Methods(http.MethodGet)
+
+	// 数据统计
+	s.HandleFunc("/qd", handler.QDStats).Methods(http.MethodGet)
+	s.HandleFunc("/qd/list", handler.QDList).Methods(http.MethodGet)
+	s.HandleFunc("/p2w/all", handler.P2WInstallRuns).Methods(http.MethodGet)
+	s.HandleFunc("/p2w/qd", handler.P2WInstallRunsGroupByQD).Methods(http.MethodGet)
+	s.HandleFunc("/p2w/qdlist", handler.P2WQDList).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/install_runs", handler.PDFInstallRuns).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/retentions", handler.PDFRentions).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/mfshow_versions", handler.MFShowVersions).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/feedbacks", handler.Feedbacks).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/uninstall_opts", handler.UninstallOpts).Methods(http.MethodGet)
 
 	log.Panic(http.ListenAndServe(*addr, r))
 }

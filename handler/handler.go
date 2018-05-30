@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/Tomasen/realip"
-	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"gocms/model"
 )
 
 const (
@@ -22,6 +22,11 @@ const (
 	sessName         = "gocms"  // Session 名称
 	dateFormate      = "2006-01-02"
 )
+
+type select2 struct {
+	ID   string `json:"id"`
+	Name string `json:"text"`
+}
 
 var (
 	t     = template.New("")
@@ -120,6 +125,12 @@ func Start(path string) {
 		},
 		"version": func() template.HTML {
 			return template.HTML(runtime.Version())
+		},
+		"rate": func(r int64) string {
+			if r == 0 {
+				return "-"
+			}
+			return fmt.Sprintf("%.2f%%", float64(r)/100)
 		},
 	})
 	t = template.Must(t.ParseGlob(pattern))
