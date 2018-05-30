@@ -27,11 +27,11 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 // Password 密码修改
 func Password(w http.ResponseWriter, r *http.Request) {
 	if session, err := store.Get(r, sessName); err != nil {
-		http.NotFound(w, r)
+		Error(w, http.StatusNotFound, "页面错误 %v", err)
 	} else if cookie, exist := session.Values["user"]; !exist {
-		http.NotFound(w, r)
+		Error(w, http.StatusNotFound, "页面错误")
 	} else if user, ok := cookie.(*model.Admin); !ok {
-		http.NotFound(w, r)
+		Error(w, http.StatusNotFound, "页面错误")
 	} else if user.Password = r.PostFormValue("passwd"); len(user.Password) < 8 {
 		jRsp(w, http.StatusBadRequest, "密码不能少于8个字符", nil)
 	} else if err = user.UpdatePasswd(); err != nil {
@@ -47,7 +47,7 @@ func Password(w http.ResponseWriter, r *http.Request) {
 // Users 用户管理
 func Users(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	filter := func(db *gorm.DB) *gorm.DB {
@@ -118,7 +118,7 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 	)
 	if r.Method == http.MethodGet {
 		if group.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			Error(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		data := make(map[string]interface{})
@@ -176,7 +176,7 @@ func GroupAdd(w http.ResponseWriter, r *http.Request) {
 // Logs 操作日志
 func Logs(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	filter := func(db *gorm.DB) *gorm.DB {

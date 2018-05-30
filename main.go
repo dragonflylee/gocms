@@ -16,7 +16,6 @@ import (
 
 var (
 	conf model.Config
-	r    = mux.NewRouter()
 	addr = flag.String("addr", ":8080", "server listen address")
 )
 
@@ -28,14 +27,21 @@ func main() {
 		log.Panicf("gocms service path (%s)", err.Error())
 	}
 	path = filepath.Dir(path)
-	// 初始化控制器
-	log.Printf("gocms starting from (%s)", path)
 	// 初始化模板
 	handler.Start(path)
 	static := http.StripPrefix("/static/",
 		http.FileServer(http.Dir(filepath.Join(path, "static"))))
+
+	r := mux.NewRouter()
 	// 静态文件
 	r.PathPrefix("/static/").Handler(static)
+	// 404页面
+	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler.Error(w, http.StatusNotFound, "页面不存在")
+	})
+	r.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler.Error(w, http.StatusMethodNotAllowed, "非法请求")
+	})
 	// 加载配置文件
 	if err = conf.Load(path); err == nil {
 		model.Open(&conf)

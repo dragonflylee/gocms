@@ -29,7 +29,9 @@
               {{if eq (print $id) ($.form.Get "group")}}
                 <li class="active">
                   <a>{{$name}}
+                  {{if $.user.Access "/admin/group/{id:[0-9]+}"}}
                     <span class="btn btn-xs bg-navy pull-right" data-href="/admin/group/{{$id}}" data-target="#modal-edit" data-toggle="modal"><i class="fa fa-edit"></i></span>
+                  {{end}}
                   </a>
                 </li>
               {{else}}

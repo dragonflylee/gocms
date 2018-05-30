@@ -37,8 +37,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session.Values["user"] = user
-	if _, exist := r.PostForm["remember"]; exist {
-		session.Options.MaxAge = 3600 * 24 * 7
+	if _, exist := r.PostForm["remember"]; !exist {
+		session.Options.MaxAge = 3600
 	}
 	if err = session.Save(r, w); err != nil {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
@@ -53,7 +53,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // Logout 登出
 func Logout(w http.ResponseWriter, r *http.Request) {
 	if session, err := store.Get(r, sessName); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		Error(w, http.StatusBadRequest, err.Error())
 	} else {
 		session.Options.MaxAge = -1
 		session.Save(r, w)
