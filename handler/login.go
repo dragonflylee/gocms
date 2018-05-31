@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"log"
 	"net/http"
-	"strings"
 	"sync"
 
 	"github.com/Tomasen/realip"
@@ -12,49 +10,50 @@ import (
 
 var (
 	tokenMap   = make(map[int64]string)
-	tokenMutex sync.Mutex
+	tokenMutex sync.RWMutex
 )
 
 // Login 登录页
 func Login(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessName)
-	if err != nil {
-		log.Printf("login session err(%s)", err.Error())
-	} else if _, exist := session.Values["user"]; exist {
-		http.Redirect(w, r, "/admin", http.StatusFound)
-		return
+	if err == nil {
+		if _, exist := session.Values["user"]; exist {
+			http.Redirect(w, r, "/admin", http.StatusFound)
+			return
+		}
 	}
 	if r.Method == http.MethodGet {
-		t.ExecuteTemplate(w, "login.tpl", nil)
+		t.ExecuteTemplate(w, "login.tpl", r.Referer())
 		return
 	}
 	if err = r.ParseForm(); err != nil {
 		jRsp(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	user, err := model.Login(
-		strings.ToLower(r.PostForm.Get("username")),
-		strings.ToLower(r.PostForm.Get("password")),
-		realip.FromRequest(r))
+	user, err := model.Login(r.PostForm.Get("username"),
+		r.PostForm.Get("password"), realip.FromRequest(r))
 	if err != nil {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return
 	}
 	session.Values["user"] = user
-	if _, exist := r.PostForm["remember"]; exist {
-		session.Options.MaxAge = 3600 * 24 * 7
+	if _, exist := r.PostForm["remember"]; !exist {
+		session.Options.MaxAge = 3600
 	}
 	if err = session.Save(r, w); err != nil {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return
 	}
-	jRsp(w, http.StatusOK, "登录成功", "/admin")
+	tokenMutex.Lock()
+	defer tokenMutex.Unlock()
+	tokenMap[user.ID] = session.ID
+	jRsp(w, http.StatusOK, "登录成功", r.Form.Get("refer"))
 }
 
 // Logout 登出
 func Logout(w http.ResponseWriter, r *http.Request) {
 	if session, err := store.Get(r, sessName); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		Error(w, http.StatusBadRequest, err.Error())
 	} else {
 		session.Options.MaxAge = -1
 		session.Save(r, w)

@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/Tomasen/realip"
 	"github.com/gorilla/mux"
 	"gocms/model"
 )
@@ -21,6 +23,15 @@ func Install(path string, s *mux.Router) http.Handler {
 			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
+		user := &model.Admin{
+			Email:     strings.ToLower(r.PostForm.Get("email")),
+			Password:  strings.ToLower(r.PostForm.Get("password")),
+			Headpic:   "/static/img/avatar.png",
+			Group:     model.Group{Name: "超级管理员"},
+			LastLogin: time.Now(),
+			LastIP:    realip.FromRequest(r),
+			Status:    true,
+		}
 		conf := &model.Config{
 			Type: strings.ToLower(r.PostForm.Get("type")),
 			Host: r.PostForm.Get("host"),
@@ -36,20 +47,11 @@ func Install(path string, s *mux.Router) http.Handler {
 			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
-		if err = model.Install(path); err != nil {
+		if err = model.Install(user, path); err != nil {
 			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}
 		if err = conf.Save(path); err != nil {
-			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
-			return
-		}
-		user := &model.Admin{
-			Email:    strings.ToLower(r.PostForm.Get("email")),
-			Password: strings.ToLower(r.PostForm.Get("password")),
-			GroupID:  1,
-		}
-		if err = user.Create(); err != nil {
 			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 			return
 		}

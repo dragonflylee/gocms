@@ -47,6 +47,7 @@ func (m *Admin) Create() error {
 	m.Salt = util.RandString(10)
 	m.Password = util.Md5Hash(m.Password + util.Md5Hash(m.Salt))
 	m.Headpic = "/static/img/avatar.png"
+	m.LastLogin = time.Now()
 	return db.New().Create(m).Error
 }
 
@@ -73,20 +74,22 @@ func (m *Admin) Access(tpl string) bool {
 // Login 用户登录
 func Login(email, passwd, ip string) (*Admin, error) {
 	var (
-		db  = db.New()
-		m   = new(Admin)
-		err error
+		db = db.New()
+		m  = new(Admin)
 	)
-	if err = db.First(m, "email = ?", email).Error; err != nil {
+	if email = strings.TrimSpace(email); len(email) <= 0 {
+		return nil, errors.New("邮箱格式不合法")
+	}
+	if db = db.Take(m, "email = ?", strings.ToLower(email)); db.Error != nil {
 		return nil, errors.New("用户不存在")
 	}
-	if err = db.Model(m).Related(&m.Group).Error; err != nil {
+	if err := db.Related(&m.Group).Error; err != nil {
 		return nil, errors.New("用户组不存在")
 	}
 	if util.Md5Hash(passwd+util.Md5Hash(m.Salt)) != m.Password {
 		return nil, errors.New("密码不正确")
 	}
-	err = db.Model(m).UpdateColumns(&Admin{LastIP: ip, LastLogin: time.Now()}).Error
+	err := db.UpdateColumns(&Admin{LastIP: ip, LastLogin: time.Now()}).Error
 	return m, err
 }
 

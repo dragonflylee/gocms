@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	db        *gorm.DB
+	db       *gorm.DB
+	mapNodes map[int64]*Node
 	debug     = flag.Bool("d", false, "debug mode")
 	redisPool *redis.RedisPool
 	mgo       *mongodb.Session
@@ -71,5 +72,14 @@ func Open(conf *Config) error {
 
 // IsOpen 数据库是否连接
 func IsOpen() bool {
-	return nil != db
+	if db == nil {
+		return false
+	}
+	if db.Error != nil {
+		return false
+	}
+	if mapNodes == nil {
+		return false
+	}
+	return true
 }

@@ -2,7 +2,6 @@
 <html>
 <head>
   {{template "header" .node.Name}}
-  <style href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default-dark/style.min.css" rel="stylesheet"></style>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -30,7 +29,9 @@
               {{if eq (print $id) ($.form.Get "group")}}
                 <li class="active">
                   <a>{{$name}}
+                  {{if $.user.Access "/admin/group/{id:[0-9]+}"}}
                     <span class="btn btn-xs bg-navy pull-right" data-href="/admin/group/{{$id}}" data-target="#modal-edit" data-toggle="modal"><i class="fa fa-edit"></i></span>
+                  {{end}}
                   </a>
                 </li>
               {{else}}
@@ -50,7 +51,7 @@
         <div class="col-md-10">
           <div class="box">
             <div class="box-header with-border">
-              <h3 class="box-title">用户列表</h3>
+              <h3 class="box-title">管理员列表</h3>
               <div class="box-tools">
                 <form class="form-inline">
                   <div class="form-group">
@@ -62,7 +63,7 @@
                     </div>
                   </div>
                 {{if .user.Access "/admin/user/add"}}
-                  <a class="btn bg-purple btn-sm" data-target="#user-add" data-toggle="modal" title="添加">添加管理员 <i class="fa fa-plus"></i></a>
+                  <a class="btn bg-purple btn-sm" data-target="#user-add" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
                 {{end}}
                 </form>
               </div>
@@ -134,7 +135,7 @@
                 <select name="group" class="form-control">
               {{range $id, $name := .data.group}}
                 {{if lt $.user.GroupID $id}}
-                  <option value="{{$id}}">{{$name}}</option>
+                  <option value="{{$id}}" {{if eq (print $id) ($.form.Get "group")}}selected{{end}}>{{$name}}</option>
                 {{end}}
               {{end}}
                 </select>
@@ -184,22 +185,11 @@
     </div>
   </div>
   {{template "footer"}}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/jstree.min.js"></script>
   <script type="text/javascript">
-    $(document).ready(function() {
-      if (jQuery().jstree) {	
-        $('.jstree', $container).jstree({	
-          "core" : {	
-            "themes" : { "variant" : "large" }	
-          },	
-          "checkbox": {	
-            "cascade": "undetermined",	
-            "three_state" : false	
-          },	
-          "plugins" : ["checkbox"]	
-        });	
-      }
-    });
+    $(document).on('click', '#modal-edit button[type="submit"]', function(e) {
+      var nodes = $('.jstree').jstree('get_selected');
+      console.log(nodes);
+    })
   </script>
 </div>
 </body>
