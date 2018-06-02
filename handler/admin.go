@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dragonflylee/gocms/model"
 	"github.com/dragonflylee/gocms/util"
@@ -190,7 +191,7 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		if list, err := model.GetLogs(filter); err == nil {
 			data["日志列表"] = list
 		}
-		util.Excel("日志.xls", data, w)
+		util.Excel(w, data, "操作日志%s.xlsx", time.Now())
 		return
 	}
 	// 获取用户总数

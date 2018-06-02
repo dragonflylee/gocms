@@ -109,7 +109,7 @@ func GetAdminNum(filter ...func(*gorm.DB) *gorm.DB) (nums int64, err error) {
 type AdminLog struct {
 	ID        int64     `gorm:"primary_key;auto_increment" xlsx:"-"`
 	AdminID   int64     `gorm:"not null" xlsx:"-"`
-	Admin     *Admin    `xlsx:"用户;field:Email"`
+	Admin     *Admin    `xlsx:"用户"`
 	Path      string    `gorm:"size:255;not null" xlsx:"路径"`
 	UA        string    `gorm:"size:255" xlsx:"-"`
 	Commit    string    `gorm:"type:text" xlsx:"注释"`

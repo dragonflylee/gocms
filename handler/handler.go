@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -117,6 +118,18 @@ func Start(path string) {
 		},
 		"html": func(s string) template.HTML {
 			return template.HTML(s)
+		},
+		"url": func(r url.Values, a ...string) template.URL {
+			if len(a) <= 0 {
+				return template.URL(r.Encode())
+			}
+			u := make(url.Values)
+			for _, n := range a {
+				if v := r.Get(n); len(v) > 0 {
+					u.Add(n, v)
+				}
+			}
+			return template.URL(u.Encode())
 		},
 		"version": func() template.HTML {
 			return template.HTML(runtime.Version())
