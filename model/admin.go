@@ -94,14 +94,16 @@ func Login(email, passwd, ip string) (*Admin, error) {
 }
 
 // GetAdmins 获取用户列表
-func GetAdmins(filter ...func(*gorm.DB) *gorm.DB) (list []*Admin, err error) {
-	err = db.New().Scopes(filter...).Order("id").Find(&list).Error
+func GetAdmins(filter ...func(*gorm.DB) *gorm.DB) ([]*Admin, error) {
+	var list []*Admin
+	err := db.New().Scopes(filter...).Order("id").Find(&list).Error
 	return list, err
 }
 
 // GetAdminNum 获取用户数量
-func GetAdminNum(filter ...func(*gorm.DB) *gorm.DB) (nums int64, err error) {
-	err = db.New().Model(&Admin{}).Scopes(filter...).Count(&nums).Error
+func GetAdminNum(filter ...func(*gorm.DB) *gorm.DB) (int64, error) {
+	var nums int64
+	err := db.New().Model(&Admin{}).Scopes(filter...).Count(&nums).Error
 	return nums, err
 }
 
@@ -123,16 +125,18 @@ func (m *AdminLog) Create() error {
 }
 
 // GetLogs 获取日志列表
-func GetLogs(filter ...func(*gorm.DB) *gorm.DB) (list []*AdminLog, err error) {
-	err = db.Scopes(filter...).Preload("Admin", func(db *gorm.DB) *gorm.DB {
+func GetLogs(filter ...func(*gorm.DB) *gorm.DB) ([]*AdminLog, error) {
+	var list []*AdminLog
+	err := db.Scopes(filter...).Preload("Admin", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id, email")
 	}).Order("id desc").Find(&list).Error
 	return list, err
 }
 
 // GetLogNum 获取日志数量
-func GetLogNum(filter ...func(*gorm.DB) *gorm.DB) (nums int64, err error) {
-	err = db.New().Model(&AdminLog{}).Scopes(filter...).Count(&nums).Error
+func GetLogNum(filter ...func(*gorm.DB) *gorm.DB) (int64, error) {
+	var nums int64
+	err := db.New().Model(&AdminLog{}).Scopes(filter...).Count(&nums).Error
 	return nums, err
 }
 
