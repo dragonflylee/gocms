@@ -184,6 +184,12 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		if id, err := strconv.ParseInt(r.Form.Get("id"), 10, 64); err == nil {
 			db = db.Where("admin_id = ?", id)
 		}
+		if from, err := time.Parse(dateFormate, r.Form.Get("from")); err == nil {
+			db = db.Where("created_at >= ?", from)
+		}
+		if to, err := time.Parse(dateFormate, r.Form.Get("to")); err == nil {
+			db = db.Where("created_at < ?", to.AddDate(0, 0, 1))
+		}
 		return db
 	}
 	data := make(map[string]interface{})
@@ -191,7 +197,7 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		if list, err := model.GetLogs(filter); err == nil {
 			data["日志列表"] = list
 		}
-		util.Excel(w, data, "操作日志%s.xlsx", time.Now())
+		util.Excel(w, data, "操作日志 %s.xlsx", time.Now().Format(dateFormate))
 		return
 	}
 	// 获取用户总数

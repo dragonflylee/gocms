@@ -13,18 +13,18 @@ import (
 
 // Admin 管理员
 type Admin struct {
-	ID        int64     `gorm:"primary_key;auto_increment"`
-	Email     string    `gorm:"size:255;unique_index;not null"`
-	Password  string    `gorm:"size:64;not null" json:"-"`
-	Salt      string    `gorm:"size:10;not null" json:"-"`
-	GroupID   int64     `gorm:"not null"`
-	Headpic   string    `gorm:"size:255"`
-	LastIP    string    `gorm:"size:16"`
-	Status    bool      `gorm:"default:false;not null"`
-	LastLogin time.Time `gorm:"type(datetime)"`
-	CreatedAt time.Time `gorm:"type(datetime)" json:"-"`
-	UpdatedAt time.Time `gorm:"type(datetime)" json:"-"`
-	Group     Group     `gorm:"-"`
+	ID        int64      `gorm:"primary_key;auto_increment"`
+	Email     string     `gorm:"size:255;unique_index;not null"`
+	Password  string     `gorm:"size:64;not null" json:"-"`
+	Salt      string     `gorm:"size:10;not null" json:"-"`
+	GroupID   int64      `gorm:"not null"`
+	Headpic   string     `gorm:"size:255"`
+	LastIP    string     `gorm:"size:16"`
+	Status    bool       `gorm:"default:false;not null"`
+	LastLogin *time.Time `gorm:"type(datetime)"`
+	CreatedAt *time.Time `gorm:"type(datetime)" json:"-"`
+	UpdatedAt *time.Time `gorm:"type(datetime)" json:"-"`
+	Group     Group      `gorm:"-"`
 }
 
 func (m *Admin) String() string {
@@ -47,7 +47,6 @@ func (m *Admin) Create() error {
 	m.Salt = util.RandString(10)
 	m.Password = util.Md5Hash(m.Password + util.Md5Hash(m.Salt))
 	m.Headpic = "/static/img/avatar.png"
-	m.LastLogin = time.Now()
 	return db.New().Create(m).Error
 }
 
@@ -89,7 +88,8 @@ func Login(email, passwd, ip string) (*Admin, error) {
 	if util.Md5Hash(passwd+util.Md5Hash(m.Salt)) != m.Password {
 		return nil, errors.New("密码不正确")
 	}
-	err := db.UpdateColumns(&Admin{LastIP: ip, LastLogin: time.Now()}).Error
+	err := db.UpdateColumns(map[string]interface{}{
+		"last_ip": ip, "last_login": time.Now()}).Error
 	return m, err
 }
 
@@ -109,14 +109,14 @@ func GetAdminNum(filter ...func(*gorm.DB) *gorm.DB) (int64, error) {
 
 // AdminLog 操作日志
 type AdminLog struct {
-	ID        int64     `gorm:"primary_key;auto_increment" xlsx:"-"`
-	AdminID   int64     `gorm:"not null" xlsx:"-"`
-	Admin     *Admin    `xlsx:"用户"`
-	Path      string    `gorm:"size:255;not null" xlsx:"路径"`
-	UA        string    `gorm:"size:255" xlsx:"-"`
-	Commit    string    `gorm:"type:text" xlsx:"注释"`
-	IP        string    `gorm:"size:16" xlsx:"IP"`
-	CreatedAt time.Time `gorm:"type(datetime)" xlsx:"时间"`
+	ID        int64      `gorm:"primary_key;auto_increment" xlsx:"-"`
+	AdminID   int64      `gorm:"not null" xlsx:"-"`
+	Admin     *Admin     `xlsx:"用户"`
+	Path      string     `gorm:"size:255;not null" xlsx:"路径"`
+	UA        string     `gorm:"size:255" xlsx:"-"`
+	Commit    string     `gorm:"type:text" xlsx:"注释"`
+	IP        string     `gorm:"size:16" xlsx:"IP"`
+	CreatedAt *time.Time `gorm:"type(datetime)" xlsx:"时间"`
 }
 
 // Create 插入日志
