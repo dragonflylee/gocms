@@ -28,7 +28,7 @@
             </form>
           </div>
         </div>
-	  </div>
+		</div>
 	  {{if .data.list}}
 	  <div class="box-body">
 	  {{range .data.list}}
@@ -46,6 +46,7 @@
         </div>
       {{end}}
       </div>
+	   </div>
     </section>
   </div>
   {{template "modal"}}

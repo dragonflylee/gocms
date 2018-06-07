@@ -1,17 +1,15 @@
 package handler
 
 import (
-	"bytes"
-	"fmt"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	"gocms/model"
 	"gocms/util"
+
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 // Home 首页
@@ -80,7 +78,6 @@ func Users(w http.ResponseWriter, r *http.Request) {
 func UserAdd(w http.ResponseWriter, r *http.Request) {
 	var (
 		user model.Admin
-		body bytes.Buffer
 		err  error
 	)
 	if err = r.ParseForm(); err != nil {
@@ -95,11 +92,11 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusBadRequest, "用户组非法", nil)
 		return
 	}
-	user.Password = fmt.Sprint(rand.Intn(8999999) + 1000000)
-	if err = t.ExecuteTemplate(&body, "email.tpl", &user); err != nil {
-		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
-		return
-	}
+	user.Password = "xd123456"
+	//if err = t.ExecuteTemplate(&body, "email.tpl", &user); err != nil {
+	//	jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+	//	return
+	//}
 	user.Password = util.Md5Hash(user.Password)
 	if err = user.Create(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
