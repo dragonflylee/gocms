@@ -33,7 +33,7 @@ func Password(w http.ResponseWriter, r *http.Request) {
 		Error(w, http.StatusNotFound, "页面错误")
 	} else if user, ok := cookie.(*model.Admin); !ok {
 		Error(w, http.StatusNotFound, "页面错误")
-	} else if user.Password = r.PostFormValue("passwd"); len(user.Password) < 8 {
+	} else if user.Password = r.PostFormValue("password"); len(user.Password) < 8 {
 		jRsp(w, http.StatusBadRequest, "密码不能少于8个字符", nil)
 	} else if err = user.UpdatePasswd(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)

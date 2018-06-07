@@ -22,7 +22,7 @@ type Admin struct {
 	LastIP    string     `gorm:"size:16"`
 	Status    bool       `gorm:"default:false;not null"`
 	LastLogin *time.Time `gorm:"type(datetime)"`
-	CreatedAt *time.Time `gorm:"type(datetime)" json:"-"`
+	CreatedAt *time.Time `gorm:"type(datetime)"`
 	UpdatedAt *time.Time `gorm:"type(datetime)" json:"-"`
 	Group     Group      `gorm:"-"`
 }
