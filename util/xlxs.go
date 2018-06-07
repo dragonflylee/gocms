@@ -52,53 +52,45 @@ func xlsxField(row *xlsx.Row, t reflect.Type) {
 	}
 }
 
-func xlsxCeil(row *xlsx.Row, v reflect.Value) {
+func xlsxCell(row *xlsx.Row, v reflect.Value) {
 	t := v.Type()
 	for j := 0; j < v.NumField(); j++ {
-		f := reflect.Indirect(v.Field(j))
 		if tags, exist := t.Field(j).Tag.Lookup("xlsx"); !exist {
+			f := reflect.Indirect(v.Field(j))
 			if !f.IsValid() {
 				row.AddCell().SetString("-")
 			} else if _, exist := typeField[f.Type()]; exist {
 				row.AddCell().SetValue(f.Interface())
 			} else if f.Kind() == reflect.Struct {
-				xlsxCeil(row, f)
+				xlsxCell(row, f)
 			} else if f.CanInterface() {
 				row.AddCell().SetValue(f.Interface())
 			} else {
 				log.Printf("bad field `%s` valid `%v`", f.Type(), f.IsValid())
 			}
 		} else if name, opts := parseXlsxTag(tags); "-" != name {
+			f := v.Field(j)
+			cell := row.AddCell()
 			if !f.IsValid() {
-				row.AddCell().SetString("-")
+				cell.SetString("-")
+			} else if enum, exist := opts["enum"]; exist {
+				list := strings.Split(enum, ",")
+				if index := int(f.Int()); index < len(list) {
+					cell.SetString(list[index])
+				}
+			} else if !f.CanInterface() {
+				log.Printf("tag `%s` bad field `%s` valid `%v`", name, f.Type(), f.IsValid())
+			} else if s, ok := f.Interface().(fmt.Stringer); ok {
+				cell.SetString(s.String())
 			} else {
-				if _, exist := typeField[f.Type()]; !exist && f.Kind() == reflect.Struct {
-					if field, exist := opts["field"]; !exist {
-						f = f.Field(0)
-					} else if t, ok := f.Type().FieldByName(field); ok {
-						f = f.FieldByIndex(t.Index)
-					} else {
-						f = f.Field(0)
-					}
-				}
-				if enum, exist := opts["enum"]; exist {
-					ceil := row.AddCell()
-					list := strings.Split(enum, ",")
-					if index := int(f.Int()); index < len(list) {
-						ceil.SetString(list[index])
-					}
-				} else if f.CanInterface() {
-					row.AddCell().SetValue(f.Interface())
-				} else {
-					log.Printf("tag `%s` bad field `%s` valid `%v`", name, f.Type(), f.IsValid())
-				}
+				cell.SetValue(f.Interface())
 			}
 		}
 	}
 }
 
 // Excel 导出Excel
-func Excel(filename string, data map[string]interface{}, w http.ResponseWriter) error {
+func Excel(w http.ResponseWriter, data map[string]interface{}, format string, a ...interface{}) error {
 	file := xlsx.NewFile()
 
 	for name, page := range data {
@@ -123,13 +115,13 @@ func Excel(filename string, data map[string]interface{}, w http.ResponseWriter) 
 		// 填写数据
 		for i := 0; i < v.Len(); i++ {
 			row = sheet.AddRow()
-			xlsxCeil(row, reflect.Indirect(v.Index(i)))
+			xlsxCell(row, reflect.Indirect(v.Index(i)))
 		}
 	}
 	w.Header().Set("Content-Type", "application/vnd.ms-excel")
 	w.Header().Set("Cache-Control", "must-revalidate, post-check=0, pre-check=0")
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
-	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+	w.Header().Set("Content-Disposition", "attachment; filename="+fmt.Sprintf(format, a...))
 	return file.Write(w)
 }

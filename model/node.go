@@ -87,8 +87,10 @@ func GetNodes() Menu {
 }
 
 // GetNodeAllNodes 根据用户组获取节点
-func GetNodeAllNodes() (list Menu, err error) {
-	if err = db.New().Order("id").Preload("Groups").Find(&list).Error; err != nil {
+func GetNodeAllNodes() (Menu, error) {
+	var list Menu
+	err := db.New().Order("id").Preload("Groups").Find(&list).Error
+	if err != nil {
 		return nil, err
 	}
 	dict := map[int64]*Node{0: &Node{ID: 0}}

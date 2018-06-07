@@ -54,7 +54,7 @@
                 <div class="form-group">
                   <label class="col-sm-3 control-label">新密码</label>
                   <div class="col-sm-5">
-                    <input name="passwd" type="password" id="register_password" class="form-control input-medium" placeholder="请输入新密码" data-rule="{'regexPasswd':true}" required>
+                    <input name="password" type="password" id="register_password" class="form-control input-medium" placeholder="请输入新密码" data-rule="{'regexPasswd':true}" required>
                   </div>
                 </div>
                 <div class="form-group">
