@@ -94,6 +94,7 @@ var Admin = {
   },
   form: function(form, options) {
     if (jQuery().ajaxSubmit) {
+      var modal = $(form).parent().hasClass('modal-content');
       options = $.extend(true, {
         dataType: 'json',
         beforeSubmit: function(arr, $form, options) {
@@ -106,7 +107,6 @@ var Admin = {
             append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
         },
         success: function(data) {
-          var modal = $(form).parent().hasClass('modal-content');
           if (typeof data.data == 'string') {
             window.location = data.data;
           } else if (data.code != 200) {
@@ -171,16 +171,16 @@ var Admin = {
     if (jQuery().bootstrapSwitch) {
       $('.make-switch', $container).bootstrapSwitch({
         onSwitchChange: function(e, state) {
-          var target = $(e.target).data('target');
+          var target = $(e.currentTarget).data('target');
           if (target) {
-            $(target).modal('show', e.target).one('hide.bs.modal', function() {
-              $(e.target).bootstrapSwitch('toggleState', 'skip');
+            $(target).modal('show', e.currentTarget).one('hide.bs.modal', function() {
+              $(e.currentTarget).bootstrapSwitch('toggleState', 'skip');
             });
           }
         }
       });
     }
-    if (jQuery().jstree) {
+    if (jQuery().jstree) {	
       $('.jstree', $container).jstree({	
         "core" : {	
           "themes" : { "variant" : "large" }	
@@ -196,20 +196,25 @@ var Admin = {
 }
 
 // 模态框内分页
-$(document).on("click", ".modal-content .pagination a,.modal-content .nav-tabs a", function(e) {
+$(document).on("click", ".modal-content .pagination a,.modal-content .nav-tabs-custom a", function(e) {
   e.preventDefault();
-  $(e.target).parents('.modal-content').load($(e.target).attr('href'));
+  $(this).parents('.modal-content').load($(this).attr('href'), function() {
+    Admin.init($(this));
+    $(this).find('form').each(function(i, form) {
+      Admin.validate($(form));
+    })
+  });
 })
 
 $(document).ready(function() {
   // 初始化插件
   Admin.init();
   // 表单验证
-  $('.login-box form,.register-box form,.modal-content form,.box-body form').each(function(index, form) {
+  $('.login-box form,.register-box form,.box-body form').each(function(index, form) {
     Admin.validate($(form));
   })
   // 模态框请求
-  $('#modal-confirm').on('show.bs.modal', function (e) {
+  $('.modal:has(a[type="submit"])').on('show.bs.modal', function (e) {
     var config = {
       url: $(e.relatedTarget).attr('data-href'),
       dataType: 'json',
@@ -219,6 +224,7 @@ $(document).ready(function() {
         } else if (data.code == 200) {
           window.location.reload();
         } else {
+          $('.box .overlay').remove();
           Admin.alert({ 
             container: $(e.currentTarget).find('.modal-footer'), 
             type: 'danger',
@@ -227,6 +233,7 @@ $(document).ready(function() {
         }
       },
       error: function(xhr, status) {
+        $('.box .overlay').remove();
         Admin.alert({ 
           container: $(e.currentTarget).find('.modal-footer'), 
           type: 'danger',
@@ -235,33 +242,47 @@ $(document).ready(function() {
       }
     }
     $(this).find('.modal-title').text('确定'+$(e.relatedTarget).attr('title')+'?');
-    $(this).find('button[type="submit"]').on('click', function () {
-      if ($(e.relatedTarget).hasClass('btn')) {
+    $(this).find('a[type="submit"]').on('click', function () {
+      if ($(e.relatedTarget).hasClass('btn-batch')) {
         config['type'] = 'POST';
-        config['data'] = { id: $('td :checkbox:checked').map(function(){
+        config['data'] = { 'id': $('td :checkbox:checked').map(function(){
           return $(this).val();
-        }).get()}
+        }).get() }
       }
+      $(this).parents('.box').append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
       $.ajax(config);
     });
   }).on('hide.bs.modal', function() {
-    $(this).find('button[type="submit"]').unbind('click');
+    $(this).find('a[type="submit"]').off('click');
+    $(this).find('.custom-alerts').remove();
   });
   // 新增对话框
-  $('.modal').on("hidden.bs.modal", function() {
+  $('.modal:has(form)').on('show.bs.modal', function (e) {
+    $(this).find('.modal-title').text($(e.relatedTarget).attr('title'));
+    $(this).find('form').each(function(i, form) {
+      Admin.validate($(form), { 'url': $(e.relatedTarget).attr('data-href') });
+    })
+  }).on("hidden.bs.modal", function() {
+    $(this).find('form').each(function(i, form) {
+      $(form).off('.validate').removeData('validator').resetForm();
+    })
     $(this).find('.custom-alerts').remove();
   });
   // 处理远端加载模态框
-  $('#modal-edit,#modal-detail').on('show.bs.modal', function (e) {
-    $(this).find('.modal-content').load($(e.relatedTarget).attr('data-href'), function(resp, status) {
-      if (status == 'success') {
-        Admin.init($(e.target));
-        Admin.validate($(e.target).find('form'));
-      } else {
-        $(e.target).find('.modal-content')
-          .html('<div class="jumbotron"><h2 class="text-center">加载失败</h2></div>');
-      }
-    }).html('<div class="jumbotron"><h2 class="text-center">加载中</h2></div><div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
+  $('#modal-edit, #modal-detail').on('show.bs.modal', function (e) {
+    if (e.namespace === 'bs.modal') {
+      $(this).find('.modal-content').load($(e.relatedTarget).attr('data-href'), function(resp, status) {
+        if (status == 'success') {
+          Admin.init($(e.currentTarget));
+          $(e.currentTarget).find('form').each(function(i, form) {
+            Admin.validate($(form));
+          })
+        } else {
+          $(e.currentTarget).find('.modal-content')
+            .html('<div class="jumbotron"><h2 class="text-center">加载失败</h2></div>');
+        }
+      });
+    }
   }).on("hide.bs.modal", function() {
     $(this).removeData("bs.modal");
   });

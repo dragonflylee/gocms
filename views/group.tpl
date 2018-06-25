@@ -1,7 +1,6 @@
 <form method="POST" action="/admin/group/{{.group.ID}}" class="form-horizontal">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-      <span aria-hidden="true">×</span></button>
+    <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
     <h4 class="modal-title">编辑角色</h4>
   </div>
   <div class="modal-body">
