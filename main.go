@@ -11,6 +11,7 @@ import (
 
 	"github.com/dragonflylee/gocms/handler"
 	"github.com/dragonflylee/gocms/model"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -33,6 +34,7 @@ func main() {
 		http.FileServer(http.Dir(filepath.Join(path, "static"))))
 
 	r := mux.NewRouter()
+	r.Use(handlers.RecoveryHandler())
 	// 静态文件
 	r.PathPrefix("/static/").Handler(static)
 	// 404页面
@@ -76,5 +78,5 @@ func main() {
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
 	s.HandleFunc("", handler.Home).Methods(http.MethodGet)
 
-	log.Panic(http.ListenAndServe(*addr, r))
+	log.Panic(http.ListenAndServe(*addr, handlers.LoggingHandler(os.Stdout, r)))
 }

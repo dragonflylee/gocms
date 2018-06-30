@@ -281,7 +281,7 @@ $(document).ready(function() {
           $(e.currentTarget).find('.modal-content')
             .html('<div class="jumbotron"><h2 class="text-center">加载失败</h2></div>');
         }
-      });
+      }).empty();
     }
   }).on("hide.bs.modal", function() {
     $(this).removeData("bs.modal");

@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -21,7 +20,6 @@ type Config struct {
 func (m *Config) Load(path string) error {
 	f, err := os.Open(filepath.Join(path, "config.json"))
 	if err != nil {
-		log.Printf("failed load config (%s)", err.Error())
 		return err
 	}
 	defer f.Close()
