@@ -21,9 +21,9 @@ type Admin struct {
 	Headpic   string     `gorm:"size:255"`
 	LastIP    string     `gorm:"size:16"`
 	Status    bool       `gorm:"default:false;not null"`
-	LastLogin *time.Time `gorm:"type(datetime)"`
-	CreatedAt *time.Time `gorm:"type(datetime)" json:"-"`
-	UpdatedAt *time.Time `gorm:"type(datetime)" json:"-"`
+	LastLogin time.Time `gorm:"type(datetime)"`
+	CreatedAt time.Time `gorm:"type(datetime)" json:"-"`
+	UpdatedAt time.Time `gorm:"type(datetime)" json:"-"`
 	Group     Group      `gorm:"-"`
 }
 
