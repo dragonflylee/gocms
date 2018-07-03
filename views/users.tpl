@@ -12,7 +12,7 @@
       <div class="row">
         <div class="col-md-2">
           {{if .user.Access "/admin/group/add"}}
-            <a class="btn bg-purple btn-block margin-bottom" data-target="#group-add" data-toggle="modal" title="添加">添加角色 <i class="fa fa-plus"></i></a>
+            <a class="btn bg-purple btn-block margin-bottom" data-target="#add-group" data-toggle="modal" title="添加">添加角色 <i class="fa fa-plus"></i></a>
           {{end}}
           <div class="box box-solid">
             <div class="box-header with-border">
@@ -63,7 +63,7 @@
                     </div>
                   </div>
                 {{if .user.Access "/admin/user/add"}}
-                  <a class="btn bg-purple btn-sm" data-target="#user-add" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
+                  <a class="btn bg-purple btn-sm" data-target="#add-user" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
                 {{end}}
                 </form>
               </div>
@@ -113,13 +113,12 @@
     </section>
   </div>
   {{if .user.Access "/admin/user/add"}}
-  <div class="modal modal-add" id="user-add">
+  <div class="modal" id="add-user">
     <div class="modal-dialog">
-      <div class="modal-content">
+      <div class="modal-content box">
         <form action="/admin/user/add" method="post" class="form-horizontal">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span></button>
+            <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
             <h4 class="modal-title">添加管理员</h4>
           </div>
           <div class="modal-body">
@@ -152,13 +151,12 @@
   </div>
   {{end}}
   {{if .user.Access "/admin/group/add"}}
-  <div class="modal modal-add" id="group-add">
+  <div class="modal" id="add-group">
     <div class="modal-dialog">
-      <div class="modal-content">
+      <div class="modal-content box">
         <form action="/admin/group/add" method="post" class="form-horizontal">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span></button>
+            <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
             <h4 class="modal-title">添加角色</h4>
           </div>
           <div class="modal-body">

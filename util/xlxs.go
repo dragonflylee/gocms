@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 	"time"
@@ -13,7 +14,7 @@ import (
 
 var (
 	typeField = map[reflect.Type]bool{
-		reflect.TypeOf(time.Time{}): true,
+		reflect.TypeOf(time.Time{}):       true,
 	}
 )
 
@@ -37,12 +38,14 @@ func xlsxField(row *xlsx.Row, t reflect.Type) {
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		if tags, exist := f.Tag.Lookup("xlsx"); !exist {
-			if _, exist = typeField[f.Type]; exist {
+			v := f.Type
+			if v.Kind() == reflect.Ptr {
+				v = v.Elem()
+			}
+			if _, exist = typeField[v]; exist {
 				row.AddCell().SetString(f.Name)
-			} else if f.Type.Kind() == reflect.Struct {
-				xlsxField(row, f.Type)
-			} else if f.Type.Kind() == reflect.Ptr {
-				xlsxField(row, f.Type.Elem())
+			} else if v.Kind() == reflect.Struct {
+				xlsxField(row, v)
 			} else {
 				row.AddCell().SetString(f.Name)
 			}
@@ -122,6 +125,6 @@ func Excel(w http.ResponseWriter, data map[string]interface{}, format string, a 
 	w.Header().Set("Cache-Control", "must-revalidate, post-check=0, pre-check=0")
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
-	w.Header().Set("Content-Disposition", "attachment; filename="+fmt.Sprintf(format, a...))
+	w.Header().Set("Content-Disposition", "attachment; filename="+url.PathEscape(fmt.Sprintf(format, a...)))
 	return file.Write(w)
 }
