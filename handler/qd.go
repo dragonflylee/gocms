@@ -77,6 +77,7 @@ func QDStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tpl := "qdstats.tpl"
 	if user.Group.ID == 1 || user.Group.Name == "data_admin" {
 		qds, err = model.AllQDs()
 		if err != nil {
@@ -89,6 +90,7 @@ func QDStats(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 			return
 		}
+		tpl = "qdsettle.tpl"
 	}
 
 	data := make(map[string]interface{})
@@ -107,30 +109,33 @@ func QDStats(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		c, err := model.GetGroupCoefficient(user.Group.Name)
-		if err != nil {
-			c = &model.GroupCoefficient{
-				Coefficient: 100,
-			}
-		}
 
+		var viewList []model.QDInstallRuns
 		if nums, err := model.TotalInstallRunsByQD(qds); err == nil && nums > 0 {
 			p := util.NewPaginator(r, nums)
 			if qdStats, err := model.InstallRunsByQD(qds, p.PerPageNums, p.Offset()); err == nil {
 				for i := range qdStats {
-					if c.Start != "" && qdStats[i].Date >= c.Start {
-						qdStats[i].InstallStart = qdStats[i].InstallStart * int64(c.Coefficient) / 100
-						qdStats[i].InstallEnd = qdStats[i].InstallEnd * int64(c.Coefficient) / 100
-						qdStats[i].UninstallStart = qdStats[i].UninstallStart * int64(c.Coefficient) / 100
-						qdStats[i].UninstallEnd = qdStats[i].UninstallEnd * int64(c.Coefficient) / 100
-						qdStats[i].MFShow = qdStats[i].MFShow * int64(c.Coefficient) / 100
-						qdStats[i].ServerRun = qdStats[i].ServerRun * int64(c.Coefficient) / 100
+					if qdStats[i].InstallEnd < 10 {
+						continue
 					}
+
+					coefficient := qdStats[i].Coefficient
+					if user.Group.ID == 1 || user.Group.Name == "data_admin" {
+						coefficient = 100
+					}
+					qdStats[i].Total = qdStats[i].InstallEnd * qdStats[i].Price * qdStats[i].Coefficient / 100
+					qdStats[i].InstallStart = qdStats[i].InstallStart * coefficient / 100
+					qdStats[i].UninstallStart = qdStats[i].UninstallStart * coefficient / 100
+					qdStats[i].UninstallEnd = qdStats[i].UninstallEnd * coefficient / 100
+					qdStats[i].MFShow = qdStats[i].MFShow * coefficient / 100
+					qdStats[i].ServerRun = qdStats[i].ServerRun * coefficient / 100
+					qdStats[i].InstallEnd = qdStats[i].InstallEnd * coefficient / 100
+					viewList = append(viewList, qdStats[i])
 				}
-				data["list"] = qdStats
+				data["list"] = viewList
 			}
 			data["page"] = p
 		}
 	}
-	rLayout(w, r, "qdstats.tpl", data)
+	rLayout(w, r, tpl, data)
 }

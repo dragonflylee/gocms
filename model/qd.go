@@ -15,12 +15,16 @@ type QDInstallRuns struct {
 	UninstallEnd   int64
 	MFShow         int64
 	ServerRun      int64
+	Coefficient    int64
+	Price          int64
+	Total          int64 `gorm:"-"`
 }
 
 type GroupCoefficient struct {
 	ID          int64 `gorm:"primary_key;auto_increment"`
 	GroupName   string
 	Coefficient int
+	Price       int64
 	Start       string
 }
 

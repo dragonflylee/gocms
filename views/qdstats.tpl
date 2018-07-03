@@ -39,6 +39,9 @@
                 <th>卸载</th>
                 <th>前台活跃</th>
                 <th>后台活跃</th>
+                <th>Rate</th>
+                <th>单价(元)</th>
+                <th>结算金额(元)</th>
               </tr>
             {{range .data.list}}
               <tr>
@@ -48,6 +51,9 @@
                 <td>{{.UninstallEnd}}</td>
                 <td>{{.MFShow}}</td>
                 <td>{{.ServerRun}}</td>
+                <td>{{.Coefficient}}%</td>
+                <td>{{price .Price}}</td>
+                <td>{{price .Total}}</td>
               </tr>
             {{end}}
             </tbody>

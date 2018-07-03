@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	db       *gorm.DB
-	mapNodes map[int64]*Node
+	db        *gorm.DB
+	mapNodes  map[int64]*Node
 	debug     = flag.Bool("d", false, "debug mode")
 	redisPool *redis.RedisPool
 	mgo       *mongodb.Session
@@ -48,7 +48,7 @@ func Open(conf *Config) error {
 		db.LogMode(*debug)
 	}
 	// 同步数据库
-	if err = db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{}).Error; err != nil {
+	if err = db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{}, &GroupCoefficient{}, &QDInstallRuns{}).Error; err != nil {
 		log.Printf("failed migrate (%s)", err.Error())
 		return err
 	}

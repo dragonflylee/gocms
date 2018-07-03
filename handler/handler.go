@@ -145,6 +145,12 @@ func Start(path string) {
 			}
 			return fmt.Sprintf("%.2f%%", float64(r)/100)
 		},
+		"price": func(r int64) string {
+			if r == 0 {
+				return "0.00"
+			}
+			return fmt.Sprintf("%.2f", float64(r)/100)
+		},
 	})
 	t = template.Must(t.ParseGlob(pattern))
 }
