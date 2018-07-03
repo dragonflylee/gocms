@@ -115,10 +115,6 @@ func QDStats(w http.ResponseWriter, r *http.Request) {
 			p := util.NewPaginator(r, nums)
 			if qdStats, err := model.InstallRunsByQD(qds, p.PerPageNums, p.Offset()); err == nil {
 				for i := range qdStats {
-					if qdStats[i].InstallEnd < 10 {
-						continue
-					}
-
 					coefficient := qdStats[i].Coefficient
 					if user.Group.ID == 1 || user.Group.Name == "data_admin" {
 						coefficient = 100

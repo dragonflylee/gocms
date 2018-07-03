@@ -42,7 +42,7 @@ func AdmindQDs(id int64) ([]string, error) {
 
 func AllQDs() ([]string, error) {
 	var qds []string
-	if err := db.New().Model(new(QDInstallRuns)).Select("qd").Group("qd").Pluck("qd", &qds).Error; err != nil {
+	if err := db.New().Model(new(QDInstallRuns)).Select("qd").Where("install_end >= 10").Group("qd").Pluck("qd", &qds).Error; err != nil {
 		return nil, err
 	}
 	if len(qds) == 0 {
@@ -53,7 +53,7 @@ func AllQDs() ([]string, error) {
 
 func InstallRunsByQD(qds []string, limit, offset int) ([]QDInstallRuns, error) {
 	var ins []QDInstallRuns
-	if err := db.New().Where("qd in (?)", qds).Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
+	if err := db.New().Where("qd in (?)", qds).Where("install_end >= 10").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
 		return nil, err
 	}
 
