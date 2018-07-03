@@ -183,12 +183,12 @@
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+          <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
           <h4 class="modal-title">确定？</h4>
         </div>
         <div class="modal-footer">
           <a class="btn btn-default" data-dismiss="modal">取消</a>
-          <button type="submit" class="btn btn-danger">确定</button>
+          <a type="submit" class="btn btn-danger">确定</a>
         </div>
       </div>
     </div>

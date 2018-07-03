@@ -43,6 +43,7 @@ func Open(conf *Config) error {
 		log.Printf("failed to connect database (%s)", err.Error())
 		return err
 	}
+	db.BlockGlobalUpdate(true)
 	if debug != nil {
 		db.LogMode(*debug)
 	}
