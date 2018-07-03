@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/dragonflylee/gocms/util"
+	"gocms/util"
 )
 
 // Node 节点模型
