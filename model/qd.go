@@ -62,7 +62,7 @@ func InstallRunsByQD(qds []string, limit, offset int) ([]QDInstallRuns, error) {
 
 func TotalInstallRunsByQD(qds []string) (int64, error) {
 	var total int64
-	if err := db.New().Model(new(QDInstallRuns)).Where("qd in (?)", qds).Count(&total).Error; err != nil {
+	if err := db.New().Model(new(QDInstallRuns)).Where("qd in (?)", qds).Where("install_end >= 10").Count(&total).Error; err != nil {
 		return 0, err
 	}
 
