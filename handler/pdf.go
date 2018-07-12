@@ -73,3 +73,15 @@ func UninstallOpts(w http.ResponseWriter, r *http.Request) {
 	}
 	rLayout(w, r, "pdf_uninstall_opts.tpl", data)
 }
+
+func BundleInstall(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	if nums, err := model.GetTotalBundleInstalls(); err == nil && nums > 0 {
+		p := util.NewPaginator(r, int64(nums))
+		if list, err := model.GetBundleInstalls(p.PerPageNums, p.Offset()); err == nil {
+			data["list"] = list
+		}
+		data["page"] = p
+	}
+	rLayout(w, r, "bundle_installation.tpl", data)
+}

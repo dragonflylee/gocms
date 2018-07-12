@@ -113,6 +113,18 @@ type UninstallResult struct {
 	Rate   int64
 }
 
+type BundleInstall struct {
+	Date        string
+	Show        int
+	ClickClose  int
+	ClickOK     int
+	ClickCancel int
+	NoData      int
+	NetError    int
+	DownPkg     int
+	InstallPkg  int
+}
+
 func GetPDFInstallRuns(limit, offset int) ([]PDFInstallRuns, error) {
 	var ins []PDFInstallRuns
 	if err := db.New().Where("date != ?", "total").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
@@ -328,4 +340,20 @@ func GetUninstallResults() ([]UninstallResult, error) {
 		})
 	}
 	return results, nil
+}
+
+func GetTotalBundleInstalls() (int64, error) {
+	var total int64
+	if err := db.New().Model(new(BundleInstall)).Where("date != ?", "total").Count(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func GetBundleInstalls(limit, offset int) ([]BundleInstall, error) {
+	var ins []BundleInstall
+	if err := db.New().Where("date != ?", "total").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
+		return nil, err
+	}
+	return ins, nil
 }

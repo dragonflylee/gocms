@@ -89,6 +89,7 @@ func main() {
 	s.HandleFunc("/pdf/mfshow_versions", handler.MFShowVersions).Methods(http.MethodGet)
 	s.HandleFunc("/pdf/feedbacks", handler.Feedbacks).Methods(http.MethodGet)
 	s.HandleFunc("/pdf/uninstall_opts", handler.UninstallOpts).Methods(http.MethodGet)
+	s.HandleFunc("/bundle_install", handler.BundleInstall).Methods(http.MethodGet)
 
 	log.Panic(http.ListenAndServe(*addr, handlers.LoggingHandler(os.Stdout, r)))
 }

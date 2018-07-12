@@ -48,7 +48,14 @@ func Open(conf *Config) error {
 		db.LogMode(*debug)
 	}
 	// 同步数据库
-	if err = db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{}, &GroupCoefficient{}, &QDInstallRuns{}).Error; err != nil {
+	if err = db.AutoMigrate(
+		new(Group),
+		new(Admin),
+		new(AdminLog),
+		new(Node),
+		new(GroupCoefficient),
+		new(QDInstallRuns),
+		new(BundleInstall)).Error; err != nil {
 		log.Printf("failed migrate (%s)", err.Error())
 		return err
 	}
