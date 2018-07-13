@@ -8,13 +8,19 @@
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
+
   {{template "navbar" .}}
   <div class="content-wrapper">
     {{template "title" .}}
     <section class="content">
       <div class="box">
         <div class="box-header with-border">
-          <h3 class="box-title">安装活跃</h3>
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li> <a href="/admin/qd/day" class="text-purple">安装活跃</a></li>
+              <li class="active"><a href="/admin/qd/month" class="text-orange">月度结算</a></li>
+            </ul>
+          </div>
           <div class="box-tools">
             <form class="form-inline">
               <div class="form-group">
@@ -33,19 +39,27 @@
           <table class="table table-bordered">
             <tbody>
               <tr>
-                <th>日期</th>
+                <th>月度</th>
                 <th>渠道</th>
-                <th>激活</th>
+                <th>安装</th>
+                <th>卸载</th>
+                <th>前台活跃</th>
+                <th>后台活跃</th>
+                <th>Rate</th>
                 <th>单价(元)</th>
                 <th>结算金额(元)</th>
               </tr>
             {{range .data.list}}
               <tr>
-                <td>{{.Date}}</td>
+                <td>{{.Month}}</td>
                 <td>{{.QD}}</td>
-                <td>{{.InstallEnd}}</td>
-                <td>{{price .Price}}</td>
-                <td>{{price .Total}}</td>
+                <td>{{.RealInstallEnd}}</td>
+                <td>{{.RealUninstallEnd}}</td>
+                <td>{{.RealMFShow}}</td>
+                <td>{{.RealServerRun}}</td>
+                <td>{{rate .Coefficient}}%</td>
+                <td>{{price .Price 4}}</td>
+                <td>{{price .Total 2}}</td>
               </tr>
             {{end}}
             </tbody>

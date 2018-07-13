@@ -143,11 +143,14 @@ func Start(path string) {
 			if r == 0 {
 				return "-"
 			}
-			return fmt.Sprintf("%.2f%%", float64(r)/100)
+			return fmt.Sprintf("%.2f", float64(r)/100)
 		},
-		"price": func(r int64) string {
+		"price": func(r, w int64) string {
 			if r == 0 {
 				return "0.00"
+			}
+			if w == 4 {
+				return fmt.Sprintf("%.4f", float64(r)/10000)
 			}
 			return fmt.Sprintf("%.2f", float64(r)/100)
 		},

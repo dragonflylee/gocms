@@ -14,7 +14,12 @@
     <section class="content">
       <div class="box">
         <div class="box-header with-border">
-          <h3 class="box-title">安装活跃</h3>
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"> <a href="/admin/qd/day" class="text-purple">安装活跃</a></li>
+              <li><a href="/admin/qd/month" class="text-orange">月度结算</a></li>
+            </ul>
+          </div>
           <div class="box-tools">
             <form class="form-inline">
               <div class="form-group">
@@ -52,8 +57,8 @@
                 <td>{{.MFShow}}</td>
                 <td>{{.ServerRun}}</td>
                 <td>{{.Coefficient}}%</td>
-                <td>{{price .Price}}</td>
-                <td>{{price .Total}}</td>
+                <td>{{price .Price 2}}</td>
+                <td>{{price .Total 2}}</td>
               </tr>
             {{end}}
             </tbody>

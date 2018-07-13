@@ -79,7 +79,9 @@ func main() {
 	s.HandleFunc("", handler.Home).Methods(http.MethodGet)
 
 	// 数据统计
-	s.HandleFunc("/qd", handler.QDStats).Methods(http.MethodGet)
+	s.HandleFunc("/qd/day", handler.QDSettleDay).Methods(http.MethodGet)
+	s.HandleFunc("/qd/month", handler.QDSettleMonth).Methods(http.MethodGet)
+
 	s.HandleFunc("/qd/list", handler.QDList).Methods(http.MethodGet)
 	s.HandleFunc("/p2w/all", handler.P2WInstallRuns).Methods(http.MethodGet)
 	s.HandleFunc("/p2w/qd", handler.P2WInstallRunsGroupByQD).Methods(http.MethodGet)

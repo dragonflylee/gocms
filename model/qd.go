@@ -1,5 +1,9 @@
 package model
 
+import (
+	"sdbackend/domain"
+)
+
 type AdminQD struct {
 	ID int64  `gorm:"primary_key"`
 	QD string `gorm:"primary_key"`
@@ -75,4 +79,22 @@ func GetGroupCoefficient(groupName string) (*GroupCoefficient, error) {
 		return nil, err
 	}
 	return &c, nil
+}
+
+func MonthSettleByQD(qds []string, limit, offset int) ([]domain.MonthSettle, error) {
+	var ins []domain.MonthSettle
+	if err := db.New().Where("qd in (?)", qds).Order("month desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
+		return nil, err
+	}
+
+	return ins, nil
+}
+
+func TotalMonthSettleByQD(qds []string) (int64, error) {
+	var total int64
+	if err := db.New().Model(new(domain.MonthSettle)).Where("qd in (?)", qds).Count(&total).Error; err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
