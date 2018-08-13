@@ -125,6 +125,15 @@ type BundleInstall struct {
 	InstallPkg  int
 }
 
+type MiniNewsStats struct {
+	Date           string `gorm:"unique_index"`
+	ForbidMiniNews int
+	SpeedupRun     int
+	LoaderDownload int
+	LoaderLoad     int
+	CloudDisable   int
+}
+
 func GetPDFInstallRuns(limit, offset int) ([]PDFInstallRuns, error) {
 	var ins []PDFInstallRuns
 	if err := db.New().Where("date != ?", "total").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
@@ -352,6 +361,22 @@ func GetTotalBundleInstalls() (int64, error) {
 
 func GetBundleInstalls(limit, offset int) ([]BundleInstall, error) {
 	var ins []BundleInstall
+	if err := db.New().Where("date != ?", "total").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
+		return nil, err
+	}
+	return ins, nil
+}
+
+func GetTotalMiniNewsStats() (int64, error) {
+	var total int64
+	if err := db.New().Model(new(MiniNewsStats)).Where("date != ?", "total").Count(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func GetMiniNewsStats(limit, offset int) ([]MiniNewsStats, error) {
+	var ins []MiniNewsStats
 	if err := db.New().Where("date != ?", "total").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
 		return nil, err
 	}

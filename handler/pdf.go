@@ -85,3 +85,15 @@ func BundleInstall(w http.ResponseWriter, r *http.Request) {
 	}
 	rLayout(w, r, "bundle_installation.tpl", data)
 }
+
+func MiniNewsStats(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	if nums, err := model.GetTotalMiniNewsStats(); err == nil && nums > 0 {
+		p := util.NewPaginator(r, int64(nums))
+		if list, err := model.GetMiniNewsStats(p.PerPageNums, p.Offset()); err == nil {
+			data["list"] = list
+		}
+		data["page"] = p
+	}
+	rLayout(w, r, "mininews_stats.tpl", data)
+}
