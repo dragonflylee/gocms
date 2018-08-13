@@ -126,12 +126,14 @@ type BundleInstall struct {
 }
 
 type MiniNewsStats struct {
-	Date           string `gorm:"unique_index"`
-	ForbidMiniNews int
-	SpeedupRun     int
-	LoaderDownload int
-	LoaderLoad     int
-	CloudDisable   int
+	Date                string `gorm:"unique_index"`
+	ForbidMiniNews      int
+	SpeedupRun          int
+	LoaderDownloadStart int
+	LoaderDownloadEnd   int
+	LoaderLoadStart     int
+	LoaderLoadEnd       int
+	CloudDisable        int
 }
 
 func GetPDFInstallRuns(limit, offset int) ([]PDFInstallRuns, error) {

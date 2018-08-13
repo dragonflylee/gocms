@@ -36,8 +36,10 @@
                 <th>日期</th>
                 <th>用户禁用</th>
                 <th>常驻进程启动</th>
-                <th>下载组件</th>
-                <th>加载组件</th>
+                <th>下载组件(开始)</th>
+                <th>下载组件(结束)</th>
+                <th>加载组件(开始)</th>
+                <th>加载组件(结束)</th>
                 <th>云端禁用</th>
               </tr>
             {{range .data.list}}
@@ -45,8 +47,10 @@
                 <td>{{.Date}}</td>
                 <td>{{.ForbidMiniNews}}</td>
                 <td>{{.SpeedupRun}}</td>
-                <td>{{.LoaderDownload}}</td>
-				<td>{{.LoaderLoad}}</td>
+                <td>{{.LoaderDownloadStart}}</td>
+                <td>{{.LoaderDownloadEnd}}</td>
+				<td>{{.LoaderLoadStart}}</td>
+				<td>{{.LoaderLoadEnd}}</td>
 				<td>{{.CloudDisable}}</td>
               </tr>
             {{end}}
