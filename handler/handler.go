@@ -154,6 +154,20 @@ func Start(path string) {
 			}
 			return fmt.Sprintf("%.2f", float64(r)/100)
 		},
+		"retention": func(mfshow, serverRun int64) string {
+			var (
+				m = fmt.Sprintf("%0.2f", float64(mfshow)/float64(100))
+				s = fmt.Sprintf("%0.2f", float64(serverRun)/float64(100))
+			)
+			if mfshow == 0 {
+				m = "-"
+			}
+			if serverRun == 0 {
+				s = "-"
+			}
+
+			return fmt.Sprintf("%s/%s", m, s)
+		},
 	})
 	t = template.Must(t.ParseGlob(pattern))
 }

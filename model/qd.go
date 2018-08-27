@@ -10,18 +10,26 @@ type AdminQD struct {
 }
 
 type QDInstallRuns struct {
-	ID             int64 `gorm:"primary_key;auto_increment"`
-	Date           string
-	QD             string
-	InstallStart   int64
-	InstallEnd     int64
-	UninstallStart int64
-	UninstallEnd   int64
-	MFShow         int64
-	ServerRun      int64
-	Coefficient    int64
-	Price          int64
-	Total          int64 `gorm:"-"`
+	ID                   int64 `gorm:"primary_key;auto_increment"`
+	Date                 string
+	QD                   string
+	InstallStart         int64
+	InstallEnd           int64
+	UninstallStart       int64
+	UninstallEnd         int64
+	MFShow               int64
+	ServerRun            int64
+	Coefficient          int64
+	Price                int64
+	MFShowRetention1     int64
+	MFShowRetention3     int64
+	MFShowRetention7     int64
+	MFShowRetention30    int64
+	ServerRunRetention1  int64
+	ServerRunRetention3  int64
+	ServerRunRetention7  int64
+	ServerRunRetention30 int64
+	Total                int64 `gorm:"-"`
 }
 
 type GroupCoefficient struct {

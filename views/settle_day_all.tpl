@@ -47,6 +47,10 @@
                 <th>Rate</th>
                 <th>单价(元)</th>
                 <th>结算金额(元)</th>
+                <th>次日留存</th>
+                <th>三日留存</th>
+                <th>七日留存</th>
+                <th>月留存</th>
               </tr>
             {{range .data.list}}
               <tr>
@@ -59,6 +63,10 @@
                 <td>{{.Coefficient}}%</td>
                 <td>{{price .Price 2}}</td>
                 <td>{{price .Total 2}}</td>
+                <td>{{retention .MFShowRetention1 .ServerRunRetention1}}</td>
+                <td>{{retention .MFShowRetention3 .ServerRunRetention3}}</td>
+                <td>{{retention .MFShowRetention7 .ServerRunRetention7}}</td>
+                <td>{{retention .MFShowRetention30 .ServerRunRetention30}}</td>
               </tr>
             {{end}}
             </tbody>
