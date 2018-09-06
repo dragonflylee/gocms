@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"sdbackend/domain"
 	"sort"
 	"time"
 )
@@ -10,25 +11,27 @@ import (
 var conf Config
 
 type PDFInstallRuns struct {
-	ID                   int64 `gorm:"primary_key;auto_increment"`
-	Date                 string
-	InstallStart         int64
-	InstallEnd           int64
-	UninstallStart       int64
-	UninstallEnd         int64
-	NewUserUninstallEnd  int64
-	UninstallRate        float64
-	NewUserUninstallRate int64
-	MFShow               int64     `gorm:"Column:mf_show"`
-	MFShow7              int64     `gorm:"Column:mf_show_7"`
-	MFShow30             int64     `gorm:"Column:mf_show_30"`
-	MFShowOld            int64     `gorm:"Column:mf_show_old"`
-	ServerRun            int64     `gorm:"Column:server_run"`
-	ServerRun7           int64     `gorm:"Column:server_run_7"`
-	ServerRun30          int64     `gorm:"Column:server_run_30"`
-	ServerRunOld         int64     `gorm:"Column:server_run_old"`
-	CreatedAt            time.Time `gorm:"Column:create_time;type(datetime)" json:"-"`
-	UpdatedAt            time.Time `gorm:"Column:update_time;type(datetime)" json:"-"`
+	ID                    int64 `gorm:"primary_key;auto_increment"`
+	Date                  string
+	InstallStart          int64
+	InstallEnd            int64
+	UninstallStart        int64
+	UninstallEnd          int64
+	NewUserUninstallEnd   int64
+	UninstallRate         float64
+	NewUserUninstallRate  int64
+	LoadDoc               int64
+	LoadDocDistinctDevice int64
+	MFShow                int64     `gorm:"Column:mf_show"`
+	MFShow7               int64     `gorm:"Column:mf_show_7"`
+	MFShow30              int64     `gorm:"Column:mf_show_30"`
+	MFShowOld             int64     `gorm:"Column:mf_show_old"`
+	ServerRun             int64     `gorm:"Column:server_run"`
+	ServerRun7            int64     `gorm:"Column:server_run_7"`
+	ServerRun30           int64     `gorm:"Column:server_run_30"`
+	ServerRunOld          int64     `gorm:"Column:server_run_old"`
+	CreatedAt             time.Time `gorm:"Column:create_time;type(datetime)" json:"-"`
+	UpdatedAt             time.Time `gorm:"Column:update_time;type(datetime)" json:"-"`
 }
 
 func (*PDFInstallRuns) TableName() string {
@@ -377,8 +380,8 @@ func GetTotalMiniNewsStats() (int64, error) {
 	return total, nil
 }
 
-func GetMiniNewsStats(limit, offset int) ([]MiniNewsStats, error) {
-	var ins []MiniNewsStats
+func GetMiniNewsStats(limit, offset int) ([]domain.MiniNewsStats, error) {
+	var ins []domain.MiniNewsStats
 	if err := db.New().Where("date != ?", "total").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
 		return nil, err
 	}

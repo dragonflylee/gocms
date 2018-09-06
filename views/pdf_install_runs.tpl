@@ -77,6 +77,7 @@
                 <th>安装</th>
                 <th>卸载 </th>
                 <th>新用户卸载比 </th>
+                <th>Doc加载</th>
                 <th>活跃</th>
                 <th>7日活跃</th>
                 <th>月活跃</th>
@@ -88,6 +89,7 @@
                 <td>{{.InstallEnd}}/{{.InstallStart}}</td>
                 <td>{{.UninstallEnd}}/{{.UninstallStart}}</td>
                 <td>{{rate .NewUserUninstallRate}}</td>
+                <td>{{.LoadDocDistinctDevice}}/{{.LoadDoc}}</td>
                 <td>{{.MFShow}}/{{.ServerRun}}</td>
                 <td>{{.MFShow7}}/{{.ServerRun7}}</td>
                 <td>{{.MFShow30}}/{{.ServerRun30}}</td>

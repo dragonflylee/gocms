@@ -39,6 +39,7 @@
                 <th>下载组件(end/start)</th>
                 <th>加载组件(end/start)</th>
                 <th>云端禁用</th>
+                <th>服务调起常驻进程
               </tr>
             {{range .data.list}}
               <tr>
@@ -48,6 +49,7 @@
                 <td>{{.LoaderDownloadEnd}}/{{.LoaderDownloadStart}}</td>
 				<td>{{.LoaderLoadEnd}}/{{.LoaderLoadStart}}</td>
 				<td>{{.CloudDisable}}</td>
+				<td>{{.ServerCallSpeedup}}</td>
               </tr>
             {{end}}
             </tbody>
