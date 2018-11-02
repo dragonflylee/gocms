@@ -3,6 +3,8 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"gopkg.in/mgo.v2/bson"
 	"sdbackend/domain"
 	"sort"
 	"time"
@@ -137,6 +139,18 @@ type MiniNewsStats struct {
 	LoaderLoadStart     int
 	LoaderLoadEnd       int
 	CloudDisable        int
+}
+
+type CrashVersionRate struct {
+	Version string
+	Rate    string
+}
+
+type CrashInfo struct {
+	LogTime  time.Time `bson:"log_time"`
+	ClientIP string    `bson:"client_ip"`
+	OS       int       `bson:"os"`
+	Version  string    `bson:"version"`
 }
 
 func GetPDFInstallRuns(limit, offset int) ([]PDFInstallRuns, error) {
@@ -386,4 +400,69 @@ func GetMiniNewsStats(limit, offset int) ([]domain.MiniNewsStats, error) {
 		return nil, err
 	}
 	return ins, nil
+}
+
+func GetCrashsTotal() (int64, error) {
+	conn := mgo.Clone()
+	defer conn.Close()
+	col := conn.DB(mgoDBName).C("crashs")
+	c, err := col.Count()
+	return int64(c), err
+}
+
+func GetCrashs(limit, offset int) ([]CrashInfo, error) {
+	conn := mgo.Clone()
+	defer conn.Close()
+	col := conn.DB(mgoDBName).C("crashs")
+	var crashs []CrashInfo
+	if err := col.Find(nil).Limit(limit).Skip(offset).Sort("-log_time").All(&crashs); err != nil {
+		return nil, err
+	}
+
+	return crashs, nil
+}
+
+func GetCrashVersioRate() ([]CrashVersionRate, error) {
+	conn := mgo.Clone()
+	defer conn.Close()
+	col := conn.DB(mgoDBName).C("crashs")
+	pipeLine := []bson.M{
+		bson.M{
+			"$group": bson.M{
+				"_id": "$version",
+				"count": bson.M{
+					"$sum": 1,
+				},
+			},
+		},
+		bson.M{
+			"$sort": bson.M{
+				"count": -1,
+			},
+		},
+	}
+	var results []struct {
+		Version string `bson:"_id"`
+		Count   int    `bson:"count"`
+	}
+	pipe := col.Pipe(pipeLine)
+	if err := pipe.All(&results); err != nil {
+		return nil, err
+	}
+
+	var (
+		total int
+		res   []CrashVersionRate
+	)
+	for _, ins := range results {
+		total += ins.Count
+	}
+	for _, ins := range results {
+		res = append(res, CrashVersionRate{
+			Version: ins.Version,
+			Rate:    fmt.Sprintf("%.02f", (float32(ins.Count*100) / float32(total))),
+		})
+	}
+	return res, nil
+
 }

@@ -97,3 +97,19 @@ func MiniNewsStats(w http.ResponseWriter, r *http.Request) {
 	}
 	rLayout(w, r, "mininews_stats.tpl", data)
 }
+
+func Crashs(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	if nums, err := model.GetCrashsTotal(); err == nil && nums > 0 {
+		p := util.NewPaginator(r, int64(nums))
+		if rates, err := model.GetCrashVersioRate(); err == nil {
+			data["crash_rate"] = rates
+		}
+		if crashs, err := model.GetCrashs(p.PerPageNums, p.Offset()); err == nil {
+			data["crash_list"] = crashs
+		}
+		data["page"] = p
+	}
+
+	rLayout(w, r, "pdf_crashs.tpl", data)
+}
