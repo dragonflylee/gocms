@@ -34,7 +34,8 @@
 	  <div class="box-body">
 	  {{range .data.list}}
 	      <p>{{.Version}}
-          <div class="progress">
+          <div class="progress progress-xs">
+
              <div class="progress-bar progress-bar-green" role="progressbar" aria-valuenow="40" aria-valuemin="10%" aria-valuemax="100" style="width: {{.Rate}}%; min-width:5em">
                <span >{{.Rate}}%</span>
              </div>
