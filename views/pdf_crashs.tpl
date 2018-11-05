@@ -23,54 +23,39 @@
             </ul>
           </div>
 	    </div>
-			{{if .data.crash_rate}}
-			<div class="box-body left">
-				{{range .data.crash_rate}}
-				<p>{{.Version}}({{.Rate}}%)
-				<div class="progress progress-xs">
-					<div class="progress-bar progress-bar-red" role="progressbar" aria-valuenow="40" aria-valuemin="10%" aria-valuemax="100" style="width: {{.Rate}}%; min-width:5em"></div>
-				</div>
-				{{end}}	  
-			</div>
-			{{else}}
-			<div class="box-body">
-				<p class="lead text-center">无数据</p>
-			</div>
-			{{end}}
-		<!------------------------>
-		<div class="box">
-			{{if .data.crash_list}}
-			<div class="box-body table-responsive right">
-				<table class="table table-bordered">
-					<tbody>
-						 <tr>
-							<th>日期</th>
-							<th>版本号</th>
-							<th>系统</th>
-							<th>客户端IP</th>
-						 </tr>
-						{{range .data.crash_list}}
-						  <tr>
-							<td>{{date .LogTime}}</td>
-							<td>{{.Version}}</td>
-							<td>{{.OS}}</td>
-							<td>{{.ClientIP}}</td>
-						  </tr>
-						{{end}}
-					</tbody>
-				</table>
-			</div> 
-			<div class="box-footer clearfix">
-				<a href="javascript:history.go(-1);" class="btn btn-sm bg-navy">返回</a>
-				{{template "paginator" .data}}
-			</div>
-			{{else}}
-				<div class="box-body">
-					<p class="lead text-center">无数据</p>
-				</div>
-			{{end}}
-		</div>
-				</div>
+      {{if .data.list}}
+        <div class="box-body table-responsive">
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <th>日期</th>
+                <th>活跃</th>
+                <th>崩溃</th>
+                <th>崩溃率</th>
+              </tr>
+            {{range .data.list}}
+              <tr>
+                <td>
+                  <a href="/admin/pdf/crashs/detail?date={{ .Date }}">{{ .Date }}</a>
+                </td>
+                <td>{{.MFShow}}</td>
+                <td>{{.Crash}}</td>
+                <td>{{.CrashRate}}</td>
+              </tr>
+            {{end}}
+            </tbody>
+          </table>
+        </div>
+        <div class="box-footer clearfix">
+          <a href="javascript:history.go(-1);" class="btn btn-sm bg-navy">返回</a>
+          {{template "paginator" .data}}
+        </div>
+      {{else}}
+        <div class="box-body">
+          <p class="lead text-center">无数据</p>
+        </div>
+      {{end}}
+      </div>
     </section>
   </div>
   {{template "modal"}}
@@ -78,3 +63,4 @@
 </div>
 </body>
 </html>
+

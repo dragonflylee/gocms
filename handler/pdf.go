@@ -4,7 +4,18 @@ import (
 	"gocms/model"
 	"gocms/util"
 	"net/http"
+	"time"
 )
+
+var local *time.Location
+
+func init() {
+	var err error
+	local, err = time.LoadLocation("Asia/Chongqing")
+	if err != nil {
+		panic(err)
+	}
+}
 
 func PDFInstallRuns(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
@@ -100,16 +111,35 @@ func MiniNewsStats(w http.ResponseWriter, r *http.Request) {
 
 func Crashs(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
-	if nums, err := model.GetCrashsTotal(); err == nil && nums > 0 {
+	if nums, err := model.TotalPDFInstallRuns(); err == nil && nums > 0 {
 		p := util.NewPaginator(r, int64(nums))
-		if rates, err := model.GetCrashVersioRate(); err == nil {
-			data["crash_rate"] = rates
-		}
-		if crashs, err := model.GetCrashs(p.PerPageNums, p.Offset()); err == nil {
-			data["crash_list"] = crashs
+		if crashs, err := model.GetPDFInstallRuns(p.PerPageNums, p.Offset()); err == nil {
+			data["list"] = crashs
 		}
 		data["page"] = p
 	}
 
 	rLayout(w, r, "pdf_crashs.tpl", data)
+}
+
+func CrashsDetail(w http.ResponseWriter, r *http.Request) {
+	start, err := time.ParseInLocation("2006-01-02", r.URL.Query().Get("date"), local)
+	if err != nil {
+		start = time.Now().AddDate(0, 0, 1)
+	}
+	end := start.AddDate(0, 0, 1)
+
+	data := make(map[string]interface{})
+	if nums, err := model.GetCrashsTotal(); err == nil && nums > 0 {
+		p := util.NewPaginator(r, int64(nums))
+		if rates, err := model.GetCrashVersioRate(); err == nil {
+			data["crash_rate"] = rates
+		}
+		if crashs, err := model.GetCrashsByDay(p.PerPageNums, p.Offset(), &start, &end); err == nil {
+			data["crash_list"] = crashs
+		}
+		data["page"] = p
+	}
+
+	rLayout(w, r, "pdf_crashs_detail.tpl", data)
 }

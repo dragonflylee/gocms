@@ -32,6 +32,8 @@ type PDFInstallRuns struct {
 	ServerRun7            int64     `gorm:"Column:server_run_7"`
 	ServerRun30           int64     `gorm:"Column:server_run_30"`
 	ServerRunOld          int64     `gorm:"Column:server_run_old"`
+	Crash                 int64     `gorm:"Column:crash"`
+	CrashRate             int64     `gorm:"Column:crash_rate"`
 	CreatedAt             time.Time `gorm:"Column:create_time;type(datetime)" json:"-"`
 	UpdatedAt             time.Time `gorm:"Column:update_time;type(datetime)" json:"-"`
 }
@@ -402,20 +404,34 @@ func GetMiniNewsStats(limit, offset int) ([]domain.MiniNewsStats, error) {
 	return ins, nil
 }
 
-func GetCrashsTotal() (int64, error) {
+func GetCrashsTotal(start, end *time.Time) (int64, error) {
 	conn := mgo.Clone()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("crashs")
-	c, err := col.Count()
+	query := bson.M{}
+	if start != nil {
+		query["$gte"] = start
+	}
+	if end != nil {
+		query["$lt"] = end
+	}
+	c, err := col.Find(query).Count()
 	return int64(c), err
 }
 
-func GetCrashs(limit, offset int) ([]CrashInfo, error) {
+func GetCrashsByDay(limit, offset int, start, end *time.Time) ([]CrashInfo, error) {
 	conn := mgo.Clone()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("crashs")
 	var crashs []CrashInfo
-	if err := col.Find(nil).Limit(limit).Skip(offset).Sort("-log_time").All(&crashs); err != nil {
+	query := bson.M{}
+	if start != nil {
+		query["$gte"] = start
+	}
+	if end != nil {
+		query["$lt"] = end
+	}
+	if err := col.Find(query).Limit(limit).Skip(offset).Sort("-log_time").All(&crashs); err != nil {
 		return nil, err
 	}
 
@@ -464,5 +480,4 @@ func GetCrashVersioRate() ([]CrashVersionRate, error) {
 		})
 	}
 	return res, nil
-
 }

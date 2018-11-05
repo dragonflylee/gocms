@@ -92,6 +92,7 @@ func main() {
 	s.HandleFunc("/pdf/feedbacks", handler.Feedbacks).Methods(http.MethodGet)
 	s.HandleFunc("/pdf/uninstall_opts", handler.UninstallOpts).Methods(http.MethodGet)
 	s.HandleFunc("/pdf/crashs", handler.Crashs).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/crashs/detail", handler.CrashsDetail).Methods(http.MethodGet)
 	s.HandleFunc("/bundle_install", handler.BundleInstall).Methods(http.MethodGet)
 	s.HandleFunc("/mininews", handler.MiniNewsStats).Methods(http.MethodGet)
 
