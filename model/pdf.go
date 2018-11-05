@@ -152,6 +152,7 @@ type CrashInfo struct {
 	LogTime  time.Time `bson:"log_time"`
 	ClientIP string    `bson:"client_ip"`
 	OS       int       `bson:"os"`
+	DeviceID string    `bson:"device_id"`
 	Version  string    `bson:"version"`
 }
 

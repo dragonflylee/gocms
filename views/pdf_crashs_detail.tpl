@@ -47,6 +47,7 @@
 							<th>日期</th>
 							<th>版本号</th>
 							<th>系统</th>
+							<th>硬件ID</th>
 							<th>客户端IP</th>
 						 </tr>
 						{{range .data.crash_list}}
@@ -54,6 +55,7 @@
 							<td>{{date .LogTime}}</td>
 							<td>{{.Version}}</td>
 							<td>{{.OS}}</td>
+							<td>{{.DeviceID}}</td>
 							<td>{{.ClientIP}}</td>
 						  </tr>
 						{{end}}
