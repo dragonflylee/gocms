@@ -409,14 +409,10 @@ func GetCrashsTotal(start, end *time.Time) (int64, error) {
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("crashs")
 	query := bson.M{}
-	if start != nil {
+	if start != nil && end != nil {
 		query["log_time"] = bson.M{
 			"$gte": start,
-		}
-	}
-	if end != nil {
-		query["log_time"] = bson.M{
-			"$lt": end,
+			"$lt":  end,
 		}
 	}
 	c, err := col.Find(query).Count()
@@ -429,14 +425,10 @@ func GetCrashsByDay(limit, offset int, start, end *time.Time) ([]CrashInfo, erro
 	col := conn.DB(mgoDBName).C("crashs")
 	var crashs []CrashInfo
 	query := bson.M{}
-	if start != nil {
+	if start != nil && end != nil {
 		query["log_time"] = bson.M{
 			"$gte": start,
-		}
-	}
-	if end != nil {
-		query["log_time"] = bson.M{
-			"$lt": end,
+			"$lt":  end,
 		}
 	}
 	if err := col.Find(query).Limit(limit).Skip(offset).Sort("-log_time").All(&crashs); err != nil {
