@@ -40,7 +40,7 @@
                 </td>
                 <td>{{.MFShow}}</td>
                 <td>{{.Crash}}</td>
-                <td>{{.CrashRate}}</td>
+                <td>{{rate .CrashRate}}‱</td>
               </tr>
             {{end}}
             </tbody>
