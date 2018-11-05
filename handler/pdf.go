@@ -132,7 +132,7 @@ func CrashsDetail(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
 	if nums, err := model.GetCrashsTotal(&start, &end); err == nil && nums > 0 {
 		p := util.NewPaginator(r, int64(nums))
-		if rates, err := model.GetCrashVersioRate(); err == nil {
+		if rates, err := model.GetCrashVersioRate(&start, &end); err == nil {
 			data["crash_rate"] = rates
 		}
 		if crashs, err := model.GetCrashsByDay(p.PerPageNums, p.Offset(), &start, &end); err == nil {

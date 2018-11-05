@@ -410,10 +410,14 @@ func GetCrashsTotal(start, end *time.Time) (int64, error) {
 	col := conn.DB(mgoDBName).C("crashs")
 	query := bson.M{}
 	if start != nil {
-		query["$gte"] = start
+		query["log_time"] = bson.M{
+			"$gte": start,
+		}
 	}
 	if end != nil {
-		query["$lt"] = end
+		query["log_time"] = bson.M{
+			"$lt": end,
+		}
 	}
 	c, err := col.Find(query).Count()
 	return int64(c), err
@@ -426,10 +430,14 @@ func GetCrashsByDay(limit, offset int, start, end *time.Time) ([]CrashInfo, erro
 	var crashs []CrashInfo
 	query := bson.M{}
 	if start != nil {
-		query["$gte"] = start
+		query["log_time"] = bson.M{
+			"$gte": start,
+		}
 	}
 	if end != nil {
-		query["$lt"] = end
+		query["log_time"] = bson.M{
+			"$lt": end,
+		}
 	}
 	if err := col.Find(query).Limit(limit).Skip(offset).Sort("-log_time").All(&crashs); err != nil {
 		return nil, err
@@ -438,11 +446,19 @@ func GetCrashsByDay(limit, offset int, start, end *time.Time) ([]CrashInfo, erro
 	return crashs, nil
 }
 
-func GetCrashVersioRate() ([]CrashVersionRate, error) {
+func GetCrashVersioRate(start, end *time.Time) ([]CrashVersionRate, error) {
 	conn := mgo.Clone()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("crashs")
 	pipeLine := []bson.M{
+		bson.M{
+			"$match": bson.M{
+				"log_time": bson.M{
+					"$gte": start,
+					"$lt":  end,
+				},
+			},
+		},
 		bson.M{
 			"$group": bson.M{
 				"_id": "$version",
