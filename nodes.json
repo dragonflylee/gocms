@@ -4,12 +4,14 @@
         "name": "仪表盘",
         "path": "/admin",
         "icon": "fa fa-dashboard",
+        "type": 1,
         "status": true
     },
     {
         "id": 2,
         "name": "个人中心",
         "path": "/admin/profile",
+        "type": 1,
         "icon": "fa fa-user-o"
     },
     {
@@ -47,13 +49,15 @@
         "parent": 3,
         "name": "角色管理",
         "path": "/admin/group/{id:[0-9]+}",
-        "icon": "fa fa-users"
+        "icon": "fa fa-users",
+        "type": 2
     },
     {
         "id": 8,
         "parent": 7,
         "name": "角色添加",
         "path": "/admin/group/add",
-        "icon": "fa fa-address-book-o"
+        "icon": "fa fa-address-book-o",
+        "type": 2
     }
 ]

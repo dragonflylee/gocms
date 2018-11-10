@@ -103,6 +103,14 @@ var Admin = {
               arr[i].value = md5(arr[i].value);
             }
           }
+          $('.jstree', $form).each(function(i, tree) {
+            $.each($(tree).jstree('get_selected'), function(j, n) {
+              arr[arr.length] = {
+                name: $(tree).attr('name'),
+                value: n,
+              };
+            })
+          })
           $(form).parents('.box').
             append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
         },

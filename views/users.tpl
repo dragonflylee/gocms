@@ -183,12 +183,6 @@
     </div>
   </div>
   {{template "footer"}}
-  <script type="text/javascript">
-    $(document).on('click', '#modal-edit button[type="submit"]', function(e) {
-      var nodes = $('.jstree').jstree('get_selected');
-      console.log(nodes);
-    })
-  </script>
 </div>
 </body>
 </html>

@@ -8,6 +8,18 @@ import (
 	"github.com/dragonflylee/gocms/util"
 )
 
+// NodeType 节点类型
+type NodeType int8
+
+const (
+	// NodeTypeNormal 普通节点
+	NodeTypeNormal NodeType = iota
+	// NodeTypeEssensial 必要节点
+	NodeTypeEssensial
+	// NodeTypeFix 不可修改节点
+	NodeTypeFix
+)
+
 // Node 节点模型
 type Node struct {
 	ID     int64    `gorm:"primary_key;auto_increment"`
@@ -16,6 +28,7 @@ type Node struct {
 	Icon   string   `gorm:"size:32;default:null"`
 	Remark string   `gorm:"type:text"`
 	Path   string   `gorm:"size:255"`
+	Type   NodeType `gorm:"default:0;not null"`
 	Status bool     `gorm:"default:false;not null"`
 	Child  Menu     `gorm:"-"`
 	Groups []*Group `gorm:"many2many:node_groups"`
@@ -59,7 +72,7 @@ func Install(m *Admin, path string) error {
 	if err = json.Unmarshal(data, &m.Group.Nodes); err != nil {
 		return err
 	}
-	db := db.New().Begin()
+	db := db.New().Begin().Set("gorm:association_autoupdate", true)
 	if err = db.Create(&m.Group).Error; err != nil {
 		db.Rollback()
 		return err
@@ -155,11 +168,15 @@ func (n *Node) HasGroup(id int64) bool {
 type Group struct {
 	ID    int64   `gorm:"primary_key;auto_increment"`
 	Name  string  `gorm:"size:64;unique_index;not null"`
-	Nodes []*Node `gorm:"many2many:node_groups"`
+	Nodes []*Node `gorm:"many2many:node_groups;association_autoupdate:false"`
 }
 
 // Create 新建用户组
 func (m *Group) Create() error {
+	err := db.New().Select("id").Find(&m.Nodes, "type = ?", NodeTypeEssensial).Error
+	if err != nil {
+		return err
+	}
 	return db.New().Create(m).Error
 }
 
@@ -174,7 +191,11 @@ func (m *Group) Select() error {
 
 // Update 更新角色
 func (m *Group) Update() error {
-	err := db.New().Model(m).Updates(m).Error
+	err := db.New().Model(m).Association("Nodes").Replace(m.Nodes).Error
+	if err != nil {
+		return err
+	}
+	err = db.New().Model(m).Set("gorm:association_save_reference", false).Updates(m).Error
 	if err != nil {
 		return err
 	}

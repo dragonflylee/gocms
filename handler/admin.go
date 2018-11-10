@@ -144,12 +144,21 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusBadRequest, "用户组不能为空", nil)
 		return
 	}
+	if nodes, exist := r.PostForm["node"]; exist {
+		group.Nodes = make([]*model.Node, 0, len(nodes))
+		for _, id := range nodes {
+			var n model.Node
+			if n.ID, err = strconv.ParseInt(id, 10, 64); err == nil {
+				group.Nodes = append(group.Nodes, &n)
+			}
+		}
+	}
 	if err = group.Update(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 	aLog(r, "修改角色: %s", group.Name)
-	jRsp(w, http.StatusBadRequest, "无权操作", nil)
+	jRsp(w, http.StatusOK, "成功", nil)
 }
 
 // GroupAdd 添加角色
