@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Tomasen/realip"
 	"github.com/dragonflylee/gocms/model"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
@@ -107,13 +109,28 @@ func Check(h http.Handler) http.Handler {
 	})
 }
 
+// WriteLog 日志打印
+func WriteLog(w io.Writer, p handlers.LogFormatterParams) {
+	fmt.Fprintf(w, "%s %s %s %d %d %s", p.TimeStamp.Format("2006/01/02 15:04:05"),
+		p.Request.Method, p.URL.RequestURI(), p.StatusCode, p.Size, realip.FromRequest(p.Request))
+	if session, err := store.Get(p.Request, sessName); err == nil {
+		if cookie, exist := session.Values["user"]; exist {
+			fmt.Fprintf(w, " %s", cookie)
+		}
+	}
+	w.Write([]byte("\n"))
+}
+
 // Start 初始化控制层
 func Start(path string) {
 	// 注册类型
 	pattern := filepath.Join(path, "views", "*.tpl")
 	// 注册自定义函数
 	t.Funcs(template.FuncMap{
-		"date": func(t time.Time) string {
+		"date": func(t *time.Time) string {
+			if t == nil {
+				return "无"
+			}
 			return t.Format("2006-01-02 15:04:05")
 		},
 		"html": func(s string) template.HTML {

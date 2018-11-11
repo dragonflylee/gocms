@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"bytes"
-	"fmt"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -81,7 +78,6 @@ func Users(w http.ResponseWriter, r *http.Request) {
 func UserAdd(w http.ResponseWriter, r *http.Request) {
 	var (
 		user model.Admin
-		body bytes.Buffer
 		err  error
 	)
 	if err = r.ParseForm(); err != nil {
@@ -96,18 +92,31 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusBadRequest, "用户组非法", nil)
 		return
 	}
-	user.Password = fmt.Sprint(rand.Intn(8999999) + 1000000)
-	if err = t.ExecuteTemplate(&body, "email.tpl", &user); err != nil {
-		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
-		return
-	}
-	user.Password = util.Md5Hash(user.Password)
 	if err = user.Create(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 	aLog(r, "添加管理员: %s", user.Email)
 	jRsp(w, http.StatusOK, "添加成功", nil)
+}
+
+// UserDelete 用户删除
+func UserDelete(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars = mux.Vars(r)
+		user model.Admin
+		err  error
+	)
+	if user.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
+		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	if err = user.Delete(); err != nil {
+		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+	aLog(r, "删除管理员: %d", user.ID)
+	jRsp(w, http.StatusOK, "删除成功", nil)
 }
 
 // GroupEdit 角色管理

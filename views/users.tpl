@@ -79,6 +79,7 @@
                     <th>创建时间</th>
                     <th>最后登录</th>
                     <th>状态</th>
+                    <th>操作</th>
                   </tr>
                 {{range .data.list}}
                   <tr>
@@ -92,6 +93,11 @@
                       <span class="text-maroon">已激活</span>
                     {{else}}
                       <span class="text-navy">未激活</span>
+                    {{end}}
+                    </td>
+                    <td>
+                    {{if and ($.user.Access "/admin/user/delete/{id:[0-9]+}") (ne .ID $.user.ID)}}
+                      <a class="btn btn-default btn-xs" title="删除 {{.Email}}" data-href="/admin/user/delete/{{.ID}}" data-target="#modal-confirm" data-toggle="modal"><i class="fa fa-trash-o text-red"></i></a>
                     {{end}}
                     </td>
                   </tr>
@@ -176,12 +182,7 @@
     </div>
   </div>
   {{end}}
-  <div class="modal" id="modal-edit">
-    <div class="modal-dialog">
-      <div class="modal-content box">
-      </div>
-    </div>
-  </div>
+  {{template "modal"}}
   {{template "footer"}}
 </div>
 </body>

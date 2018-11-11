@@ -35,17 +35,26 @@
         "name": "用户管理",
         "path": "/admin/users",
         "icon": "fa fa-users",
-        "status": true
+        "status": true,
+        "type": 2
     },
     {
         "id": 6,
         "parent": 5,
         "name": "用户添加",
         "path": "/admin/user/add",
-        "icon": "fa fa-user-plus"
+        "icon": "fa fa-user-plus",
+        "type": 2
     },
     {
         "id": 7,
+        "parent": 5,
+        "name": "用户删除",
+        "path": "/admin/user/delete/{id:[0-9]+}",
+        "type": 2
+    },
+    {
+        "id": 8,
         "parent": 3,
         "name": "角色管理",
         "path": "/admin/group/{id:[0-9]+}",
@@ -53,7 +62,7 @@
         "type": 2
     },
     {
-        "id": 8,
+        "id": 9,
         "parent": 7,
         "name": "角色添加",
         "path": "/admin/group/add",
