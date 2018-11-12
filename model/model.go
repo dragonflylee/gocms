@@ -7,15 +7,21 @@ import (
 	"log"
 
 	"github.com/jinzhu/gorm"
+	"gocms/libraries/mongo"
+	"gocms/libraries/redis"
+	mongodb "gopkg.in/mgo.v2"
 	// 数据库驱动
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var (
-	db       *gorm.DB
-	mapNodes map[int64]*Node
-	debug    = flag.Bool("d", false, "debug mode")
+	db        *gorm.DB
+	mapNodes  map[int64]*Node
+	debug     = flag.Bool("d", false, "debug mode")
+	redisPool *redis.RedisPool
+	mgo       *mongodb.Session
+	mgoDBName string
 )
 
 // Open 连接数据库
@@ -25,7 +31,7 @@ func Open(conf *Config) error {
 		err    error
 	)
 	if conf.Type == "mysql" {
-		source = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&allowOldPasswords=1",
+		source = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&allowOldPasswords=1&parseTime=true",
 			conf.User, conf.Pass, conf.Host, conf.Port, conf.Name)
 	} else if conf.Type == "postgres" {
 		source = fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable",
@@ -42,7 +48,14 @@ func Open(conf *Config) error {
 		db.LogMode(*debug)
 	}
 	// 同步数据库
-	if err = db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{}).Error; err != nil {
+	if err = db.AutoMigrate(
+		new(Group),
+		new(Admin),
+		new(AdminLog),
+		new(Node),
+		new(GroupCoefficient),
+		new(QDInstallRuns),
+		new(BundleInstall)).Error; err != nil {
 		log.Printf("failed migrate (%s)", err.Error())
 		return err
 	}
@@ -51,6 +64,17 @@ func Open(conf *Config) error {
 		log.Printf("failed init nodes (%s)", err.Error())
 		return err
 	}
+
+	// 链接Redis
+	if conf.RedisConf != nil {
+		redisPool = redis.NewPool(conf.RedisConf)
+	}
+
+	if conf.MongoConf != nil {
+		mgo = mongo.NewPool(conf.MongoConf)
+		mgoDBName = conf.MongoConf.DBName
+	}
+
 	return nil
 }
 
