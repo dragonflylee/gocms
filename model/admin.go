@@ -21,9 +21,10 @@ type Admin struct {
 	Headpic   string     `gorm:"size:255"`
 	LastIP    string     `gorm:"size:16"`
 	Status    bool       `gorm:"default:false;not null"`
-	LastLogin time.Time `gorm:"type(datetime)"`
-	CreatedAt time.Time `gorm:"type(datetime)" json:"-"`
-	UpdatedAt time.Time `gorm:"type(datetime)" json:"-"`
+	LastLogin *time.Time `gorm:"type(datetime)"`
+	CreatedAt *time.Time `gorm:"type(datetime)"`
+	UpdatedAt *time.Time `gorm:"type(datetime)" json:"-"`
+	DeletedAt *time.Time `gorm:"type(datetime)" json:"-"`
 	Group     Group      `gorm:"-"`
 }
 
@@ -44,10 +45,25 @@ func (m *Admin) GobDecode(data []byte) error {
 // Create 注册新用户
 func (m *Admin) Create() error {
 	m.Email = strings.ToLower(m.Email)
-	m.Salt = util.RandString(10)
-	m.Password = util.Md5Hash(m.Password + util.Md5Hash(m.Salt))
 	m.Headpic = "/static/img/avatar.png"
-	return db.New().Create(m).Error
+	db := db.New().Unscoped().Model(m).
+		Where("email = ?", m.Email).
+		Updates(map[string]interface{}{
+			"group_id":   m.GroupID,
+			"deleted_at": nil,
+		})
+	if db.Error != nil {
+		return db.Error
+	}
+	if db.RowsAffected > 0 {
+		return nil
+	}
+	return db.Create(m).Error
+}
+
+// Delete 删除
+func (m *Admin) Delete() error {
+	return db.Delete(m).Error
 }
 
 // UpdatePasswd 更新密码
@@ -74,7 +90,7 @@ func (m *Admin) Access(tpl string) bool {
 func Login(email, passwd, ip string) (*Admin, error) {
 	var (
 		db = db.New()
-		m  = new(Admin)
+		m  = &Admin{}
 	)
 	if email = strings.TrimSpace(email); len(email) <= 0 {
 		return nil, errors.New("邮箱格式不合法")
@@ -85,7 +101,7 @@ func Login(email, passwd, ip string) (*Admin, error) {
 	if err := db.Related(&m.Group).Error; err != nil {
 		return nil, errors.New("用户组不存在")
 	}
-	if util.Md5Hash(passwd+util.Md5Hash(m.Salt)) != m.Password {
+	if m.Status && util.Md5Hash(passwd+util.Md5Hash(m.Salt)) != m.Password {
 		return nil, errors.New("密码不正确")
 	}
 	err := db.UpdateColumns(map[string]interface{}{

@@ -71,6 +71,7 @@ func main() {
 	// 系统管理
 	s.HandleFunc("/users", handler.Users).Methods(http.MethodGet)
 	s.HandleFunc("/user/add", handler.UserAdd).Methods(http.MethodPost)
+	s.HandleFunc("/user/delete/{id:[0-9]+}", handler.UserDelete)
 	s.HandleFunc("/group/{id:[0-9]+}", handler.GroupEdit)
 	s.HandleFunc("/group/add", handler.GroupAdd).Methods(http.MethodPost)
 	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
@@ -96,5 +97,5 @@ func main() {
 	s.HandleFunc("/bundle_install", handler.BundleInstall).Methods(http.MethodGet)
 	s.HandleFunc("/mininews", handler.MiniNewsStats).Methods(http.MethodGet)
 
-	log.Panic(http.ListenAndServe(*addr, handlers.LoggingHandler(os.Stdout, r)))
+	log.Panic(http.ListenAndServe(*addr, handlers.CustomLoggingHandler(os.Stdout, r, handler.WriteLog)))
 }

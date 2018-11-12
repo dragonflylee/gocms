@@ -93,18 +93,31 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusBadRequest, "用户组非法", nil)
 		return
 	}
-	user.Password = "xd123456"
-	//if err = t.ExecuteTemplate(&body, "email.tpl", &user); err != nil {
-	//	jRsp(w, http.StatusInternalServerError, err.Error(), nil)
-	//	return
-	//}
-	user.Password = util.Md5Hash(user.Password)
 	if err = user.Create(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 	aLog(r, "添加管理员: %s", user.Email)
 	jRsp(w, http.StatusOK, "添加成功", nil)
+}
+
+// UserDelete 用户删除
+func UserDelete(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars = mux.Vars(r)
+		user model.Admin
+		err  error
+	)
+	if user.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
+		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	if err = user.Delete(); err != nil {
+		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+	aLog(r, "删除管理员: %d", user.ID)
+	jRsp(w, http.StatusOK, "删除成功", nil)
 }
 
 // GroupEdit 角色管理
@@ -141,12 +154,21 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusBadRequest, "用户组不能为空", nil)
 		return
 	}
+	if nodes, exist := r.PostForm["node"]; exist {
+		group.Nodes = make([]*model.Node, 0, len(nodes))
+		for _, id := range nodes {
+			var n model.Node
+			if n.ID, err = strconv.ParseInt(id, 10, 64); err == nil {
+				group.Nodes = append(group.Nodes, &n)
+			}
+		}
+	}
 	if err = group.Update(); err != nil {
 		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 	aLog(r, "修改角色: %s", group.Name)
-	jRsp(w, http.StatusBadRequest, "无权操作", nil)
+	jRsp(w, http.StatusOK, "成功", nil)
 }
 
 // GroupAdd 添加角色
