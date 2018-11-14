@@ -45,7 +45,7 @@
                 <td>{{.Path}}</td>
                 <td>{{.Commit}}</td>
                 <td>{{date .CreatedAt}}</td>
-                <td>{{.IP}}</td>
+                <td><span class="last-ip" data-toggle="popover" data-trigger="hover" data-content="请稍等...">{{.IP}}</span></td>
               </tr>
             {{end}}
             </tbody>
