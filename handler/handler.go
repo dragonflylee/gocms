@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"time"
 
@@ -21,14 +22,16 @@ import (
 )
 
 const (
-	defaultMaxMemory = 32 << 20 // 32 MB
-	sessName         = "gocms"  // Session 名称
+	defaultMaxMemory = 32 << 20  // 32 MB
+	sessName         = "X-GoCMS" // Session 名称
 	dateFormate      = "2006-01-02"
 )
 
 var (
-	t     = template.New("")
-	store = sessions.NewFilesystemStore(os.TempDir(), securecookie.GenerateRandomKey(32))
+	t           = template.New("")
+	md5Regexp   = regexp.MustCompile("[a-fA-F0-9]{32}$")
+	emailRegexp = regexp.MustCompile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$")
+	store       = sessions.NewFilesystemStore(os.TempDir(), securecookie.GenerateRandomKey(32))
 )
 
 func aLog(r *http.Request, format string, a ...interface{}) error {

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/Tomasen/realip"
@@ -30,8 +31,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jRsp(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	user, err := model.Login(r.PostForm.Get("username"),
-		r.PostForm.Get("password"), realip.FromRequest(r))
+	email := strings.TrimSpace(r.PostForm.Get("username"))
+	password := strings.TrimSpace(r.PostForm.Get("password"))
+	if !emailRegexp.MatchString(email) {
+		jRsp(w, http.StatusBadRequest, "邮箱格式非法", nil)
+		return
+	}
+	if !md5Regexp.MatchString(password) {
+		jRsp(w, http.StatusBadRequest, "密码不正确", nil)
+		return
+	}
+	user, err := model.Login(email, password, realip.FromRequest(r))
 	if err != nil {
 		jRsp(w, http.StatusForbidden, err.Error(), nil)
 		return

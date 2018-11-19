@@ -23,12 +23,20 @@ func Install(path string, s *mux.Router) http.Handler {
 			return
 		}
 		user := &model.Admin{
-			Email:    strings.ToLower(r.PostForm.Get("email")),
-			Password: strings.ToLower(r.PostForm.Get("password")),
+			Email:    strings.ToLower(strings.TrimSpace(r.PostForm.Get("email"))),
+			Password: strings.TrimSpace(r.PostForm.Get("password")),
 			Headpic:  "/static/img/avatar.png",
 			Group:    model.Group{Name: "超级管理员"},
 			LastIP:   realip.FromRequest(r),
 			Status:   true,
+		}
+		if !emailRegexp.MatchString(user.Email) {
+			jRsp(w, http.StatusBadRequest, "邮箱格式非法", nil)
+			return
+		}
+		if !md5Regexp.MatchString(user.Password) {
+			jRsp(w, http.StatusBadRequest, "密码不正确", nil)
+			return
 		}
 		conf := &model.Config{
 			Type: strings.ToLower(r.PostForm.Get("type")),
