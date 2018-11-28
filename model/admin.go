@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -83,6 +84,7 @@ func (m *Admin) Access(tpl string) bool {
 	if node := GetNodeByPath(tpl); node != nil {
 		return node.HasGroup(m.GroupID)
 	}
+	log.Println(tpl)
 	return true
 }
 

@@ -141,6 +141,13 @@ func (n *Node) HasParent(id int64) bool {
 	return false
 }
 
+func (n *Node) String() string {
+	if n == nil {
+		return ""
+	}
+	return n.Name
+}
+
 // Parents 获取指定节点的所有父节点
 func (n *Node) Parents() []*Node {
 	list := make([]*Node, 0)

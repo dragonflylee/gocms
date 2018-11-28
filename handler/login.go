@@ -19,7 +19,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessName)
 	if err == nil {
 		if _, exist := session.Values["user"]; exist {
-			http.Redirect(w, r, "/admin", http.StatusFound)
+			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
 	}
@@ -28,22 +28,22 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = r.ParseForm(); err != nil {
-		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	email := strings.TrimSpace(r.PostForm.Get("username"))
 	password := strings.TrimSpace(r.PostForm.Get("password"))
 	if !emailRegexp.MatchString(email) {
-		jRsp(w, http.StatusBadRequest, "邮箱格式非法", nil)
+		jFailed(w, http.StatusBadRequest, "邮箱格式非法")
 		return
 	}
 	if !md5Regexp.MatchString(password) {
-		jRsp(w, http.StatusBadRequest, "密码不正确", nil)
+		jFailed(w, http.StatusBadRequest, "密码不正确")
 		return
 	}
 	user, err := model.Login(email, password, realip.FromRequest(r))
 	if err != nil {
-		jRsp(w, http.StatusForbidden, err.Error(), nil)
+		jFailed(w, http.StatusForbidden, err.Error())
 		return
 	}
 	session.Values["user"] = user
@@ -51,13 +51,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		session.Options.MaxAge = 3600
 	}
 	if err = session.Save(r, w); err != nil {
-		jRsp(w, http.StatusForbidden, err.Error(), nil)
+		jFailed(w, http.StatusForbidden, err.Error())
 		return
 	}
 	tokenMutex.Lock()
 	defer tokenMutex.Unlock()
 	tokenMap[user.ID] = session.ID
-	jRsp(w, http.StatusOK, "登录成功", r.Form.Get("refer"))
+	jSuccess(w, r.Form.Get("refer"))
 }
 
 // Logout 登出

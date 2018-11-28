@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	// 数据库驱动
@@ -34,8 +34,7 @@ func Open(conf *Config) error {
 		return errors.New("数据库类型不支持")
 	}
 	if db, err = gorm.Open(conf.Type, source); err != nil {
-		log.Printf("failed to connect database (%s)", err.Error())
-		return err
+		return fmt.Errorf("connect database failed: %v", err)
 	}
 	db.BlockGlobalUpdate(true)
 	if debug != nil {
@@ -43,13 +42,17 @@ func Open(conf *Config) error {
 	}
 	// 同步数据库
 	if err = db.AutoMigrate(&Group{}, &Admin{}, &AdminLog{}, &Node{}).Error; err != nil {
-		log.Printf("failed migrate (%s)", err.Error())
-		return err
+		return fmt.Errorf("migrate failed: %v", err)
 	}
 	// 加载节点数据
 	if mapNodes, err = loadNodes(); err != nil {
-		log.Printf("failed init nodes (%s)", err.Error())
-		return err
+		return fmt.Errorf("init nodes failed: %v", err)
+	}
+	if time.Local, err = time.LoadLocation("Asia/Chongqing"); err != nil {
+		return fmt.Errorf("load location failed: %v", err)
+	}
+	gorm.NowFunc = func() time.Time {
+		return time.Now().UTC()
 	}
 	return nil
 }

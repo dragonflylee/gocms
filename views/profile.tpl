@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" .node.Name}}
+  {{template "header" .node}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">

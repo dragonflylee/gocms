@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/Tomasen/realip"
@@ -19,6 +20,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
+	"golang.org/x/time/rate"
 )
 
 const (
@@ -51,10 +53,14 @@ func aLog(r *http.Request, format string, a ...interface{}) error {
 	return m.Create()
 }
 
-func jRsp(w http.ResponseWriter, code int64, message string, data interface{}) {
+func jSuccess(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"code": code, "msg": message, "data": data})
+	json.NewEncoder(w).Encode(map[string]interface{}{"code": http.StatusOK, "data": data})
+}
+
+func jFailed(w http.ResponseWriter, code int64, format string, a ...interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"code": code, "msg": fmt.Sprintf(format, a...)})
 }
 
 // rLayout 渲染模板
@@ -77,11 +83,11 @@ func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface
 }
 
 // Error 错误页面
-func Error(w http.ResponseWriter, statusCode int, format string, a ...interface{}) {
-	w.WriteHeader(statusCode)
+func Error(w http.ResponseWriter, code int, format string, a ...interface{}) {
+	w.WriteHeader(code)
 	t.ExecuteTemplate(w, "error.tpl", map[string]interface{}{
-		"code": statusCode,
-		"msg":  fmt.Sprintf(format, a...),
+		"code": code, "text": http.StatusText(code),
+		"msg": fmt.Sprintf(format, a...),
 	})
 }
 
@@ -98,8 +104,8 @@ func Check(h http.Handler) http.Handler {
 			session.Options.MaxAge = -1
 			session.Save(r, w)
 			http.Redirect(w, r, "/login", http.StatusFound)
-		} else if !user.Status && r.URL.Path != "/admin/profile" {
-			http.Redirect(w, r, "/admin/profile", http.StatusFound)
+		} else if !user.Status && r.URL.Path != "/profile" {
+			http.Redirect(w, r, "/profile", http.StatusFound)
 		} else if c := mux.CurrentRoute(r); c == nil {
 			Error(w, http.StatusNotFound, "页面错误")
 		} else if tpl, err := c.GetPathTemplate(); err != nil {
@@ -112,16 +118,42 @@ func Check(h http.Handler) http.Handler {
 	})
 }
 
+// Limit 请求限制
+func Limit(b int, f func(http.ResponseWriter, *http.Request)) http.Handler {
+	var (
+		bucket = make(map[string]*rate.Limiter)
+		lock   sync.Mutex
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var (
+			ip    = realip.FromRequest(r)
+			l     *rate.Limiter
+			exist bool
+		)
+		lock.Lock()
+		if l, exist = bucket[ip]; !exist {
+			l = rate.NewLimiter(rate.Limit(1), b)
+			bucket[ip] = l
+		}
+		lock.Unlock()
+		if l.Allow() {
+			f(w, r)
+			return
+		}
+		Error(w, http.StatusTooManyRequests, "请求太频繁")
+	})
+}
+
 // WriteLog 日志打印
 func WriteLog(w io.Writer, p handlers.LogFormatterParams) {
-	fmt.Fprintf(w, "%s %s %s %d %d %s", p.TimeStamp.Format("2006/01/02 15:04:05"),
-		p.Request.Method, p.URL.RequestURI(), p.StatusCode, p.Size, realip.FromRequest(p.Request))
+	var u string
 	if session, err := store.Get(p.Request, sessName); err == nil {
 		if cookie, exist := session.Values["user"]; exist {
-			fmt.Fprintf(w, " %s", cookie)
+			u = fmt.Sprint(cookie)
 		}
 	}
-	w.Write([]byte("\n"))
+	fmt.Fprintf(w, "%s %s %s %d %d %s %s\n", p.TimeStamp.Format("2006/01/02 15:04:05"), p.Request.Method,
+		p.URL.RequestURI(), p.StatusCode, p.Size, realip.FromRequest(p.Request), u)
 }
 
 // Start 初始化控制层
@@ -134,7 +166,7 @@ func Start(path string) {
 			if t == nil {
 				return "无"
 			}
-			return t.Format("2006-01-02 15:04:05")
+			return t.In(time.Local).Format("2006-01-02 15:04:05")
 		},
 		"html": func(s string) template.HTML {
 			return template.HTML(s)

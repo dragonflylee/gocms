@@ -31,14 +31,14 @@ func Password(w http.ResponseWriter, r *http.Request) {
 	} else if user, ok := cookie.(*model.Admin); !ok {
 		Error(w, http.StatusNotFound, "页面错误")
 	} else if user.Password = r.PostFormValue("password"); len(user.Password) < 8 {
-		jRsp(w, http.StatusBadRequest, "密码不能少于8个字符", nil)
+		jFailed(w, http.StatusBadRequest, "密码不能少于8个字符")
 	} else if err = user.UpdatePasswd(); err != nil {
-		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		jFailed(w, http.StatusInternalServerError, err.Error())
 	} else {
 		session.Values["user"] = user
 		session.Save(r, w)
 		aLog(r, "修改管理员密码")
-		jRsp(w, http.StatusOK, "修改成功", nil)
+		jFailed(w, http.StatusOK, "修改密码成功")
 	}
 }
 
@@ -81,23 +81,23 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		err  error
 	)
 	if err = r.ParseForm(); err != nil {
-		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if user.Email = strings.ToLower(r.PostForm.Get("email")); len(user.Email) < 0 {
-		jRsp(w, http.StatusBadRequest, "邮箱非法", nil)
+		jFailed(w, http.StatusBadRequest, "邮箱非法")
 		return
 	}
 	if user.GroupID, err = strconv.ParseInt(r.PostForm.Get("group"), 10, 64); err != nil {
-		jRsp(w, http.StatusBadRequest, "用户组非法", nil)
+		jFailed(w, http.StatusBadRequest, "用户组非法")
 		return
 	}
 	if err = user.Create(); err != nil {
-		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		jFailed(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	aLog(r, "添加管理员: %s", user.Email)
-	jRsp(w, http.StatusOK, "添加成功", nil)
+	jSuccess(w, nil)
 }
 
 // UserDelete 用户删除
@@ -108,15 +108,15 @@ func UserDelete(w http.ResponseWriter, r *http.Request) {
 		err  error
 	)
 	if user.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
-		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err = user.Delete(); err != nil {
-		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		jFailed(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	aLog(r, "删除管理员: %d", user.ID)
-	jRsp(w, http.StatusOK, "删除成功", nil)
+	jSuccess(w, nil)
 }
 
 // GroupEdit 角色管理
@@ -142,15 +142,15 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if group.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
-		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err = r.ParseForm(); err != nil {
-		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if group.Name = strings.TrimSpace(r.PostForm.Get("name")); len(group.Name) <= 0 {
-		jRsp(w, http.StatusBadRequest, "用户组不能为空", nil)
+		jFailed(w, http.StatusBadRequest, "用户组不能为空")
 		return
 	}
 	if nodes, exist := r.PostForm["node"]; exist {
@@ -163,11 +163,11 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if err = group.Update(); err != nil {
-		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		jFailed(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	aLog(r, "修改角色: %s", group.Name)
-	jRsp(w, http.StatusOK, "成功", nil)
+	jSuccess(w, nil)
 }
 
 // GroupAdd 添加角色
@@ -177,19 +177,19 @@ func GroupAdd(w http.ResponseWriter, r *http.Request) {
 		err   error
 	)
 	if err = r.ParseForm(); err != nil {
-		jRsp(w, http.StatusBadRequest, err.Error(), nil)
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if group.Name = strings.TrimSpace(r.PostForm.Get("name")); len(group.Name) <= 0 {
-		jRsp(w, http.StatusBadRequest, "用户组不能为空", nil)
+		jFailed(w, http.StatusBadRequest, "用户组不能为空")
 		return
 	}
 	if err = group.Create(); err != nil {
-		jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+		jFailed(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	aLog(r, "新增角色: %s", group.Name)
-	jRsp(w, http.StatusOK, "添加成功", nil)
+	jSuccess(w, nil)
 }
 
 // Logs 操作日志

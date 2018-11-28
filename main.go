@@ -25,7 +25,7 @@ func main() {
 
 	path, err := exec.LookPath(os.Args[0])
 	if err != nil {
-		log.Panicf("gocms service path (%s)", err.Error())
+		log.Panicf("gocms service path: %v", err)
 	}
 	path = filepath.Dir(path)
 	// 初始化模板
@@ -34,7 +34,6 @@ func main() {
 		http.FileServer(http.Dir(filepath.Join(path, "static"))))
 
 	r := mux.NewRouter()
-	r.Use(handlers.RecoveryHandler())
 	// 静态文件
 	r.PathPrefix("/static/").Handler(static)
 	// 404页面
@@ -46,7 +45,9 @@ func main() {
 	})
 	// 加载配置文件
 	if err = conf.Load(path); err == nil {
-		model.Open(&conf)
+		if err = model.Open(&conf); err != nil {
+			log.Panic(err)
+		}
 	}
 	if !model.IsOpen() {
 		r.Use(func(h http.Handler) http.Handler {
@@ -60,12 +61,13 @@ func main() {
 		})
 	}
 	// 登录相关
-	r.HandleFunc("/", handler.Login)
-	r.HandleFunc("/login", handler.Login)
+	r.Handle("/", handler.Check(http.HandlerFunc(handler.Home)))
+	r.Handle("/login", handler.Limit(2, handler.Login)).Methods(http.MethodPost)
+	r.HandleFunc("/login", handler.Login).Methods(http.MethodGet)
 	r.HandleFunc("/logout", handler.Logout)
 	r.HandleFunc("/password", handler.Password).Methods(http.MethodPost)
 	// 后台主页
-	s := r.PathPrefix("/admin").Subrouter()
+	s := r.PathPrefix("/").Subrouter()
 	// 检查登陆状态
 	s.Use(handler.Check)
 	// 系统管理
@@ -77,7 +79,7 @@ func main() {
 	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
 	// 个人中心
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
-	s.HandleFunc("", handler.Home).Methods(http.MethodGet)
 
-	log.Panic(http.ListenAndServe(*addr, handlers.CustomLoggingHandler(os.Stdout, r, handler.WriteLog)))
+	log.Panic(http.ListenAndServe(*addr, handlers.CustomLoggingHandler(os.Stdout,
+		handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(r), handler.WriteLog)))
 }
