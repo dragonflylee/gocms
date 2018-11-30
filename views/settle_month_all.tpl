@@ -17,15 +17,15 @@
         <div class="box-header with-border">
           <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-              <li> <a href="/admin/qd/day" class="text-purple">安装活跃</a></li>
-              <li class="active"><a href="/admin/qd/month" class="text-orange">月度结算</a></li>
+              <li> <a href="/qd/day" class="text-purple">安装活跃</a></li>
+              <li class="active"><a href="/qd/month" class="text-orange">月度结算</a></li>
             </ul>
           </div>
           <div class="box-tools">
             <form class="form-inline">
               <div class="form-group">
                 <label>渠道</label>
-                <select class="form-control select2 input-group-sm" name="qd" data-ajax--url="/admin/qd/list" data-ajax--cache="true">
+                <select class="form-control select2 input-group-sm" name="qd" data-ajax--url="/qd/list" data-ajax--cache="true">
                   <option selected>{{.form.Get "qd"}}</option>
                 </select>
               </div>

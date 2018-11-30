@@ -2,7 +2,7 @@
     {
         "id": 1,
         "name": "仪表盘",
-        "path": "/admin",
+        "path": "/",
         "icon": "fa fa-dashboard",
         "type": 1,
         "status": true
@@ -10,7 +10,7 @@
     {
         "id": 2,
         "name": "个人中心",
-        "path": "/admin/profile",
+        "path": "/profile",
         "type": 1,
         "icon": "fa fa-user-o"
     },
@@ -25,7 +25,7 @@
         "id": 4,
         "parent": 3,
         "name": "日志查看",
-        "path": "/admin/logs",
+        "path": "/logs",
         "icon": "fa fa-sticky-note-o",
         "status": true
     },
@@ -33,7 +33,7 @@
         "id": 5,
         "parent": 3,
         "name": "用户管理",
-        "path": "/admin/users",
+        "path": "/users",
         "icon": "fa fa-users",
         "status": true,
         "type": 2
@@ -42,7 +42,7 @@
         "id": 6,
         "parent": 5,
         "name": "用户添加",
-        "path": "/admin/user/add",
+        "path": "/user/add",
         "icon": "fa fa-user-plus",
         "type": 2
     },
@@ -50,14 +50,14 @@
         "id": 7,
         "parent": 5,
         "name": "用户删除",
-        "path": "/admin/user/delete/{id:[0-9]+}",
+        "path": "/user/delete/{id:[0-9]+}",
         "type": 2
     },
     {
         "id": 8,
         "parent": 3,
         "name": "角色管理",
-        "path": "/admin/group/{id:[0-9]+}",
+        "path": "/group/{id:[0-9]+}",
         "icon": "fa fa-users",
         "type": 2
     },
@@ -65,7 +65,7 @@
         "id": 9,
         "parent": 7,
         "name": "角色添加",
-        "path": "/admin/group/add",
+        "path": "/group/add",
         "icon": "fa fa-address-book-o",
         "type": 2
     }

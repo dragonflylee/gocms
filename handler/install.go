@@ -19,16 +19,24 @@ func Install(path string, s *mux.Router) http.Handler {
 		}
 		err := r.ParseForm()
 		if err != nil {
-			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		user := &model.Admin{
-			Email:    strings.ToLower(r.PostForm.Get("email")),
-			Password: strings.ToLower(r.PostForm.Get("password")),
+			Email:    strings.ToLower(strings.TrimSpace(r.PostForm.Get("email"))),
+			Password: strings.TrimSpace(r.PostForm.Get("password")),
 			Headpic:  "/static/img/avatar.png",
 			Group:    model.Group{Name: "超级管理员"},
 			LastIP:   realip.FromRequest(r),
 			Status:   true,
+		}
+		if !emailRegexp.MatchString(user.Email) {
+			jFailed(w, http.StatusBadRequest, "邮箱格式非法")
+			return
+		}
+		if !md5Regexp.MatchString(user.Password) {
+			jFailed(w, http.StatusBadRequest, "密码不正确")
+			return
 		}
 		conf := &model.Config{
 			Type: strings.ToLower(r.PostForm.Get("type")),
@@ -38,21 +46,21 @@ func Install(path string, s *mux.Router) http.Handler {
 			Name: r.PostForm.Get("name"),
 		}
 		if conf.Port, err = strconv.ParseUint(r.PostForm.Get("port"), 10, 16); err != nil {
-			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		if err = model.Open(conf); err != nil {
-			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		if err = model.Install(user, path); err != nil {
-			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		if err = conf.Save(path); err != nil {
-			jRsp(w, http.StatusInternalServerError, err.Error(), nil)
+			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		jRsp(w, http.StatusOK, "安装成功", "/login")
+		jSuccess(w, "/login")
 	})
 }

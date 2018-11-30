@@ -1,4 +1,4 @@
-<form method="POST" action="/admin/group/{{.group.ID}}" class="form-horizontal">
+<form method="POST" action="/group/{{.group.ID}}" class="form-horizontal">
   <div class="modal-header">
     <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
     <h4 class="modal-title">编辑角色</h4>

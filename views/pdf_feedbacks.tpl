@@ -16,8 +16,8 @@
         <div class="box-header with-border">
 		 <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-              <li class="active"><a href="/admin/pdf/feedbacks" class="text-purple">用户反馈</a></li>
-              <li ><a href="/admin/pdf/uninstall_opts" class="text-orange">卸载反馈</a></li>
+              <li class="active"><a href="/pdf/feedbacks" class="text-purple">用户反馈</a></li>
+              <li ><a href="/pdf/uninstall_opts" class="text-orange">卸载反馈</a></li>
             </ul>
           </div>
           <div class="box-tools">

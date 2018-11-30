@@ -17,10 +17,10 @@
         <div class="box-header with-border">
           <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-              <li><a href="/admin/pdf/install_runs" class="text-purple">安装活跃</a></li>
-              <li><a href="/admin/pdf/retentions" class="text-orange">留存率</a></li>
-              <li class="active"><a href="/admin/pdf/mfshow_versions" class="text-green">版本占比</a></li>
-              <li ><a href="/admin/pdf/crashs" class="text-red">崩溃统计</a></li>
+              <li><a href="/pdf/install_runs" class="text-purple">安装活跃</a></li>
+              <li><a href="/pdf/retentions" class="text-orange">留存率</a></li>
+              <li class="active"><a href="/pdf/mfshow_versions" class="text-green">版本占比</a></li>
+              <li ><a href="/pdf/crashs" class="text-red">崩溃统计</a></li>
             </ul>
           </div>
           <div class="box-tools">

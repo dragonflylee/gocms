@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" .node.Name}}
+  {{template "header" .node}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -11,7 +11,7 @@
     <section class="content">
       <div class="row">
         <div class="col-md-2">
-          {{if .user.Access "/admin/group/add"}}
+          {{if .user.Access "/group/add"}}
             <a class="btn bg-purple btn-block margin-bottom" data-target="#add-group" data-toggle="modal" title="添加">添加角色 <i class="fa fa-plus"></i></a>
           {{end}}
           <div class="box box-solid">
@@ -29,8 +29,8 @@
               {{if eq (print $id) ($.form.Get "group")}}
                 <li class="active">
                   <a>{{$name}}
-                  {{if $.user.Access "/admin/group/{id:[0-9]+}"}}
-                    <span class="btn btn-xs bg-navy pull-right" data-href="/admin/group/{{$id}}" data-target="#modal-edit" data-toggle="modal"><i class="fa fa-edit"></i></span>
+                  {{if $.user.Access "/group/{id:[0-9]+}"}}
+                    <span class="btn btn-xs bg-navy pull-right" data-href="/group/{{$id}}" data-target="#modal-edit" data-toggle="modal"><i class="fa fa-edit"></i></span>
                   {{end}}
                   </a>
                 </li>
@@ -62,7 +62,7 @@
                       </span>
                     </div>
                   </div>
-                {{if .user.Access "/admin/user/add"}}
+                {{if .user.Access "/user/add"}}
                   <a class="btn bg-purple btn-sm" data-target="#add-user" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
                 {{end}}
                 </form>
@@ -96,8 +96,8 @@
                     {{end}}
                     </td>
                     <td>
-                    {{if and ($.user.Access "/admin/user/delete/{id:[0-9]+}") (ne .ID $.user.ID)}}
-                      <a class="btn btn-default btn-xs" title="删除 {{.Email}}" data-href="/admin/user/delete/{{.ID}}" data-target="#modal-confirm" data-toggle="modal"><i class="fa fa-trash-o text-red"></i></a>
+                    {{if and ($.user.Access "/user/delete/{id:[0-9]+}") (ne .ID $.user.ID)}}
+                      <a class="btn btn-default btn-xs" title="删除 {{.Email}}" data-href="/user/delete/{{.ID}}" data-target="#modal-confirm" data-toggle="modal"><i class="fa fa-trash-o text-red"></i></a>
                     {{end}}
                     </td>
                   </tr>
@@ -118,11 +118,11 @@
       </div>
     </section>
   </div>
-  {{if .user.Access "/admin/user/add"}}
+  {{if .user.Access "/user/add"}}
   <div class="modal" id="add-user">
     <div class="modal-dialog">
       <div class="modal-content box">
-        <form action="/admin/user/add" method="post" class="form-horizontal">
+        <form action="/user/add" method="post" class="form-horizontal">
           <div class="modal-header">
             <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
             <h4 class="modal-title">添加管理员</h4>
@@ -156,11 +156,11 @@
     </div>
   </div>
   {{end}}
-  {{if .user.Access "/admin/group/add"}}
+  {{if .user.Access "/group/add"}}
   <div class="modal" id="add-group">
     <div class="modal-dialog">
       <div class="modal-content box">
-        <form action="/admin/group/add" method="post" class="form-horizontal">
+        <form action="/group/add" method="post" class="form-horizontal">
           <div class="modal-header">
             <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
             <h4 class="modal-title">添加角色</h4>

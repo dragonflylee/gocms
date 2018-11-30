@@ -16,8 +16,8 @@
         <div class="box-header with-border">
           <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-              <li class="active"><a href="/admin/p2w/all" class="text-purple">总体统计</a></li>
-              <li ><a href="/admin/p2w/qd" class="text-orange">渠道统计</a></li>
+              <li class="active"><a href="/p2w/all" class="text-purple">总体统计</a></li>
+              <li ><a href="/p2w/qd" class="text-orange">渠道统计</a></li>
             </ul>
           </div>
           <div class="box-tools">

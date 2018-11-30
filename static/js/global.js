@@ -147,6 +147,9 @@ var Admin = {
     if (jQuery().tooltip) {
       $('[data-toggle="tooltip"]', $container).tooltip();
     }
+    if (jQuery().popover) {
+      $('[data-toggle="popover"]', $container).popover();
+    }
     if (jQuery().select2) {
       $(".select2", $container).select2({
         language: "zh-CN"
@@ -212,6 +215,13 @@ $(document).on("click", ".modal-content .pagination a,.modal-content .nav-tabs-c
       Admin.validate($(form));
     })
   });
+})
+
+// IP归属地查询
+$(document).on('show.bs.popover', '.last-ip', function(e) {
+  $.getJSON('http://ip-api.com/json/' + $(e.target).text(), function(data) {
+    $(e.target).attr('data-content', data.isp).popover('setContent');
+  })
 })
 
 $(document).ready(function() {

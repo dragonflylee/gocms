@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	"gocms/libraries/mongo"
@@ -40,8 +40,7 @@ func Open(conf *Config) error {
 		return errors.New("数据库类型不支持")
 	}
 	if db, err = gorm.Open(conf.Type, source); err != nil {
-		log.Printf("failed to connect database (%s)", err.Error())
-		return err
+		return fmt.Errorf("connect database failed: %v", err)
 	}
 	db.BlockGlobalUpdate(true)
 	if debug != nil {
@@ -56,13 +55,17 @@ func Open(conf *Config) error {
 		new(GroupCoefficient),
 		new(QDInstallRuns),
 		new(BundleInstall)).Error; err != nil {
-		log.Printf("failed migrate (%s)", err.Error())
-		return err
+		return fmt.Errorf("migrate failed: %v", err)
 	}
 	// 加载节点数据
 	if mapNodes, err = loadNodes(); err != nil {
-		log.Printf("failed init nodes (%s)", err.Error())
-		return err
+		return fmt.Errorf("init nodes failed: %v", err)
+	}
+	if time.Local, err = time.LoadLocation("Asia/Chongqing"); err != nil {
+		return fmt.Errorf("load location failed: %v", err)
+	}
+	gorm.NowFunc = func() time.Time {
+		return time.Now().UTC()
 	}
 
 	// 链接Redis

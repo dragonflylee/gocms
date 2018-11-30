@@ -13,8 +13,10 @@ import (
 )
 
 var (
-	typeField = map[reflect.Type]bool{
-		reflect.TypeOf(time.Time{}):       true,
+	xlsxType = map[reflect.Type]func(v interface{}) string{
+		reflect.TypeOf(time.Time{}): func(v interface{}) string {
+			return v.(time.Time).Format(formatDateTime)
+		},
 	}
 )
 
@@ -42,7 +44,7 @@ func xlsxField(row *xlsx.Row, t reflect.Type) {
 			if v.Kind() == reflect.Ptr {
 				v = v.Elem()
 			}
-			if _, exist = typeField[v]; exist {
+			if _, exist = xlsxType[v]; exist {
 				row.AddCell().SetString(f.Name)
 			} else if v.Kind() == reflect.Struct {
 				xlsxField(row, v)
@@ -55,39 +57,37 @@ func xlsxField(row *xlsx.Row, t reflect.Type) {
 	}
 }
 
-func xlsxCell(row *xlsx.Row, v reflect.Value) {
-	t := v.Type()
-	for j := 0; j < v.NumField(); j++ {
-		if tags, exist := t.Field(j).Tag.Lookup("xlsx"); !exist {
-			f := reflect.Indirect(v.Field(j))
-			if !f.IsValid() {
-				row.AddCell().SetString("-")
-			} else if _, exist := typeField[f.Type()]; exist {
-				row.AddCell().SetValue(f.Interface())
-			} else if f.Kind() == reflect.Struct {
-				xlsxCell(row, f)
-			} else if f.CanInterface() {
-				row.AddCell().SetValue(f.Interface())
-			} else {
-				log.Printf("bad field `%s` valid `%v`", f.Type(), f.IsValid())
+func xlsxCell(row *xlsx.Row, objT reflect.Type, objV reflect.Value) {
+	for i := 0; i < objT.NumField(); i++ {
+		fieldV := objV.Field(i)
+		fieldT := objT.Field(i)
+		if fieldT.Anonymous && fieldT.Type.Kind() == reflect.Struct {
+			xlsxCell(row, fieldT.Type, fieldV)
+			continue
+		}
+		name, opts := parseXlsxTag(fieldT.Tag.Get("xlsx"))
+		if name == "-" {
+			continue
+		}
+		cell := row.AddCell()
+		if !fieldV.IsValid() {
+			cell.SetString("-")
+			continue
+		}
+		fieldV = reflect.Indirect(fieldV)
+		if enum, exist := opts["enum"]; exist {
+			list := strings.Split(enum, ",")
+			if index := int(fieldV.Int()); index < len(list) {
+				cell.SetString(list[index])
 			}
-		} else if name, opts := parseXlsxTag(tags); "-" != name {
-			f := v.Field(j)
-			cell := row.AddCell()
-			if !f.IsValid() {
-				cell.SetString("-")
-			} else if enum, exist := opts["enum"]; exist {
-				list := strings.Split(enum, ",")
-				if index := int(f.Int()); index < len(list) {
-					cell.SetString(list[index])
-				}
-			} else if !f.CanInterface() {
-				log.Printf("tag `%s` bad field `%s` valid `%v`", name, f.Type(), f.IsValid())
-			} else if s, ok := f.Interface().(fmt.Stringer); ok {
-				cell.SetString(s.String())
-			} else {
-				cell.SetValue(f.Interface())
-			}
+		} else if !fieldV.CanInterface() {
+			log.Printf("tag `%s` bad field `%s` valid `%v`", name, fieldV.Type(), fieldV.IsValid())
+		} else if m, exist := xlsxType[fieldV.Type()]; exist {
+			cell.SetString(m(fieldV.Interface()))
+		} else if s, ok := fieldV.Interface().(fmt.Stringer); ok {
+			cell.SetString(s.String())
+		} else {
+			cell.SetValue(fieldV.Interface())
 		}
 	}
 }
@@ -96,12 +96,12 @@ func xlsxCell(row *xlsx.Row, v reflect.Value) {
 func Excel(w http.ResponseWriter, data map[string]interface{}, format string, a ...interface{}) error {
 	file := xlsx.NewFile()
 
-	for name, page := range data {
+	for name, obj := range data {
 		sheet, err := file.AddSheet(name)
 		if err != nil {
 			return err
 		}
-		v := reflect.Indirect(reflect.ValueOf(page))
+		v := reflect.Indirect(reflect.ValueOf(obj))
 		if v.Kind() != reflect.Slice {
 			return fmt.Errorf("expect slice but type `%s` found", v.Type())
 		}
@@ -118,7 +118,7 @@ func Excel(w http.ResponseWriter, data map[string]interface{}, format string, a 
 		// 填写数据
 		for i := 0; i < v.Len(); i++ {
 			row = sheet.AddRow()
-			xlsxCell(row, reflect.Indirect(v.Index(i)))
+			xlsxCell(row, t, reflect.Indirect(v.Index(i)))
 		}
 	}
 	w.Header().Set("Content-Type", "application/vnd.ms-excel")

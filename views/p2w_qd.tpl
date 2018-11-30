@@ -16,15 +16,15 @@
         <div class="box-header with-border">
           <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-              <li> <a href="/admin/p2w/all" class="text-purple">总体统计</a></li>
-              <li class="active"><a href="/admin/p2w/qd" class="text-orange">渠道统计</a></li>
+              <li> <a href="/p2w/all" class="text-purple">总体统计</a></li>
+              <li class="active"><a href="/p2w/qd" class="text-orange">渠道统计</a></li>
             </ul>
           </div>
           <div class="box-tools">
             <form class="form-inline">
               <div class="form-group">
                 <label>渠道</label>
-                <select class="form-control select2 input-group-sm" name="qd" data-ajax--url="/admin/p2w/qdlist" data-ajax--cache="true">
+                <select class="form-control select2 input-group-sm" name="qd" data-ajax--url="/p2w/qdlist" data-ajax--cache="true">
                   <option selected>{{.form.Get "qd"}}</option>
                 </select>
               </div>

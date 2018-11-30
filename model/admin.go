@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -83,6 +84,7 @@ func (m *Admin) Access(tpl string) bool {
 	if node := GetNodeByPath(tpl); node != nil {
 		return node.HasGroup(m.GroupID)
 	}
+	log.Println(tpl)
 	return true
 }
 
@@ -92,9 +94,6 @@ func Login(email, passwd, ip string) (*Admin, error) {
 		db = db.New()
 		m  = &Admin{}
 	)
-	if email = strings.TrimSpace(email); len(email) <= 0 {
-		return nil, errors.New("邮箱格式不合法")
-	}
 	if db = db.Take(m, "email = ?", strings.ToLower(email)); db.Error != nil {
 		return nil, errors.New("用户不存在")
 	}

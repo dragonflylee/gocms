@@ -26,7 +26,7 @@
 
 {{define "navbar"}}
   <header class="main-header">
-    <a href="/admin" class="logo">
+    <a href="/" class="logo">
       <span class="logo-mini"><b>后</b></span>
       <span class="logo-lg"><b>后台管理</b></span>
     </a>
@@ -56,7 +56,7 @@
               </li>
               <li class="user-footer">
                 <div class="pull-left">
-                  <a href="/admin/profile" class="btn btn-default btn-flat">个人中心</a>
+                  <a href="/profile" class="btn btn-default btn-flat">个人中心</a>
                 </div>
                 <div class="pull-right">
                   <a href="/logout" class="btn btn-default btn-flat">注销</a>
@@ -121,7 +121,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
 
-  <script src="/static/js/global.js?v=20180512" type="text/javascript"></script>
+  <script src="/static/js/global.js?v=20181114" type="text/javascript"></script>
 {{end}}
 
 {{define "sidebar"}}
@@ -153,15 +153,15 @@
 {{define "title"}}
   <section class="content-header">
     <h1>
-      {{.node.Name}}
+      {{.node}}
       <small>{{.node.Remark}}</small>
     </h1>
     <ol class="breadcrumb">
-      <li><a href="/admin"><i class="fa fa-dashboard"></i> 首页</a></li>
+      <li><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
     {{range .node.Parents}}
       <li><a href="{{.Path}}"> {{.Name}}</a></li>
     {{end}}
-      <li class="active">{{.node.Name}}</li>
+      <li class="active">{{.node}}</li>
     </ol>
   </section>
 {{end}}

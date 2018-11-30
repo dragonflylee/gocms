@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" .node.Name}}
+  {{template "header" .}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -35,8 +35,8 @@
                 <th>管理员</th>
                 <th>访问内容</th>
                 <th>注释</th>
-                <th>操作时间</th>
                 <th>IP</th>
+                <th>操作时间</th>
               </tr>
             {{range .data.list}}
               <tr>
@@ -44,8 +44,8 @@
                 <td>{{.Admin.Email}}</td>
                 <td>{{.Path}}</td>
                 <td>{{.Commit}}</td>
+                <td><span class="last-ip" data-toggle="popover" data-trigger="hover" data-content="请稍等...">{{.IP}}</span></td>
                 <td>{{date .CreatedAt}}</td>
-                <td>{{.IP}}</td>
               </tr>
             {{end}}
             </tbody>
