@@ -15,12 +15,12 @@ import (
 	"time"
 
 	"github.com/Tomasen/realip"
-	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"golang.org/x/time/rate"
+	"gocms/model"
 )
 
 const (
@@ -28,6 +28,11 @@ const (
 	sessName         = "X-GoCMS" // Session 名称
 	dateFormate      = "2006-01-02"
 )
+
+type select2 struct {
+	ID   string `json:"id"`
+	Name string `json:"text"`
+}
 
 var (
 	t           = template.New("")
@@ -185,6 +190,35 @@ func Start(path string) {
 		},
 		"version": func() template.HTML {
 			return template.HTML(runtime.Version())
+		},
+		"rate": func(r int64) string {
+			if r == 0 {
+				return "-"
+			}
+			return fmt.Sprintf("%.2f", float64(r)/100)
+		},
+		"price": func(r, w int64) string {
+			if r == 0 {
+				return "0.00"
+			}
+			if w == 4 {
+				return fmt.Sprintf("%.4f", float64(r)/10000)
+			}
+			return fmt.Sprintf("%.2f", float64(r)/100)
+		},
+		"retention": func(mfshow, serverRun int64) string {
+			var (
+				m = fmt.Sprintf("%0.2f", float64(mfshow)/float64(100))
+				s = fmt.Sprintf("%0.2f", float64(serverRun)/float64(100))
+			)
+			if mfshow == 0 {
+				m = "-"
+			}
+			if serverRun == 0 {
+				s = "-"
+			}
+
+			return fmt.Sprintf("%s/%s", m, s)
 		},
 	})
 	t = template.Must(t.ParseGlob(pattern))

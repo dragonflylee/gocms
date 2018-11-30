@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/Tomasen/realip"
-	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/mux"
+	"gocms/model"
 )
 
 // Install 安装配置

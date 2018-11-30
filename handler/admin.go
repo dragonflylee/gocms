@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dragonflylee/gocms/model"
-	"github.com/dragonflylee/gocms/util"
+	"gocms/model"
+	"gocms/util"
+
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )

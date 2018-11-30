@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dragonflylee/gocms/handler"
-	"github.com/dragonflylee/gocms/model"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"gocms/handler"
+	"gocms/model"
 )
 
 var (
@@ -79,6 +79,24 @@ func main() {
 	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
 	// 个人中心
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
+
+	// 数据统计
+	s.HandleFunc("/qd/day", handler.QDSettleDay).Methods(http.MethodGet)
+	s.HandleFunc("/qd/month", handler.QDSettleMonth).Methods(http.MethodGet)
+
+	s.HandleFunc("/qd/list", handler.QDList).Methods(http.MethodGet)
+	s.HandleFunc("/p2w/all", handler.P2WInstallRuns).Methods(http.MethodGet)
+	s.HandleFunc("/p2w/qd", handler.P2WInstallRunsGroupByQD).Methods(http.MethodGet)
+	s.HandleFunc("/p2w/qdlist", handler.P2WQDList).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/install_runs", handler.PDFInstallRuns).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/retentions", handler.PDFRentions).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/mfshow_versions", handler.MFShowVersions).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/feedbacks", handler.Feedbacks).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/uninstall_opts", handler.UninstallOpts).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/crashs", handler.Crashs).Methods(http.MethodGet)
+	s.HandleFunc("/pdf/crashs/detail", handler.CrashsDetail).Methods(http.MethodGet)
+	s.HandleFunc("/bundle_install", handler.BundleInstall).Methods(http.MethodGet)
+	s.HandleFunc("/mininews", handler.MiniNewsStats).Methods(http.MethodGet)
 
 	log.Panic(http.ListenAndServe(*addr, handlers.CustomLoggingHandler(os.Stdout,
 		handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(r), handler.WriteLog)))
