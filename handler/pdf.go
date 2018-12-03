@@ -143,3 +143,8 @@ func CrashsDetail(w http.ResponseWriter, r *http.Request) {
 
 	rLayout(w, r, "pdf_crashs_detail.tpl", data)
 }
+
+func PDFVersion(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	rLayout(w, r, "pdf_version.tpl", data)
+}
