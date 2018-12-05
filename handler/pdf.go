@@ -148,3 +148,15 @@ func PDFVersion(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
 	rLayout(w, r, "pdf_version.tpl", data)
 }
+
+func KitTipStats(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	if nums, err := model.GetTotalKitTip(); err == nil && nums > 0 {
+		p := util.NewPaginator(r, int64(nums))
+		if list, err := model.GetKitTipStats(p.PerPageNums, p.Offset()); err == nil {
+			data["list"] = list
+		}
+		data["page"] = p
+	}
+	rLayout(w, r, "kit_tip_stats.tpl", data)
+}
