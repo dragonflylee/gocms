@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
-	//"sdbackend/domain"
+	"sdbackend/domain"
 	"sort"
 	"time"
 )
@@ -489,4 +489,20 @@ func GetCrashVersioRate(start, end *time.Time) ([]CrashVersionRate, error) {
 		})
 	}
 	return res, nil
+}
+
+func GetTotalKitTip() (int64, error) {
+	var total int64
+	if err := db.New().Model(new(domain.KitTip)).Where("date != ?", "total").Count(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func GetKitTipStats(limit, offset int) ([]domain.KitTip, error) {
+	var ins []domain.KitTip
+	if err := db.New().Where("date != ?", "total").Order("date desc").Limit(limit).Offset(offset).Find(&ins).Error; err != nil {
+		return nil, err
+	}
+	return ins, nil
 }

@@ -26,11 +26,12 @@
 </form>
 
 {{define "nodetree"}}
-  {{range .m}}
-    <li data-jstree='{"icon":"{{.Icon}}","selected":{{.HasGroup $.group|print}},"opened":false{{if .Type}},"disabled":true{{end}}}' id="{{.ID}}">{{.Name}}
-    {{if .Child}}
-      <ul>{{template "nodetree" .Child.Assign $.group nil}}</ul>
-    {{end}}
-    </li>
+{{range .m}}
+<li data-jstree='{"icon":"{{.Icon}}","selected":{{.HasGroup $.group|print}},"opened":false{{if .Type}},"disabled":true{{end}}}'
+  id="{{.ID}}">{{.Name}}
+  {{if .Child}}
+  <ul>{{template "nodetree" .Child.Assign $.group nil}}</ul>
   {{end}}
+</li>
+{{end}}
 {{end}}

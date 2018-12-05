@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   {{template "header" .node.Name}}
   <style>
-    .select2 {min-width:120px;}
+    .select2 {
+      min-width: 120px;
+    }
   </style>
 </head>
+
 <body class="hold-transition skin-blue sidebar-mini">
-<div class="wrapper">
-  {{template "navbar" .}}
-  <div class="content-wrapper">
-    {{template "title" .}}
-    <section class="content">
-      <div class="box">
-        <!--
+  <div class="wrapper">
+    {{template "navbar" .}}
+    <div class="content-wrapper">
+      {{template "title" .}}
+      <section class="content">
+        <div class="box">
+          <!--
         <div class="box-header with-border">
 		 <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
@@ -28,52 +32,52 @@
           </div>
         </div>
         -->
-      {{if .data.list}}
-        <div class="box-body table-responsive">
-          <table class="table table-bordered">
-            <tbody>
-              <tr>
-                <th>日期</th>
-                <th>ri_show</th>
-                <th>ri_click_close</th>
-                <th>ri_click_cancle</th>
-                <th>ri_click_ok</th>
-                <th>ri_no_data</th>
-                <th>ri_net_error</th>
-                <th>ri_down_pkg</th>
-                <th>ri_install_pkg</th>
-              </tr>
-            {{range .data.list}}
-              <tr>
-                <td>{{.Date}}</td>
-                <td>{{.Show}}</td>
-                <td>{{.ClickClose}}</td>
-                <td>{{.ClickCancel}}</td>
-				<td>{{.ClickOK}}</td>
-				<td>{{.NoData}}</td>
-				<td>{{.NetError}}</td>
-				<td>{{.DownPkg}}</td>
-				<td>{{.InstallPkg}}</td>
-              </tr>
-            {{end}}
-            </tbody>
-          </table>
+          {{if .data.list}}
+          <div class="box-body table-responsive">
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th>日期</th>
+                  <th>ri_show</th>
+                  <th>ri_click_close</th>
+                  <th>ri_click_cancle</th>
+                  <th>ri_click_ok</th>
+                  <th>ri_no_data</th>
+                  <th>ri_net_error</th>
+                  <th>ri_down_pkg</th>
+                  <th>ri_install_pkg</th>
+                </tr>
+                {{range .data.list}}
+                <tr>
+                  <td>{{.Date}}</td>
+                  <td>{{.Show}}</td>
+                  <td>{{.ClickClose}}</td>
+                  <td>{{.ClickCancel}}</td>
+                  <td>{{.ClickOK}}</td>
+                  <td>{{.NoData}}</td>
+                  <td>{{.NetError}}</td>
+                  <td>{{.DownPkg}}</td>
+                  <td>{{.InstallPkg}}</td>
+                </tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+          <div class="box-footer clearfix">
+            <a href="javascript:history.go(-1);" class="btn btn-sm bg-navy">返回</a>
+            {{template "paginator" .data}}
+          </div>
+          {{else}}
+          <div class="box-body">
+            <p class="lead text-center">无数据</p>
+          </div>
+          {{end}}
         </div>
-        <div class="box-footer clearfix">
-          <a href="javascript:history.go(-1);" class="btn btn-sm bg-navy">返回</a>
-          {{template "paginator" .data}}
-        </div>
-      {{else}}
-        <div class="box-body">
-          <p class="lead text-center">无数据</p>
-        </div>
-      {{end}}
-      </div>
-    </section>
+      </section>
+    </div>
+    {{template "modal"}}
+    {{template "footer"}}
   </div>
-  {{template "modal"}}
-  {{template "footer"}}
-</div>
 </body>
-</html>
 
+</html>
