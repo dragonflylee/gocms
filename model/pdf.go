@@ -291,7 +291,7 @@ func GetMFShowVersions() (MFShowVersions, error) {
 }
 
 func GetFeedbacks(limit, offset int) ([]Feedback, error) {
-	conn := mgo.Clone()
+	conn := mgo.Copy()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("feedbacks")
 	var feedbacks []Feedback
@@ -303,7 +303,7 @@ func GetFeedbacks(limit, offset int) ([]Feedback, error) {
 }
 
 func GetTotalFeedbacks() (int, error) {
-	conn := mgo.Clone()
+	conn := mgo.Copy()
 	defer conn.Close()
 	var (
 		total int
@@ -317,7 +317,7 @@ func GetTotalFeedbacks() (int, error) {
 }
 
 func GetUninstallOpts(limit, offset int) ([]UninstallOpts, error) {
-	conn := mgo.Clone()
+	conn := mgo.Copy()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("uninstall_opts")
 	var feedbacks []UninstallOpts
@@ -329,7 +329,7 @@ func GetUninstallOpts(limit, offset int) ([]UninstallOpts, error) {
 }
 
 func GetTotalUninstallOpts() (int, error) {
-	conn := mgo.Clone()
+	conn := mgo.Copy()
 	defer conn.Close()
 	var (
 		total int
@@ -406,7 +406,7 @@ func GetMiniNewsStats(limit, offset int) ([]domain.MiniNewsStats, error) {
 }
 
 func GetCrashsTotal(start, end *time.Time) (int64, error) {
-	conn := mgo.Clone()
+	conn := mgo.Copy()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("crashs")
 	query := bson.M{}
@@ -421,7 +421,7 @@ func GetCrashsTotal(start, end *time.Time) (int64, error) {
 }
 
 func GetCrashsByDay(limit, offset int, start, end *time.Time) ([]CrashInfo, error) {
-	conn := mgo.Clone()
+	conn := mgo.Copy()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("crashs")
 	var crashs []CrashInfo
@@ -440,7 +440,7 @@ func GetCrashsByDay(limit, offset int, start, end *time.Time) ([]CrashInfo, erro
 }
 
 func GetCrashVersioRate(start, end *time.Time) ([]CrashVersionRate, error) {
-	conn := mgo.Clone()
+	conn := mgo.Copy()
 	defer conn.Close()
 	col := conn.DB(mgoDBName).C("crashs")
 	pipeLine := []bson.M{
