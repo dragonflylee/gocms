@@ -2,7 +2,11 @@
 *.exe
 *.dll
 *.so
+*.db
 *.dylib
+/gocms
+/debug
+/config.yml
 
 # Test binary, build with `go test -c`
 *.test
