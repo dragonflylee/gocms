@@ -9,7 +9,7 @@
             "command": "go",
             "args": [
                 "build", "-o", "${workspaceFolderBasename}", 
-                "-ldflags", "\"-X gocms/handler.build=$(git rev-list --count --all)\""
+                "-ldflags", "\"-X github.com/dragonflylee/gocms/handler.build=$(git rev-list --count --all)\""
             ],
         }
     ]

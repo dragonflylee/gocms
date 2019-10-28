@@ -7,13 +7,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dragonflylee/gocms/handler"
-	"github.com/dragonflylee/gocms/model"
-	"github.com/jinzhu/configor"
-
 	"github.com/dchest/captcha"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/configor"
+
+	"github.com/dragonflylee/gocms/handler"
+	"github.com/dragonflylee/gocms/model"
 )
 
 var (
@@ -25,13 +25,9 @@ func main() {
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	path := filepath.Dir(os.Args[0])
-	// 初始化模板
-	if err := handler.Watch(filepath.Join(path, "views")); err != nil {
-		log.Fatalf("watch failed: %v", err)
-	}
 	r := mux.NewRouter()
 	// 静态文件
+	path := filepath.Dir(os.Args[0])
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
 		http.FileServer(http.Dir(filepath.Join(path, "static")))))
 	// 404页面
@@ -48,12 +44,18 @@ func main() {
 			if model.IsOpen() {
 				return h
 			}
-			return handler.Install(path, s)
+			return handler.Install(*config, s)
 		})
+	}
+	s.Use(handler.LogHandler, handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
+	// 初始化模板
+	if err := handler.Watch(filepath.Join(path, "views")); err != nil {
+		log.Fatalf("watch failed: %v", err)
 	}
 	// 登录相关
 	s.Handle("/", handler.Check(http.HandlerFunc(handler.Home)))
 	s.Handle("/login", handler.Limit(2, handler.Login)).Methods(http.MethodPost)
+	s.Handle("/bingpic", handler.Limit(2, handler.BingPic)).Methods(http.MethodGet)
 	s.Handle("/captcha/{png}", captcha.Server(120, 35)).Methods(http.MethodGet)
 
 	s.HandleFunc("/login", handler.Login).Methods(http.MethodGet)
@@ -62,7 +64,7 @@ func main() {
 	// 后台主页
 	s = s.PathPrefix("/").Subrouter()
 	// 检查登陆状态
-	s.Use(handler.Check)
+	s.Use(handler.Check, handlers.CompressHandler)
 	// 系统管理
 	s.HandleFunc("/users", handler.Users).Methods(http.MethodGet)
 	s.HandleFunc("/user/add", handler.UserAdd).Methods(http.MethodPost)
@@ -75,6 +77,5 @@ func main() {
 	// 文件上传
 	s.HandleFunc("/upload", handler.Upload).Methods(http.MethodPost)
 
-	log.Panic(http.ListenAndServe(*addr, handlers.CustomLoggingHandler(os.Stdout,
-		handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(r), handler.WriteLog)))
+	log.Panic(http.ListenAndServe(*addr, r))
 }

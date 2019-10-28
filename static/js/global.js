@@ -244,13 +244,11 @@ $(document).ready(function () {
   // 远端模态框
   Admin.modal('#modal-edit, #modal-detail');
   // 页面表单
-  $('form:has([name="password"])').each(function (i, el) {
-    Admin.validate(el, {
-      beforeSubmit: function (arr) {
-        for (var i = 0; i < arr.length; i++)
-          if (arr[i].name == 'password')
-            arr[i].value = md5(arr[i].value);
-      }
-    });
-  })
+  Admin.validate('form:has([name="password"])', {
+    beforeSubmit: function (arr) {
+      for (var i = 0; i < arr.length; i++)
+        if (arr[i].name == 'password')
+          arr[i].value = md5(arr[i].value);
+    }
+  });
 })

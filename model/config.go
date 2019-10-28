@@ -4,10 +4,10 @@ package model
 var Config struct {
 	DB struct {
 		Type string `required:"true"`
-		Host string
-		Port uint64
-		User string
-		Pass string
-		Name string
+		Host string `required:"true"`
+		Port uint64 `yaml:"port,omitempty"`
+		User string `required:"true"`
+		Pass string `yaml:"pass,omitempty"`
+		Name string `yaml:"name,omitempty"`
 	} `required:"true"`
 }

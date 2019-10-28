@@ -48,7 +48,7 @@ func (m Menu) Assign(g int64, n *Node) map[string]interface{} {
 
 func loadNodes() (map[int64]*Node, error) {
 	var list []*Node
-	n := map[int64]*Node{0: &Node{ID: 0}}
+	n := map[int64]*Node{0: &Node{ID: 0, Path: "#"}}
 	err := db.Order("id").Preload("Groups").Find(&list).Error
 	if err != nil {
 		return nil, err

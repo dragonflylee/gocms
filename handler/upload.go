@@ -3,6 +3,7 @@ package handler
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/xml"
 	"image"
 	"io"
 	"net/http"
@@ -49,5 +50,30 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		jFailed(w, http.StatusBadRequest, "unsupport %s", t)
+	}
+}
+
+// BingPic 每日背景
+func BingPic(w http.ResponseWriter, r *http.Request) {
+	resp, err := http.Get("https://cn.bing.com/HPImageArchive.aspx?idx=0&n=1")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	var s struct {
+		XMLName xml.Name `xml:"images"`
+		Image   []struct {
+			URL string `xml:"url"`
+		} `xml:"image"`
+	}
+	if err = xml.NewDecoder(resp.Body).Decode(&s); err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	for _, v := range s.Image {
+		http.Redirect(w, r, "//cn.bing.com"+v.URL, http.StatusTemporaryRedirect)
+		return
 	}
 }

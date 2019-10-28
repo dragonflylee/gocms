@@ -17,16 +17,16 @@
       <p class="login-box-msg">登录系统后台</p>
       <form action="?refer={{urlquery .Ref}}" method="post">
         <div class="form-group has-feedback">
-          <input name="username" type="email" class="form-control" autocomplete="off" placeholder="请输入管理员邮箱" data-rule="{'messages':{'required':'登录名称不能为空'}}" required>
+          <input name="user" type="email" class="form-control" autocomplete="off" placeholder="请输入管理员邮箱" data-rule="{'messages':{'required':'登录名称不能为空'}}" required>
           <span class="glyphicon glyphicon-user form-control-feedback"></span>
         </div>
         <div class="form-group has-feedback">
-          <input name="password" type="password" class="form-control" autocomplete="off" placeholder="请输入密码" data-rule="{'messages':{'required':'密码不能为空'}}" required>
+          <input name="pass" type="password" class="form-control" autocomplete="off" placeholder="请输入密码" data-rule="{'messages':{'required':'密码不能为空'}}" required>
           <span class="glyphicon glyphicon-lock form-control-feedback"></span>
         </div>
         <div class="row">
           <div class="col-xs-6 form-group has-feedback">
-            <input name="code" type="text" class="form-control" autocomplete="off" placeholder="验证码" data-rule="{'messages':{'required':'验证码不能为空'}}" required>
+            <input name="code" type="text" class="form-control" autocomplete="off" placeholder="验证码" data-rule="{'maxlength':6,'digits':true,'messages':{'required':'验证码不能为空'}}" required>
           </div>
           <div class="col-xs-4 pull-right">
             <input type="hidden" name="id" value="{{.Captcha}}">
@@ -46,12 +46,31 @@
   <script src="/static/js/global.js?v=20190101" type="text/javascript"></script>
   <script type="text/javascript">
     $(document).ready(function () {
-      $('img').click(function (e) {
+      $('img.img-responsive').click(function (e) {
         var src = e.target.src;
         e.target.src = src.substr(0, src.indexOf('?') + 1) +
           'reload=' + new Date().getTime();
       });
-      $.backstretch('https://open.saintic.com/api/bingPic/');
+      $.backstretch('/bingpic');
+      // 页面表单
+      Admin.validate('form:has([name="pass"])', {
+        beforeSubmit: function (arr) {
+          for (var i = 0; i < arr.length; i++)
+            if (arr[i].name == 'pass')
+              arr[i].value = md5(arr[i].value);
+        },
+        success: function (resp) {
+          if (resp.code == 200) {
+            window.location = resp.data;
+            return;
+          }
+          if (typeof resp.data === 'string') {
+            $('input[name="id"]').val(resp.data);
+            $('img.img-responsive').attr('src', '/captcha/' + resp.data + '.png?')
+          }
+          Admin.alert({container: $('form'), type: 'danger', message: resp.msg });
+        }
+      });
     })
   </script>
 </body>

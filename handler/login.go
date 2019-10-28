@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 	"sync"
@@ -34,12 +35,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if !captcha.VerifyString(r.PostForm.Get("id"), r.PostForm.Get("code")) {
-		jFailed(w, http.StatusBadRequest, "验证码非法")
-		return
-	}
-	email := strings.TrimSpace(r.PostForm.Get("username"))
-	password := strings.TrimSpace(r.PostForm.Get("password"))
+	email := strings.TrimSpace(r.PostForm.Get("user"))
+	password := strings.TrimSpace(r.PostForm.Get("pass"))
 	if !emailRegexp.MatchString(email) {
 		jFailed(w, http.StatusBadRequest, "邮箱格式非法")
 		return
@@ -48,9 +45,23 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jFailed(w, http.StatusBadRequest, "密码不正确")
 		return
 	}
+
+	jResp := func(w http.ResponseWriter, msg string) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(struct {
+			Code int    `json:"code"`
+			Msg  string `json:"msg,omitempty"`
+			Data string `json:"data,omitempty"`
+		}{Code: http.StatusBadRequest, Msg: msg, Data: captcha.New()})
+	}
+
+	if !captcha.VerifyString(r.Form.Get("id"), r.PostForm.Get("code")) {
+		jResp(w, "验证码非法")
+		return
+	}
 	user, err := model.Login(email, password, realip.FromRequest(r))
 	if err != nil {
-		jFailed(w, http.StatusForbidden, err.Error())
+		jResp(w, err.Error())
 		return
 	}
 	sess.Values[userKey] = user
@@ -58,7 +69,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		sess.Options.MaxAge = 3600
 	}
 	if err = sess.Save(r, w); err != nil {
-		jFailed(w, http.StatusForbidden, err.Error())
+		jResp(w, err.Error())
 		return
 	}
 	tokenMutex.Lock()
