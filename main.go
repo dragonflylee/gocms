@@ -38,22 +38,22 @@ func main() {
 			log.Panicf("open db failed: %v", err)
 		}
 	}
-	s := r.PathPrefix("/").Subrouter()
+	s := handler.RouterWrap{Router: r.PathPrefix("/").Subrouter()}
 	if !model.IsOpen() {
 		s.Use(func(h http.Handler) http.Handler {
 			if model.IsOpen() {
 				return h
 			}
-			return handler.Install(*config, s)
+			return handler.Install(*config, s.Router)
 		})
 	}
 	s.Use(handler.LogHandler, handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
 	// 初始化模板
-	if err := handler.Watch(filepath.Join(path, "views")); err != nil {
+	if err := handler.Watch(filepath.Join(path, "views"), s.Router); err != nil {
 		log.Fatalf("watch failed: %v", err)
 	}
 	// 登录相关
-	s.Handle("/", handler.Check(http.HandlerFunc(handler.Home)))
+	s.Handle("/", handler.Check(http.HandlerFunc(handler.Home))).Name("")
 	s.Handle("/login", handler.Limit(2, handler.Login)).Methods(http.MethodPost)
 	s.Handle("/bingpic", handler.Limit(2, handler.BingPic)).Methods(http.MethodGet)
 	s.Handle("/captcha/{png}", captcha.Server(120, 35)).Methods(http.MethodGet)
@@ -62,7 +62,7 @@ func main() {
 	s.HandleFunc("/logout", handler.Logout)
 	s.HandleFunc("/password", handler.Password).Methods(http.MethodPost)
 	// 后台主页
-	s = s.PathPrefix("/").Subrouter()
+	s = handler.RouterWrap{Router: s.PathPrefix("/").Subrouter()}
 	// 检查登陆状态
 	s.Use(handler.Check, handlers.CompressHandler)
 	// 系统管理

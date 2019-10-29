@@ -8,9 +8,13 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -82,11 +86,9 @@ func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface
 		Error(w, http.StatusBadRequest, "页面错误 %v", err)
 	} else if s := mux.CurrentRoute(r); s == nil {
 		Error(w, http.StatusBadRequest, "页面错误")
-	} else if tpl, err := s.GetPathTemplate(); err != nil {
-		Error(w, http.StatusNotFound, "页面错误 %v", err)
 	} else if err = t.ExecuteTemplate(w, name, map[string]interface{}{
 		"Menu": model.GetNodes(),
-		"Node": model.GetNodeByPath(tpl),
+		"Node": model.GetNodeByPath(s.GetName()),
 		"User": sess.Values[userKey],
 		"Form": r.Form, "Data": data,
 	}); err != nil {
@@ -120,12 +122,10 @@ func Check(h http.Handler) http.Handler {
 			http.Redirect(w, r, "/profile", http.StatusFound)
 		} else if c := mux.CurrentRoute(r); c == nil {
 			Error(w, http.StatusNotFound, "页面错误")
-		} else if tpl, err := c.GetPathTemplate(); err != nil {
-			Error(w, http.StatusNotFound, "页面错误 %v", err)
-		} else if user.Access(tpl) {
+		} else if user.Access(c.GetName()) {
 			h.ServeHTTP(w, r)
 		} else {
-			Error(w, http.StatusForbidden, "无权访问 %s", tpl)
+			Error(w, http.StatusForbidden, "无权访问 %s", r.URL)
 		}
 	})
 }
@@ -171,8 +171,19 @@ func LogHandler(h http.Handler) http.Handler {
 	})
 }
 
+// RouterWrap 路由封装
+type RouterWrap struct {
+	*mux.Router
+}
+
+// HandleFunc 反射函数名
+func (r RouterWrap) HandleFunc(path string, h http.HandlerFunc) *mux.Route {
+	n := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
+	return r.Handle(path, h).Name(n[strings.LastIndexByte(n, '.')+1:])
+}
+
 // Watch 初始化控制层
-func Watch(tpl string) error {
+func Watch(tpl string, r *mux.Router) error {
 	// 注册自定义函数
 	funcMap := template.FuncMap{
 		"date": func(t *time.Time) string {
@@ -180,6 +191,12 @@ func Watch(tpl string) error {
 				return "无"
 			}
 			return t.In(time.Local).Format("2006-01-02 15:04:05")
+		},
+		"urlfor": func(name string, pair ...string) (*url.URL, error) {
+			if s := r.Get(name); s != nil {
+				return s.URL(pair...)
+			}
+			return &url.URL{Fragment: "top"}, nil
 		},
 		"html": func(s string) template.HTML {
 			return template.HTML(s)

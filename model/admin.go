@@ -87,7 +87,7 @@ func (m *Admin) Access(tpl string) bool {
 	if node := GetNodeByPath(tpl); node != nil {
 		return node.HasGroup(m.GroupID)
 	}
-	log.Println(tpl)
+	log.Printf("Access `%s`", tpl)
 	return true
 }
 

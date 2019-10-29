@@ -24,7 +24,7 @@
 
 {{define "navbar"}}
 <header class="main-header">
-  <a href="/" class="logo">
+  <a href="#" class="logo">
     <span class="logo-mini"><b>后</b></span>
     <span class="logo-lg"><b>后台管理</b></span>
   </a>
@@ -54,10 +54,10 @@
             </li>
             <li class="user-footer">
               <div class="pull-left">
-                <a href="/profile" class="btn btn-default btn-flat">个人中心</a>
+                <a href="{{urlfor "Profile"}}" class="btn btn-default btn-flat">个人中心</a>
               </div>
               <div class="pull-right">
-                <a href="/logout" class="btn btn-default btn-flat">注销</a>
+                <a href="{{urlfor "Logout"}}" class="btn btn-default btn-flat">注销</a>
               </div>
             </li>
           </ul>
@@ -138,7 +138,7 @@
   </li>
   {{else}}
   <li {{if $.Node.HasParent .ID}} class="active" {{end}}>
-    <a href="{{.Path}}">
+    <a href="{{urlfor .Path}}">
       <i class="{{.Icon}}"></i>
       <span>{{.Name}}</span>
     </a>
@@ -154,9 +154,9 @@
     <small>{{.Node.Remark}}</small>
   </h1>
   <ol class="breadcrumb">
-    <li><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+    <li><a href="#"><i class="fa fa-dashboard"></i> 首页</a></li>
     {{range .Node.Parents}}
-    <li><a href="{{.Path}}"> {{.Name}}</a></li>
+    <li><a href="{{urlfor .Path}}"> {{.Name}}</a></li>
     {{end}}
     <li class="active">{{.Node}}</li>
   </ol>

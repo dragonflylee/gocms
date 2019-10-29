@@ -12,7 +12,7 @@
       <section class="content">
         <div class="row">
           <div class="col-md-2">
-            {{if .User.Access "/group/add"}}
+            {{if .User.Access "GroupAdd"}}
             <a class="btn bg-purple btn-block margin-bottom" data-target="#add-group" data-toggle="modal" title="添加">添加角色
               <i class="fa fa-plus"></i></a>
             {{end}}
@@ -31,8 +31,8 @@
                   {{if eq (print $id) ($.Form.Get "group")}}
                   <li class="active">
                     <a>{{$name}}
-                      {{if and ($.User.Access "/group/{id:[0-9]+}") (ne $id $.User.GroupID)}}
-                      <span class="btn btn-xs bg-navy pull-right" data-href="/group/{{$id}}" data-target="#modal-node"
+                      {{if and ($.User.Access "GroupEdit") (ne $id $.User.GroupID)}}
+                      <span class="btn btn-xs bg-navy pull-right" data-href="{{urlfor "GroupEdit" "id" ($id|print)}}" data-target="#modal-node"
                         data-toggle="modal"><i class="fa fa-edit"></i></span>
                       {{end}}
                     </a>
@@ -66,7 +66,7 @@
                         </span>
                       </div>
                     </div>
-                    {{if .User.Access "/user/add"}}
+                    {{if .User.Access "UserAdd"}}
                     <a class="btn bg-purple btn-sm" data-target="#add-user" data-toggle="modal" title="添加">添加 <i class="fa fa-plus"></i></a>
                     {{end}}
                   </form>
@@ -100,8 +100,8 @@
                         {{end}}
                       </td>
                       <td>
-                        {{if and ($.User.Access "/user/delete/{id:[0-9]+}") (ne .ID $.User.ID)}}
-                        <a class="btn btn-default btn-xs" title="删除 {{.Email}}" data-href="/user/delete/{{.ID}}"
+                        {{if and ($.User.Access "UserDelete") (ne .ID $.User.ID)}}
+                        <a class="btn btn-default btn-xs" title="删除 {{.Email}}" data-href="{{urlfor "UserDelete" "id" (.ID|print)}}"
                           data-target="#modal-confirm" data-toggle="modal"><i class="fa fa-trash-o text-red"></i></a>
                         {{end}}
                       </td>
@@ -123,11 +123,11 @@
         </div>
       </section>
     </div>
-    {{if .User.Access "/user/add"}}
+    {{if .User.Access "UserAdd"}}
     <div class="modal" id="add-user">
       <div class="modal-dialog">
         <div class="modal-content box">
-          <form action="/user/add" method="post" class="form-horizontal">
+          <form action="{{urlfor "UserAdd"}}" method="post" class="form-horizontal">
             <div class="modal-header">
               <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
               <h4 class="modal-title">添加管理员</h4>
@@ -161,11 +161,11 @@
       </div>
     </div>
     {{end}}
-    {{if .User.Access "/group/add"}}
+    {{if .User.Access "GroupAdd"}}
     <div class="modal" id="add-group">
       <div class="modal-dialog">
         <div class="modal-content box">
-          <form action="/group/add" method="post" class="form-horizontal">
+          <form action="{{urlfor "GroupAdd"}}" method="post" class="form-horizontal">
             <div class="modal-header">
               <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
               <h4 class="modal-title">添加角色</h4>
@@ -187,7 +187,7 @@
       </div>
     </div>
     {{end}}
-    {{if .User.Access "/group/{id:[0-9]+}"}}
+    {{if .User.Access "GroupAdd"}}
     <div class="modal" id="modal-node">
       <div class="modal-dialog">
         <div class="modal-content box">
