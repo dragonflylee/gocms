@@ -75,15 +75,17 @@ func Install(u *Admin, path string) error {
 		return err
 	}
 	db := db.Begin().Set("gorm:association_autoupdate", true)
-	if err = db.Create(&u.Group).Error; err != nil {
+	u.Group.ID = 1
+	if err = db.Save(&u.Group).Error; err != nil {
 		db.Rollback()
 		return err
 	}
+	u.ID = 1
 	u.GroupID = u.Group.ID
 	u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
 	u.Password = util.MD5(u.Password + util.MD5(u.Salt))
 	u.Status = true
-	if err = db.Create(u).Error; err != nil {
+	if err = db.Save(u).Error; err != nil {
 		db.Rollback()
 		return err
 	}

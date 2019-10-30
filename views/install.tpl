@@ -81,8 +81,8 @@
   <script src="/static/js/global.js?v=20190101" type="text/javascript"></script>
   <script type="text/javascript">
     var options = {
-      'MySQL': { 'port': 3306, 'user': 'root' },
-      'Postgres': { 'port': 5432, 'user': 'postgres' },
+      'MySQL': { 'host': 'localhost', 'port': 3306, 'user': 'root' },
+      'Postgres': { 'host': 'localhost', 'port': 5432, 'user': 'postgres' },
       'SQLite3': { 'host': 'gocms.db', 'port': null, 'user': 'admin', 'name': null },
     };
     $(document).ready(function () {

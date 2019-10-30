@@ -1,7 +1,6 @@
 package model
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 	"time"
@@ -17,15 +16,11 @@ var (
 	db       *gorm.DB
 	model    []interface{}
 	mapNodes map[int64]*Node
-	debug    = flag.Bool("d", false, "debug mode")
 )
 
 // Open 连接数据库
-func Open() error {
-	var (
-		dsn string
-		err error
-	)
+func Open(debug bool) (err error) {
+	var dsn string
 	dialect := strings.ToLower(Config.DB.Type)
 	switch dialect {
 	case "mysql":
@@ -44,9 +39,7 @@ func Open() error {
 		return fmt.Errorf("connect database failed: %v", err)
 	}
 	db.BlockGlobalUpdate(true)
-	if debug != nil {
-		db.LogMode(*debug)
-	}
+	db.LogMode(debug)
 	// 同步数据库
 	if err = db.AutoMigrate(model...).Error; err != nil {
 		return fmt.Errorf("migrate failed: %v", err)

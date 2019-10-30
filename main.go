@@ -19,6 +19,7 @@ import (
 var (
 	addr   = flag.String("addr", ":8080", "监听端口")
 	config = flag.String("c", "config.yml", "配置文件路径")
+	debug  = flag.Bool("d", false, "debug mode")
 )
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 	r.NotFoundHandler = handler.Limit(2, http.NotFound)
 	// 加载配置文件
 	if err := configor.New(nil).Load(&model.Config, *config); err == nil {
-		if err = model.Open(); err != nil {
+		if err = model.Open(*debug); err != nil {
 			log.Panicf("open db failed: %v", err)
 		}
 	}
@@ -44,7 +45,7 @@ func main() {
 			if model.IsOpen() {
 				return h
 			}
-			return handler.Install(*config, s.Router)
+			return handler.Install(*config, *debug, s.Router)
 		})
 	}
 	s.Use(handler.LogHandler, handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))

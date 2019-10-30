@@ -12,7 +12,7 @@ import (
 )
 
 // Install 安装配置
-func Install(path string, s *mux.Router) http.Handler {
+func Install(path string, debug bool, s *mux.Router) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			t.ExecuteTemplate(w, "install.tpl", nil)
@@ -42,7 +42,7 @@ func Install(path string, s *mux.Router) http.Handler {
 			jFailed(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		if err := model.Open(); err != nil {
+		if err := model.Open(debug); err != nil {
 			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}
