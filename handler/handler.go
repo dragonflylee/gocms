@@ -20,12 +20,11 @@ import (
 
 	"github.com/dragonflylee/gocms/model"
 
-	"github.com/Tomasen/realip"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
+	"github.com/quasoft/memstore"
 	"golang.org/x/time/rate"
 )
 
@@ -44,14 +43,14 @@ var (
 	build       = "0"
 	md5Regexp   = regexp.MustCompile("[a-fA-F0-9]{32}$")
 	emailRegexp = regexp.MustCompile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$")
-	store       = sessions.NewFilesystemStore(os.TempDir(), securecookie.GenerateRandomKey(32))
+	store       = memstore.NewMemStore(securecookie.GenerateRandomKey(32))
 )
 
 func aLog(r *http.Request, format string, a ...interface{}) error {
 	m := &model.AdminLog{
 		Path:   r.URL.String(),
 		UA:     r.UserAgent(),
-		IP:     realip.FromRequest(r),
+		IP:     r.RemoteAddr,
 		Commit: fmt.Sprintf(format, a...),
 	}
 	if sess, err := store.Get(r, sessName); err != nil {
@@ -114,7 +113,7 @@ func Check(h http.Handler) http.Handler {
 			http.Redirect(w, r, "/login", http.StatusFound)
 		} else if user, ok := cookie.(*model.Admin); !ok {
 			http.Redirect(w, r, "/login", http.StatusFound)
-		} else if token, exist := tokenMap[user.ID]; exist && token != sess.ID {
+		} else if token, exist := tokenMap.Load(user.ID); exist && token != sess.ID {
 			sess.Options.MaxAge = -1
 			sess.Save(r, w)
 			http.Redirect(w, r, "/login", http.StatusFound)
@@ -137,15 +136,11 @@ func Limit(b int, f func(http.ResponseWriter, *http.Request)) http.Handler {
 		lock   sync.Mutex
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var (
-			ip    = realip.FromRequest(r)
-			l     *rate.Limiter
-			exist bool
-		)
 		lock.Lock()
-		if l, exist = bucket[ip]; !exist {
+		l, exist := bucket[r.RemoteAddr]
+		if !exist {
 			l = rate.NewLimiter(rate.Limit(1), b)
-			bucket[ip] = l
+			bucket[r.RemoteAddr] = l
 		}
 		lock.Unlock()
 		if l.Allow() {
@@ -167,7 +162,7 @@ func LogHandler(h http.Handler) http.Handler {
 		}
 		fmt.Fprintf(w, "%s %s %d %s %d %s (%s) %s\n", p.TimeStamp.Format("2006/01/02 15:04:05"),
 			p.Request.Method, p.StatusCode, p.URL.RequestURI(), p.Size,
-			realip.FromRequest(p.Request), time.Now().Sub(p.TimeStamp), u)
+			p.Request.RemoteAddr, time.Now().Sub(p.TimeStamp), u)
 	})
 }
 
@@ -215,9 +210,8 @@ func Watch(tpl string, r *mux.Router) error {
 		for {
 			select {
 			case e := <-watcher.Events:
-				n := filepath.Base(e.Name)
-				log.Printf("load %s: %d", n, e.Op)
-				if t, err = template.New(n).Funcs(funcMap).ParseGlob(pattern); err != nil {
+				log.Printf("load %s %d", filepath.Base(e.Name), e.Op)
+				if t, err = template.New(sessName).Funcs(funcMap).ParseGlob(pattern); err != nil {
 					log.Printf("parse %s failed: %v", e.Name, err)
 				}
 			case err := <-watcher.Errors:

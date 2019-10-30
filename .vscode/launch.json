@@ -10,8 +10,7 @@
             "request": "launch",
             "mode": "exec",
             "program": "${workspaceFolder}/${workspaceFolderBasename}",
-            "preLaunchTask": "build",
-            "args": ["-d", "-addr=:8081"]
+            "preLaunchTask": "build"
         }
     ]
 }

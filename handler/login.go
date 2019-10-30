@@ -8,14 +8,10 @@ import (
 
 	"github.com/dragonflylee/gocms/model"
 
-	"github.com/Tomasen/realip"
 	"github.com/dchest/captcha"
 )
 
-var (
-	tokenMap   = make(map[int64]string)
-	tokenMutex sync.RWMutex
-)
+var tokenMap sync.Map
 
 // Login 登录页
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -59,22 +55,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jResp(w, "验证码非法")
 		return
 	}
-	user, err := model.Login(email, password, realip.FromRequest(r))
+	user, err := model.Login(email, password, r.RemoteAddr)
 	if err != nil {
 		jResp(w, err.Error())
 		return
 	}
 	sess.Values[userKey] = user
 	if _, exist := r.PostForm["remember"]; !exist {
-		sess.Options.MaxAge = 3600
+		sess.Options.MaxAge = 0
 	}
 	if err = sess.Save(r, w); err != nil {
 		jResp(w, err.Error())
 		return
 	}
-	tokenMutex.Lock()
-	defer tokenMutex.Unlock()
-	tokenMap[user.ID] = sess.ID
+	tokenMap.Store(user.ID, sess.ID)
 	jSuccess(w, r.Form.Get("refer"))
 }
 

@@ -14,7 +14,7 @@
 
 <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.10/css/AdminLTE.min.css" rel="stylesheet">
 <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.10/css/skins/_all-skins.min.css" rel="stylesheet">
-<link href="/static/css/custom.min.css?v=20190214" rel="stylesheet" type="text/css">
+<link href="/static/css/custom.min.css?v{{version}}" rel="stylesheet" type="text/css">
 
 {{html "<!--[if lt IE 9]>"}}
   <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -118,7 +118,7 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
 
-<script src="/static/js/global.js?v=20190102" type="text/javascript"></script>
+<script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
 {{end}}
 
 {{define "sidebar"}}

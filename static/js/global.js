@@ -33,17 +33,15 @@ if (jQuery().validate) {
 var Admin = {
   // 通用表单验证
   validate: function (selector, options) {
-    var $form = $(selector);
-    if (jQuery().validate) {
-      $form.validate({
+    if (jQuery().validate) $(selector).each(function (i, form) {
+      $(form).validate({
         errorElement: 'span', focusInvalid: false,
         errorClass: 'help-inline help-block',
         highlight: function (el) {
-          $(el).closest('.form-group').addClass('has-error');
+          $(el).closest('.form-group').removeClass('has-success').addClass('has-error');
         },
-        success: function (el) {
-          el.closest('.form-group').removeClass('has-error');
-          el.remove();
+        unhighlight: function (el) {
+          $(el).closest('.form-group').removeClass('has-error').addClass('has-success');
         },
         errorPlacement: function (err, el) {
           var target = el.data('target');
@@ -58,11 +56,15 @@ var Admin = {
           }
         },
         submitHandler: function () {
-          var $overlay = $('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>').
-            appendTo($form.closest('.box')), target = $form.data('target');
-          if (typeof target !== 'undefined') target = $form.find(target)
-          else if ((target = $form.find('.modal-footer')).length == 0) target = $form;
-          $form.ajaxSubmit($.extend(true, {
+          var $overlay = $('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
+          $(form).hasClass('box') ? $(form).append($overlay) : $(form).closest('.box').append($overlay);
+
+          var target = $(form).data('target');
+          if (typeof target !== 'undefined') target = $(form).find(target)
+          else if ($(form).hasClass('box')) target = $(form).find('.box-footer')
+          else if ((target = $(form).find('.modal-footer')).length == 0) target = $(form);
+
+          $(form).ajaxSubmit($.extend(true, {
             dataType: 'json',
             complete: function (xhr, resp) {
               $overlay.remove();
@@ -84,10 +86,10 @@ var Admin = {
           }, options));
         }
       });
-      $('[data-rule]', $form).each(function (i, o) {
+      $('[data-rule]', $(form)).each(function (i, o) {
         $(o).rules('add', $.parseJSON($(o).data('rule').replace(/'/g, '"')));
       });
-    }
+    })
   },
   // 表单提示
   alert: function (options) {
@@ -102,7 +104,7 @@ var Admin = {
     }, options);
 
     var id = 'prefix_' + Math.floor(Math.random() * (new Date()).getTime());;
-    var html = '<div id="' + id + '" class="custom-alerts text-left alert alert-' + options.type + ' fade in">' + (options.close ? '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>' : '') + (options.icon !== '' ? '<i class="fa-lg fa fa-' + options.icon + '"></i>  ' : '') + options.message + '</div>';
+    var html = '<div id="' + id + '" class="custom-alerts text-left alert alert-' + options.type + ' fade in">' + (options.close ? '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' : '') + (options.icon !== '' ? '<i class="fa-lg fa fa-' + options.icon + '"></i>  ' : '') + options.message + '</div>';
 
     $('.custom-alerts').remove();
 

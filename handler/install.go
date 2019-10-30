@@ -7,7 +7,6 @@ import (
 	"github.com/dragonflylee/gocms/model"
 	"github.com/dragonflylee/gocms/util"
 
-	"github.com/Tomasen/realip"
 	"github.com/gorilla/mux"
 )
 
@@ -27,7 +26,7 @@ func Install(path string, debug bool, s *mux.Router) http.Handler {
 			Password: strings.TrimSpace(r.PostForm.Get("password")),
 			Headpic:  "/static/img/avatar.png",
 			Group:    model.Group{Name: "超级管理员"},
-			LastIP:   realip.FromRequest(r),
+			LastIP:   r.RemoteAddr,
 			Status:   true,
 		}
 		if !emailRegexp.MatchString(user.Email) {

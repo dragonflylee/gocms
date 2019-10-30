@@ -17,40 +17,40 @@ import (
 )
 
 var (
-	addr   = flag.String("addr", ":8080", "监听端口")
-	config = flag.String("c", "config.yml", "配置文件路径")
-	debug  = flag.Bool("d", false, "debug mode")
+	config = configor.New(&configor.Config{AutoReload: true})
+	path   = flag.String("c", "config.yml", "配置文件路径")
 )
 
 func main() {
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	r := mux.NewRouter()
-	// 静态文件
-	path := filepath.Dir(os.Args[0])
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
-		http.FileServer(http.Dir(filepath.Join(path, "static")))))
-	// 404页面
-	r.NotFoundHandler = handler.Limit(2, http.NotFound)
 	// 加载配置文件
-	if err := configor.New(nil).Load(&model.Config, *config); err == nil {
-		if err = model.Open(*debug); err != nil {
+	if err := config.Load(&model.Config, *path); err == nil {
+		if err = model.Open(config.Debug); err != nil {
 			log.Panicf("open db failed: %v", err)
 		}
 	}
+	r := mux.NewRouter()
+	// 静态文件
+	dir := filepath.Dir(os.Args[0])
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
+		http.FileServer(http.Dir(filepath.Join(dir, "static")))))
+	// 404页面
+	r.NotFoundHandler = handler.Limit(2, http.NotFound)
 	s := handler.RouterWrap{Router: r.PathPrefix("/").Subrouter()}
 	if !model.IsOpen() {
 		s.Use(func(h http.Handler) http.Handler {
 			if model.IsOpen() {
 				return h
 			}
-			return handler.Install(*config, *debug, s.Router)
+			return handler.Install(dir, config.Debug, s.Router)
 		})
 	}
-	s.Use(handler.LogHandler, handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
+	s.Use(handlers.ProxyHeaders, handler.LogHandler,
+		handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
 	// 初始化模板
-	if err := handler.Watch(filepath.Join(path, "views"), s.Router); err != nil {
+	if err := handler.Watch(filepath.Join(dir, "views"), s.Router); err != nil {
 		log.Fatalf("watch failed: %v", err)
 	}
 	// 登录相关
@@ -78,5 +78,5 @@ func main() {
 	// 文件上传
 	s.HandleFunc("/upload", handler.Upload).Methods(http.MethodPost)
 
-	log.Panic(http.ListenAndServe(*addr, r))
+	log.Panic(http.ListenAndServe(model.Config.Addr, r))
 }

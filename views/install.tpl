@@ -78,7 +78,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
-  <script src="/static/js/global.js?v=20190101" type="text/javascript"></script>
+  <script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
   <script type="text/javascript">
     var options = {
       'MySQL': { 'host': 'localhost', 'port': 3306, 'user': 'root' },
