@@ -16,5 +16,15 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
-/go.sum
+
+/node_modules
 /vendor
+/wallet
+/static/js
+/static/img
+/package-lock.json
+
+*.tar.gz
+*.db
+.DS_Store
+go.sum

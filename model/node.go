@@ -3,10 +3,9 @@ package model
 import (
 	"encoding/hex"
 	"encoding/json"
+	"gocms/util"
 	"io/ioutil"
 	"os"
-
-	"github.com/dragonflylee/gocms/util"
 
 	"github.com/gorilla/securecookie"
 	"gopkg.in/yaml.v2"

@@ -1,4 +1,4 @@
-module github.com/dragonflylee/gocms
+module gocms
 
 go 1.13
 

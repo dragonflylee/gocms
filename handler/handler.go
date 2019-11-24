@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"gocms/model"
 	"html/template"
 	"io"
 	"log"
@@ -17,8 +18,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/dragonflylee/gocms/model"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/handlers"
@@ -162,7 +161,7 @@ func LogHandler(h http.Handler) http.Handler {
 		}
 		fmt.Fprintf(w, "%s %s %d %s %d %s (%s) %s\n", p.TimeStamp.Format("2006/01/02 15:04:05"),
 			p.Request.Method, p.StatusCode, p.URL.RequestURI(), p.Size,
-			p.Request.RemoteAddr, time.Now().Sub(p.TimeStamp), u)
+			p.Request.RemoteAddr, time.Since(p.TimeStamp), u)
 	})
 }
 
@@ -183,7 +182,7 @@ func Watch(tpl string, r *mux.Router) error {
 	funcMap := template.FuncMap{
 		"date": func(t *time.Time) string {
 			if t == nil {
-				return "无"
+				return "-"
 			}
 			return t.In(time.Local).Format("2006-01-02 15:04:05")
 		},

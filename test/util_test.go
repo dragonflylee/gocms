@@ -1,11 +1,11 @@
 package test
 
 import (
+	"gocms/util"
 	"net/url"
 	"testing"
 	"time"
 
-	"github.com/dragonflylee/gocms/util"
 	"github.com/shopspring/decimal"
 )
 

@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"gocms/handler"
+	"gocms/model"
 	"log"
 	"net/http"
 	"os"
@@ -11,9 +13,6 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/configor"
-
-	"github.com/dragonflylee/gocms/handler"
-	"github.com/dragonflylee/gocms/model"
 )
 
 var (
@@ -44,7 +43,7 @@ func main() {
 			if model.IsOpen() {
 				return h
 			}
-			return handler.Install(dir, config.Debug, s.Router)
+			return handler.Install(*path, config.Debug, s.Router)
 		})
 	}
 	s.Use(handlers.ProxyHeaders, handler.LogHandler,

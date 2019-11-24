@@ -3,9 +3,8 @@
 
 ## 获取安装
 
-执如下命令，就能够在你的 `$GOPATH/bin` 目录下发现 gocms
 ```bash
-go get -v github.com/dragonflylee/gocms
+git clone https://github.com/dragonflylee/gocms.git && cd gocms && make
 ```
 
 ## 目录结构
@@ -15,6 +14,7 @@ go get -v github.com/dragonflylee/gocms
  ├── static     前端静态资源  
  ├── util       工具函数  
  ├── views      模板页面  
+ ├── src        js源文件  
  ├── main.go    路由入口  
  └── nodes.json 节点初始化数据  
 

@@ -2,11 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"gocms/model"
 	"net/http"
 	"strings"
 	"sync"
-
-	"github.com/dragonflylee/gocms/model"
 
 	"github.com/dchest/captcha"
 )
