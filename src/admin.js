@@ -1,39 +1,39 @@
-if (jQuery().validate) {
-  // 表单验证提示中文化
-  $.extend($.validator.messages, {
-    required: '该项不能为空',
-    remote: '请修正此字段',
-    email: '请输入有效的电子邮件地址',
-    url: '请输入有效的网址',
-    date: '请输入有效的日期',
-    dateISO: '请输入有效的日期 (YYYY-MM-DD)',
-    number: '请输入有效的数字',
-    digits: '只能输入数字',
-    creditcard: '请输入有效的信用卡号码',
-    equalTo: '你的输入不相同',
-    extension: '请输入有效的后缀',
-    maxlength: $.validator.format('最多可以输入 {0} 个字符'),
-    minlength: $.validator.format('最少要输入 {0} 个字符'),
-    rangelength: $.validator.format('请输入长度在 {0} 到 {1} 之间的字符串'),
-    range: $.validator.format('请输入范围在 {0} 到 {1} 之间的数值'),
-    max: $.validator.format('请输入不大于 {0} 的数值'),
-    min: $.validator.format('请输入不小于 {0} 的数值')
-  });
-  // 手机号校验
-  $.validator.addMethod('mobile', function (value, element) {
-    var mobile = /^((\+?86)|(\(\+86\)))?(13[0-9][0-9]{8}|15[0-9][0-9]{8}|18[0-9][0-9]{8}|17[0678][0-9]{8}|147[0-9]{8}|1349[0-9]{7})$/;
-    return this.optional(element) || (value.length == 11 && mobile.test(value));
-  }, '请填写正确的手机号码');
-  // 密码验证正则表达式
-  $.validator.addMethod('regexPasswd', function (value, element) {
-    return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,}$/.test(value);
-  }, '密码至少包大小写字母及数字，长度至少8位');
-}
+const $ = require('jquery')
+window.jQuery = $;
+window.$ = $;
 
-var Admin = {
+require('bootstrap')
+require('admin-lte')
+require('jquery-form')
+require('jquery-validation')
+require('jquery-validation/dist/localization/messages_zh')
+
+require('bootstrap-switch')
+require('icheck')
+require('select2')
+require('select2/dist/js/i18n/zh-CN')
+require('bootstrap-filestyle')
+require('bootstrap-datepicker')
+require('bootstrap-datepicker/dist/locales/bootstrap-datepicker.zh-CN.min.js')
+
+window.md5 = require('blueimp-md5')
+
+import './admin.css'
+
+// 手机号校验
+$.validator.addMethod('mobile', function (value, element) {
+  var mobile = /^((\+?86)|(\(\+86\)))?(13[0-9][0-9]{8}|15[0-9][0-9]{8}|18[0-9][0-9]{8}|17[0678][0-9]{8}|147[0-9]{8}|1349[0-9]{7})$/;
+  return this.optional(element) || (value.length == 11 && mobile.test(value));
+}, '请填写正确的手机号码');
+// 密码验证正则表达式
+$.validator.addMethod('regexPasswd', function (value, element) {
+  return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,}$/.test(value);
+}, '密码至少包大小写字母及数字，长度至少8位');
+
+window.Admin = {
   // 通用表单验证
   validate: function (selector, options) {
-    if (jQuery().validate) $(selector).each(function (i, form) {
+    $(selector).each(function (i, form) {
       $(form).validate({
         errorElement: 'span', focusInvalid: false,
         errorClass: 'help-inline help-block',
@@ -71,17 +71,22 @@ var Admin = {
             },
             success: function (resp) {
               if (resp.code != 200) Admin.alert({
-                container: target, type: 'danger', message: resp.msg });
+                container: target, type: 'danger', message: resp.msg
+              });
               else if (typeof resp.data === 'string')
                 window.location = resp.data;
               else if (typeof resp.msg !== 'string')
                 location.reload();
-              else Admin.alert({container: target,
-                message: resp.msg, closeInSeconds: 3 });
+              else Admin.alert({
+                container: target,
+                message: resp.msg, closeInSeconds: 3
+              });
             },
             error: function () {
-              Admin.alert({container: target,
-                type: 'danger', message: '请求失败' });
+              Admin.alert({
+                container: target,
+                type: 'danger', message: '请求失败'
+              });
             }
           }, options));
         }
@@ -143,22 +148,14 @@ var Admin = {
     });
   },
   init: function ($container) {
-    if (jQuery().tooltip) {
-      $('[data-toggle="tooltip"]', $container).tooltip();
-    }
-    if (jQuery().popover) {
-      $('[data-toggle="popover"]', $container).popover();
-    }
-    if (jQuery().select2) {
-      $('.select2', $container).select2({
-        language: 'zh-CN'
-      });
-    }
-    if (window.Sortable) {
-      $('[data-toggle="sortable"]', $container).each(function (i, e) {
-        Sortable.create(e);
-      });
-    }
+    $('[data-toggle="tooltip"]', $container).tooltip();
+
+    $('[data-toggle="popover"]', $container).popover();
+
+    $('.select2', $container).select2({
+      language: 'zh-CN'
+    });
+
     if (jQuery().jstree) {
       $('.jstree', $container).jstree({
         "core": { "themes": { "variant": "large" } },
@@ -166,40 +163,38 @@ var Admin = {
         "plugins": ["checkbox"]
       });
     }
-    if (jQuery().iCheck) {
-      $('.icheck :checkbox, .icheck :radio', $container).iCheck({
-        checkboxClass: 'icheckbox_minimal-blue',
-        radioClass: 'iradio_minimal-blue',
-        increaseArea: '20%' // optional
-      });
-      // 表格复选框
-      $('th :checkbox', $container).on('ifChanged', function () {
-        var set = $(this).data('set');
-        var checked = $(this).is(':checked');
-        $(set).each(function () {
-          if (checked) {
-            $(this).iCheck('check');
-            $(this).parents('tr').addClass('active');
-          } else {
-            $(this).iCheck('uncheck');
-            $(this).parents('tr').removeClass('active');
-          }
-        });
-      });
-      $('tr :checkbox').on('ifChanged', function () {
-        $(this).parents('tr').toggleClass('active');
-      });
-    }
-    if (jQuery().bootstrapSwitch) {
-      $('.make-switch', $container).bootstrapSwitch({
-        onSwitchChange: function (e, state) {
-          var target = $(e.currentTarget).data('target');
-          if (target) $(target).modal('show', e.currentTarget).one('hide.bs.modal', function () {
-            $(e.currentTarget).bootstrapSwitch('toggleState', 'skip');
-          });
+
+    $('.icheck :checkbox, .icheck :radio', $container).iCheck({
+      checkboxClass: 'icheckbox_minimal-blue',
+      radioClass: 'iradio_minimal-blue',
+      increaseArea: '20%' // optional
+    });
+    // 表格复选框
+    $('th :checkbox', $container).on('ifChanged', function () {
+      var set = $(this).data('set');
+      var checked = $(this).is(':checked');
+      $(set).each(function () {
+        if (checked) {
+          $(this).iCheck('check');
+          $(this).parents('tr').addClass('active');
+        } else {
+          $(this).iCheck('uncheck');
+          $(this).parents('tr').removeClass('active');
         }
       });
-    }
+    });
+    $('tr :checkbox').on('ifChanged', function () {
+      $(this).parents('tr').toggleClass('active');
+    });
+
+    $('.make-switch', $container).bootstrapSwitch({
+      onSwitchChange: function (e, state) {
+        var target = $(e.currentTarget).data('target');
+        if (target) $(target).modal('show', e.currentTarget).one('hide.bs.modal', function () {
+          $(e.currentTarget).bootstrapSwitch('toggleState', 'skip');
+        });
+      }
+    });
   }
 }
 
@@ -217,13 +212,15 @@ $(document).on('click', '.modal-content .pagination a,.modal-content .nav-tabs-c
 
 if (typeof Storage !== 'undefined') {
   // 侧边栏
-  $(document).on('expanded.pushMenu', function() {
+  $(document).on('expanded.pushMenu', function () {
     localStorage.removeItem('sidebar');
-  }).on('collapsed.pushMenu', function() {
+  }).on('collapsed.pushMenu', function (e) {
     localStorage.setItem('sidebar', 'sidebar-collapse');
   })
-  var sidebar = localStorage.getItem('sidebar');
-  if (sidebar) $(document.body).addClass(sidebar);
+  $(document).ready(function () {
+    var sidebar = localStorage.getItem('sidebar');
+    if (sidebar) $(document.body).addClass(sidebar);
+  })
 }
 
 $(document).ready(function () {

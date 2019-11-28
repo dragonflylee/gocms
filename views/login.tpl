@@ -37,42 +37,6 @@
       </form>
     </div>
   </div>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
-  <script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
-  <script type="text/javascript">
-    $(document).ready(function () {
-      $('img.img-responsive').click(function (e) {
-        var src = e.target.src;
-        e.target.src = src.substr(0, src.indexOf('?') + 1) +
-          'reload=' + new Date().getTime();
-      });
-      $.backstretch('/bingpic');
-      // 页面表单
-      Admin.validate('form:has([name="pass"])', {
-        beforeSubmit: function (arr) {
-          for (var i = 0; i < arr.length; i++)
-            if (arr[i].name == 'pass')
-              arr[i].value = md5(arr[i].value);
-        },
-        success: function (resp) {
-          if (resp.code == 200) {
-            window.location = resp.data;
-            return;
-          }
-          if (typeof resp.data === 'string') {
-            $('input[name="id"]').val(resp.data);
-            $('img.img-responsive').attr('src', '/captcha/' + resp.data + '.png?')
-          }
-          Admin.alert({container: $('form'), type: 'danger', message: resp.msg });
-        }
-      });
-    })
-  </script>
 </body>
-
+<script src="/static/js/login.js?v{{version}}" type="text/javascript"></script>
 </html>
