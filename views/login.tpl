@@ -35,8 +35,8 @@
       </form>
     </div>
   </div>
-  {{- template "footer" "login"}}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+  <script src="/static/js/admin.js?v{{version}}" type="text/javascript"></script>
+  <script src="/static/js/login.js?v{{version}}" type="text/javascript"></script>
   {{- if .Key}}
   <script src='//recaptcha.net/recaptcha/api.js'></script>
   {{- end}}

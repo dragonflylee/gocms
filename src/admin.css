@@ -1,0 +1,21 @@
+@import "~bootstrap/dist/css/bootstrap.min.css";
+@import "~font-awesome/css/font-awesome.min.css";
+
+@import "~bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css";
+@import "~bootstrap-datepicker/dist/css/bootstrap-datepicker3.min.css";
+@import "~icheck/skins/square/blue.css";
+@import "~select2/dist/css/select2.min.css";
+@import '~jstree/dist/themes/default/style.min.css';
+
+@import "~admin-lte/dist/css/AdminLTE.min.css";
+@import "~admin-lte/dist/css/skins/_all-skins.min.css";
+
+.sort-tags li,
+table th,
+td {
+  text-align: center;
+}
+
+.login-logo img {
+  max-height: 50px
+}

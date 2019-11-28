@@ -204,7 +204,7 @@ func Watch(tpl string, r *mux.Router) error {
 		for {
 			select {
 			case e := <-watcher.Events:
-				log.Printf("load %s %v", filepath.Base(e.Name), e.Op)
+				log.Printf("load %s %s", filepath.Base(e.Name), e.Op)
 				if t, err = template.New(sessName).Funcs(funcMap).ParseGlob(pattern); err != nil {
 					log.Printf("parse %s failed: %v", e.Name, err)
 				}

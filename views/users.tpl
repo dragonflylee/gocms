@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{- template "header" .Node}}
-  <link href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.10/themes/default/style.min.css" rel="stylesheet">
+  {{template "header" .Node}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
@@ -26,7 +25,7 @@
               {{- if .Data.Group}}
               <div class="box-body no-padding">
                 <ul class="nav nav-pills nav-stacked">
-                  <li {{- if not (.Form.Get "group")}} class="active" {{- end}}><a href="?">所有</a></li>
+                  <li {{- if not (.Form.Get "group" )}} class="active" {{- end}}><a href="?">所有</a></li>
                   {{- range $id, $name := .Data.Group}}
                   {{- if eq (print $id) ($.Form.Get "group")}}
                   <li class="active">
@@ -142,7 +141,7 @@
                   <select name="group" class="form-control">
                     {{- range $id, $name := .Data.Group}}
                     {{- if lt $.User.GroupID $id}}
-                    <option value="{{$id}}" {{if eq (print $id) ($.Form.Get "group")}} selected{{end}}>{{$name}}</option>
+                    <option value="{{$id}}" {{if eq (print $id) ($.Form.Get "group" )}} selected{{end}}>{{$name}}</option>
                     {{- end}}
                     {{- end}}
                   </select>
@@ -183,10 +182,17 @@
         </div>
       </div>
     </div>
-    {{- end}}
-    {{- template "modal"}}
-    {{- template "footer"}}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.10/jstree.min.js"></script>
+    {{end}}
+    {{if .User.Access "GroupAdd"}}
+    <div class="modal" id="modal-node">
+      <div class="modal-dialog">
+        <div class="modal-content box">
+        </div>
+      </div>
+    </div>
+    {{end}}
+    {{template "modal"}}
+    {{template "footer"}}
   </div>
 </body>
 </html>

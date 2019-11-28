@@ -1,23 +1,11 @@
 {{define "header"}}
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>{{.}}</title>
-  <meta content="noarchive" name="robots">
-  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.3/skins/square/blue.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/css/AdminLTE.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/css/skins/_all-skins.min.css" rel="stylesheet">
-  <link href="/static/css/custom.min.css?v{{version}}" rel="stylesheet" type="text/css">
-  {{html "<!--[if lt IE 9]>"}}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
-  {{html "<![endif]-->"}}
-{{- end}}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>{{.}}</title>
+<meta content="noarchive" name="robots">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<link href="/static/css/admin.css?v={{version}}" rel="stylesheet" type="text/css">
+{{end}}
 
 {{define "navbar"}}
 <header class="main-header">
@@ -89,31 +77,14 @@
 {{- end}}
 
 {{define "footer"}}
-  {{- if not .}}
-  <footer class="main-footer">
-    <div class="pull-right hidden-xs">
-      Powered by <b>{{version}}</b>
-    </div>
-    <strong>版权所有 &copy; 2020 <a href="https://github.com/dragonflylee/gocms">GoCMS</a>.</strong>
-  </footer>
-  {{- end}}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/js/adminlte.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.2/jquery.validate.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.18.0/js/md5.min.js"></script>
-  {{- if not .}}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/Sortable/1.8.3/Sortable.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.3/icheck.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/i18n/zh-CN.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
-  {{- end}}
-  <script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
-{{- end}}
+<footer class="main-footer">
+  <div class="pull-right hidden-xs">
+    Powered by <b>{{version}}</b>
+  </div>
+  <strong>版权所有 &copy; 2019 <a href="https://github.com/dragonflylee/gocms">GoCMS</a>.</strong>
+</footer>
+<script src="/static/js/admin.js?v{{version}}" type="text/javascript"></script>
+{{end}}
 
 {{define "sidebar"}}
   {{- range .m}}

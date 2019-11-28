@@ -5,6 +5,9 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"image"
+	// 图像解析
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"net/http"
 	"strings"

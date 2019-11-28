@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{- template "header" .Node}}
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+  {{template "header" .Node}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
@@ -121,32 +120,8 @@
         </div>
       </section>
     </div>
-    {{- template "footer"}}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-filestyle/1.2.3/bootstrap-filestyle.min.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function () {
-        var area = new Morris.Line({
-          element: $('#area-chart .chart'),
-          xkey: 'y',
-          hideHover: 'auto',
-          ykeys: ['item1', 'item2'],
-          labels: ['类型1', '类型2'],
-          lineColors: ['#a0d0e0', '#3c8dbc']
-        });
-        $('#area-chart').boxRefresh({
-          loadInContent: false, responseType: 'json',
-          onLoadStart: function () {
-            this[0].options.params =
-              $('#area-chart input,select').serializeArray();
-          },
-          onLoadDone: function (e) {
-            area.setData(e.data);
-          }
-        })
-      })
-    </script>
+    {{template "footer"}}
+    <script src="/static/js/index.js?v{{version}}" type="text/javascript"></script>
   </div>
 </body>
 </html>

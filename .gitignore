@@ -20,6 +20,10 @@
 /node_modules
 /vendor
 /wallet
+/static/js/*
+/static/img/*
+/static/css/*
+!/static/img/avatar.png
 /package-lock.json
 
 *.tar.gz

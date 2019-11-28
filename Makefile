@@ -6,15 +6,17 @@ LDFLAGS += -X 'gocms/handler.build=$(COMMIT)'
 
 .PHONY: all
 
-all: vendor node_modules build
-
-vendor:
-	@GO111MODULE=on go mod vendor
+all: build
 
 node_modules:
 	@npm install
 
-build:
-	@echo "building: ${VERSION}"
+static/js/admin.js:
 	@npm run build
+
+bindata.go: static/js/admin.js
+	@go run github.com/go-bindata/go-bindata/go-bindata
+
+build: bindata.go
+	@echo "building: ${VERSION}"
 	@go build -v -ldflags "$(LDFLAGS)"

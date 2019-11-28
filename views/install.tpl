@@ -64,7 +64,7 @@
       </form>
     </div>
   </div>
-  {{- template "footer" "install"}}
+  <script src="/static/js/admin.js?v{{version}}" type="text/javascript"></script>
   <script type="text/javascript">
     var options = {
       'MySQL': { 'host': 'localhost', 'port': 3306, 'user': 'root' },
