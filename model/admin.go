@@ -123,9 +123,9 @@ func GetAdminNum(filter ...func(*gorm.DB) *gorm.DB) (int64, error) {
 
 // Group 用户组
 type Group struct {
-	ID    int64   `gorm:"primary_key;auto_increment"`
-	Name  string  `gorm:"size:64;unique;not null"`
-	Nodes []*Node `gorm:"many2many:node_groups;association_autoupdate:false"`
+	ID    int64  `gorm:"primary_key;auto_increment"`
+	Name  string `gorm:"size:64;unique;not null"`
+	Nodes Menu   `gorm:"many2many:node_groups;association_autoupdate:false"`
 }
 
 // Create 新建用户组
@@ -201,8 +201,8 @@ func (m *AdminLog) Create() error {
 }
 
 // GetLogs 获取日志列表
-func GetLogs(filter ...func(*gorm.DB) *gorm.DB) ([]*AdminLog, error) {
-	var list []*AdminLog
+func GetLogs(filter ...func(*gorm.DB) *gorm.DB) ([]AdminLog, error) {
+	var list []AdminLog
 	err := db.Scopes(filter...).Preload("Admin", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id, email")
 	}).Order("id desc").Find(&list).Error
@@ -218,5 +218,4 @@ func GetLogNum(filter ...func(*gorm.DB) *gorm.DB) (int64, error) {
 
 func init() {
 	gob.Register(new(Admin))
-	model = append(model, new(Admin), new(Group), new(AdminLog))
 }

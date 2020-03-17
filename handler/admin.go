@@ -134,14 +134,13 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == http.MethodGet {
-		data := make(map[string]interface{})
-		if err = group.Select(); err == nil {
-			data["Group"] = &group
+		if err = group.Select(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
-		if nodes, err := model.GetNodeAllNodes(); err == nil {
-			data["Node"] = nodes
-		}
-		t.ExecuteTemplate(w, "group.tpl", data)
+		t.ExecuteTemplate(w, "group.tpl", map[string]interface{}{
+			"Group": &group, "Node": model.GetNodes(),
+		})
 		return
 	}
 	if group.ID == sess.Values[userKey].(*model.Admin).GroupID {
@@ -160,7 +159,7 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		group.Nodes = make([]*model.Node, 0, len(nodes))
 		for _, id := range nodes {
 			var n model.Node
-			if n.ID, err = strconv.ParseInt(id, 10, 64); err == nil {
+			if n.ID, err = strconv.Atoi(id); err == nil {
 				group.Nodes = append(group.Nodes, &n)
 			}
 		}

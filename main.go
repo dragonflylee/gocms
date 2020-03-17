@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/dchest/captcha"
 	"github.com/gorilla/handlers"
@@ -16,7 +17,7 @@ import (
 )
 
 var (
-	config = configor.New(&configor.Config{AutoReload: true})
+	config = configor.New(&configor.Config{AutoReload: true, AutoReloadInterval: time.Hour})
 	path   = flag.String("c", "config.yml", "配置文件路径")
 )
 
@@ -53,7 +54,6 @@ func main() {
 		log.Fatalf("watch failed: %v", err)
 	}
 	// 登录相关
-	s.Handle("/", handler.Check(http.HandlerFunc(handler.Home))).Name("")
 	s.Handle("/login", handler.Limit(2, handler.Login)).Methods(http.MethodPost)
 	s.Handle("/bingpic", handler.Limit(2, handler.BingPic)).Methods(http.MethodGet)
 	s.Handle("/captcha/{png}", captcha.Server(120, 35)).Methods(http.MethodGet)
@@ -76,6 +76,7 @@ func main() {
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
 	// 文件上传
 	s.HandleFunc("/upload", handler.Upload).Methods(http.MethodPost)
+	s.HandleFunc("/", handler.Home)
 
 	log.Panic(http.ListenAndServe(model.Config.Addr, r))
 }

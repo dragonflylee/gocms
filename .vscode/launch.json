@@ -10,7 +10,10 @@
             "request": "launch",
             "mode": "exec",
             "program": "${workspaceFolder}/${workspaceFolderBasename}",
-            "preLaunchTask": "build"
+            "preLaunchTask": "build",
+            "env": {
+                "CONFIGOR_DEBUG_MODE": true
+            }
         }
     ]
 }

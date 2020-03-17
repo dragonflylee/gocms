@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+
 	// 数据库驱动
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -14,8 +15,7 @@ import (
 
 var (
 	db       *gorm.DB
-	model    []interface{}
-	mapNodes map[int64]*Node
+	mapNodes map[int]*Node
 )
 
 // Open 连接数据库
@@ -41,7 +41,13 @@ func Open(debug bool) (err error) {
 	db.BlockGlobalUpdate(true)
 	db.LogMode(debug)
 	// 同步数据库
-	if err = db.AutoMigrate(model...).Error; err != nil {
+	if err = db.AutoMigrate(
+		new(Admin),
+		new(Group),
+		new(AdminLog),
+		new(Node),
+		new(Article),
+	).Error; err != nil {
 		return fmt.Errorf("migrate failed: %v", err)
 	}
 	// 加载节点数据

@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"gocms/util"
 	"io/ioutil"
 	"os"
@@ -19,22 +18,22 @@ const (
 	NodeTypeNormal NodeType = iota
 	// NodeTypeEssensial 必要节点
 	NodeTypeEssensial
-	// NodeTypeFix 不可修改节点
-	NodeTypeFix
+	// NodeTypeAdmin 管理员
+	NodeTypeAdmin
 )
 
 // Node 节点模型
 type Node struct {
-	ID     int64    `gorm:"primary_key;auto_increment"`
+	ID     int      `gorm:"primary_key;auto_increment" yaml:"-"`
 	Name   string   `gorm:"size:64;not null"`
-	Parent int64    `gorm:"default:0;not null"`
-	Icon   string   `gorm:"size:32;default:null"`
-	Remark string   `gorm:"type:text"`
-	Path   string   `gorm:"size:255"`
-	Type   NodeType `gorm:"default:0;not null"`
+	Parent int      `gorm:"default:0;not null" yaml:"-"`
+	Icon   string   `gorm:"size:32;default:null" yaml:",omitempty"`
+	Remark string   `gorm:"type:text" yaml:",omitempty"`
+	Path   string   `gorm:"size:255;default:null"`
+	Type   NodeType `gorm:"default:0;not null" yaml:",omitempty"`
 	Status bool     `gorm:"default:false;not null"`
-	Child  Menu     `gorm:"-"`
-	Groups []*Group `gorm:"many2many:node_groups"`
+	Child  Menu     `yaml:",omitempty"`
+	Groups []Group  `gorm:"many2many:node_groups" yaml:"-"`
 }
 
 // Menu 菜单
@@ -45,9 +44,9 @@ func (m Menu) Assign(g int64, n *Node) map[string]interface{} {
 	return map[string]interface{}{"m": m, "Group": g, "Node": n}
 }
 
-func loadNodes() (map[int64]*Node, error) {
-	var list []*Node
-	n := map[int64]*Node{0: &Node{ID: 0, Path: "#"}}
+func loadNodes() (map[int]*Node, error) {
+	var list Menu
+	n := map[int]*Node{0: &Node{ID: 0, Path: "#"}}
 	err := db.Order("id").Preload("Groups").Find(&list).Error
 	if err != nil {
 		return nil, err
@@ -56,7 +55,7 @@ func loadNodes() (map[int64]*Node, error) {
 		n[node.ID] = node
 	}
 	for _, node := range list {
-		if node.ID > 0 && node.Status {
+		if node.ID > 0 {
 			p := n[node.Parent]
 			p.Child = append(p.Child, node)
 		}
@@ -66,20 +65,37 @@ func loadNodes() (map[int64]*Node, error) {
 
 // Install 初始化节点
 func Install(u *Admin, path string) error {
-	data, err := ioutil.ReadFile("nodes.json")
+	data, err := ioutil.ReadFile("nodes.yml")
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(data, &u.Group.Nodes); err != nil {
+	var (
+		walk func(m Menu, id int) int
+		list Menu
+	)
+	if err = yaml.Unmarshal(data, &list); err != nil {
 		return err
 	}
+	walk = func(m Menu, id int) int {
+		var i = id
+		for _, v := range m {
+			v.Parent = id
+			i = i + 1
+			if v.ID = i; len(v.Child) > 0 {
+				i = walk(v.Child, v.ID)
+				v.Child = nil
+			}
+			u.Group.Nodes = append(u.Group.Nodes, v)
+		}
+		return i
+	}
+	walk(list, 0)
+
 	db := db.Begin().Set("gorm:association_autoupdate", true)
-	u.Group.ID = 1
 	if err = db.Save(&u.Group).Error; err != nil {
 		db.Rollback()
 		return err
 	}
-	u.ID = 1
 	u.GroupID = u.Group.ID
 	u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
 	u.Password = util.MD5(u.Password + util.MD5(u.Salt))
@@ -111,24 +127,6 @@ func GetNodes() Menu {
 	return mapNodes[0].Child
 }
 
-// GetNodeAllNodes 根据用户组获取节点
-func GetNodeAllNodes() (Menu, error) {
-	var list Menu
-	err := db.Order("id").Preload("Groups").Find(&list).Error
-	if err != nil {
-		return nil, err
-	}
-	dict := map[int64]*Node{0: &Node{ID: 0}}
-	for _, node := range list {
-		dict[node.ID] = node
-	}
-	for _, node := range list {
-		p := dict[node.Parent]
-		p.Child = append(p.Child, node)
-	}
-	return dict[0].Child, nil
-}
-
 // GetNodeByPath 根据路径查找节点
 func GetNodeByPath(path string) *Node {
 	for _, node := range mapNodes {
@@ -140,7 +138,7 @@ func GetNodeByPath(path string) *Node {
 }
 
 // HasParent 判断父节点是否存在
-func (n *Node) HasParent(id int64) bool {
+func (n *Node) HasParent(id int) bool {
 	if n == nil {
 		return false
 	}
@@ -161,18 +159,18 @@ func (n *Node) String() string {
 }
 
 // Parents 获取指定节点的所有父节点
-func (n *Node) Parents() []*Node {
-	list := make([]*Node, 0)
+func (n *Node) Parents() Menu {
+	list := make(Menu, 0)
 	for n.Parent != 0 {
 		n = mapNodes[n.Parent]
-		list = append([]*Node{n}, list...)
+		list = append(Menu{n}, list...)
 	}
 	return list
 }
 
 // HasGroup 判断指定节点是否能被某角色访问
 func (n *Node) HasGroup(id int64) bool {
-	if n == nil {
+	if n == nil || n.Type == NodeTypeEssensial {
 		return true
 	}
 	for _, role := range n.Groups {
@@ -181,8 +179,4 @@ func (n *Node) HasGroup(id int64) bool {
 		}
 	}
 	return false
-}
-
-func init() {
-	model = append(model, new(Node))
 }

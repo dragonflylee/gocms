@@ -123,8 +123,8 @@
 
 {{define "sidebar"}}
   {{range .m}}
-  {{if not (.HasGroup $.Group)}}
-  {{else if .Child}}
+  {{if and .Status (.HasGroup $.Group)}}
+  {{if and .Child (not .Path)}}
   <li class="treeview {{if $.Node.HasParent .ID}}active{{end}}">
     <a href="#">
       <i class="{{.Icon}}"></i> <span>{{.Name}}</span>
@@ -143,6 +143,7 @@
       <span>{{.Name}}</span>
     </a>
   </li>
+  {{end}}
   {{end}}
   {{end}}
 {{end}}

@@ -1,0 +1,39 @@
+- name: 仪表盘
+  icon: fa fa-dashboard
+  path: Home
+  type: 1
+  status: true
+- name: 个人中心
+  icon: fa fa-user-o
+  path: Profile
+  type: 1
+- name: 系统管理
+  icon: fa fa-gears
+  status: true
+  child:
+  - name: 日志查看
+    icon: fa fa-sticky-note-o
+    path: Logs
+    status: true
+  - name: 用户管理
+    icon: fa fa-users
+    path: Users
+    type: 2
+    status: true
+    child:
+    - name: 用户添加
+      icon: fa fa-user-plus
+      path: UserAdd
+      type: 2
+    - name: 用户删除
+      path: UserDelete
+      type: 2
+      child:
+      - name: 角色添加
+        icon: fa fa-address-book-o
+        path: GroupAdd
+        type: 2
+  - name: 角色管理
+    icon: fa fa-users
+    path: GroupEdit
+    type: 2
