@@ -12,12 +12,14 @@ import (
 // Article 文章
 type Article struct {
 	ID        int64      `json:"-" gorm:"primary_key"`
+	AdminID   int64      `json:"-"`
 	Title     string     `json:"title" gorm:"index;size:256;not null"`
 	Tags      string     `json:"tags,omitempty" gorm:"size:256"`
 	Content   string     `json:"content,omitempty" gorm:"type:text"`
 	Remark    string     `json:"remark,omitempty" gorm:"size:512"`
 	CreatedAt *time.Time `json:"created_at,omitempty" gorm:"not null"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	Admin     *Admin     `json:"-"`
 }
 
 // Render 渲染
@@ -27,8 +29,8 @@ func (a Article) Render() template.HTML {
 }
 
 // Query 获取文章
-func (a *Article) Query() error {
-	return db.New().First(a, "id = ?", a.ID).Error
+func (a *Article) Query(where ...interface{}) error {
+	return db.New().First(a, where...).Error
 }
 
 // Update 更新文章
@@ -39,7 +41,7 @@ func (a *Article) Update() error {
 // GetArticles 获取文章列表
 func GetArticles(filter ...func(*gorm.DB) *gorm.DB) ([]Article, error) {
 	var list []Article
-	err := db.New().Scopes(filter...).Find(&list).Error
+	err := db.New().Scopes(filter...).Preload("Admin").Find(&list).Error
 	return list, err
 }
 

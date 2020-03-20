@@ -11,7 +11,7 @@
       <section class="content">
         <div class="box">
           <div class="box-header with-border">
-            <h3 class="box-title">日志列表</h3>
+            <h3 class="box-title">文章列表</h3>
             <div class="box-tools">
               <form class="form-inline">
                 <div class="form-group">
@@ -36,20 +36,18 @@
               <tbody>
                 <tr>
                   <th>#</th>
-                  <th>管理员</th>
-                  <th>访问内容</th>
+                  <th>标题</th>
+                  <th>作者</th>
                   <th>注释</th>
-                  <th>IP</th>
-                  <th>操作时间</th>
+                  <th>更新时间</th>
                 </tr>
                 {{range .Data.List}}
                 <tr>
                   <td>{{.ID}}</td>
+                  <td>{{.Title}}</td>
                   <td>{{.Admin}}</td>
-                  <td>{{.Path}}</td>
-                  <td>{{.Commit}}</td>
-                  <td><span class="last-ip" data-toggle="popover" data-trigger="hover" data-content="请稍等...">{{.IP}}</span></td>
-                  <td>{{date .CreatedAt}}</td>
+                  <td></td>
+                  <td>{{date .UpdatedAt}}</td>
                 </tr>
                 {{end}}
               </tbody>

@@ -37,3 +37,14 @@
     icon: fa fa-users
     path: GroupEdit
     type: 2
+- name: 文章管理
+  icon: fa fa-user-o
+  path: Articles
+  status: true
+  child:
+  - name: 文章详情
+    path: GetArticle
+  - name: 编辑文章
+    path: EditArticle
+  - name: 删除文章
+    path: DelArticle

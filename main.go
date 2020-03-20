@@ -72,6 +72,10 @@ func main() {
 	s.HandleFunc("/group/{id:[0-9]+}", handler.GroupEdit)
 	s.HandleFunc("/group/add", handler.GroupAdd).Methods(http.MethodPost)
 	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
+	// 文章管理
+	s.HandleFunc("/articles", handler.Articles)
+	s.HandleFunc("/article/{id:[0-9]+}", handler.GetArticle)
+	s.HandleFunc("/article/edit/{id:[0-9]+}", handler.EditArticle)
 	// 个人中心
 	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
 	// 文件上传

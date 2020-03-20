@@ -194,21 +194,21 @@
 {{end}}
 
 {{define "paginator"}}
-{{if and . .page}}
-<span style="padding-left: 10px;">共 {{.page.Nums}} 条记录</span>
+{{if and . .Page}}
+<span style="padding-left: 10px;">共 {{.Page.Nums}} 条记录</span>
 {{end}}
-{{if and . .page .page.HasPages}}
+{{if and . .Page .Page.HasPages}}
 <ul class="pagination pagination-sm no-margin pull-right">
-  {{if .page.HasPrev}}
-  <li><a href="{{.page.PageLinkFirst}}"><i class="fa fa-angle-double-left"></i></a></li>
+  {{if .Page.HasPrev}}
+  <li><a href="{{.Page.PageLinkFirst}}"><i class="fa fa-angle-double-left"></i></a></li>
   {{end}}
-  {{range $index, $page := .page.Pages}}
-  <li {{if $.page.IsActive .}} class="active" {{end}}>
-    <a href="{{$.page.PageLink $page}}">{{$page}}</a>
+  {{range $index, $page := .Page.Pages}}
+  <li {{if $.Page.IsActive .}} class="active" {{end}}>
+    <a href="{{$.Page.PageLink $page}}">{{$page}}</a>
   </li>
   {{end}}
-  {{if .page.HasNext}}
-  <li><a href="{{.page.PageLinkLast}}"><i class="fa fa-angle-double-right"></i></a></li>
+  {{if .Page.HasNext}}
+  <li><a href="{{.Page.PageLinkLast}}"><i class="fa fa-angle-double-right"></i></a></li>
   {{end}}
 </ul>
 {{end}}
