@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"gocms/model"
 	"net/http"
 	"strings"
@@ -30,8 +29,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	email := strings.TrimSpace(r.PostForm.Get("user"))
-	password := strings.TrimSpace(r.PostForm.Get("pass"))
+	email := strings.TrimSpace(r.PostForm.Get("username"))
+	password := strings.TrimSpace(r.PostForm.Get("password"))
 	if !emailRegexp.MatchString(email) {
 		jFailed(w, http.StatusBadRequest, "邮箱格式非法")
 		return
@@ -41,22 +40,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jResp := func(w http.ResponseWriter, msg string) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(struct {
-			Code int    `json:"code"`
-			Msg  string `json:"msg,omitempty"`
-			Data string `json:"data,omitempty"`
-		}{Code: http.StatusBadRequest, Msg: msg, Data: captcha.New()})
-	}
-
-	if !captcha.VerifyString(r.Form.Get("id"), r.PostForm.Get("code")) {
-		jResp(w, "验证码非法")
+	id := r.Form.Get("id")
+	defer captcha.Reload(id)
+	if !captcha.VerifyString(id, r.PostForm.Get("code")) {
+		jFailed(w, http.StatusBadRequest, "验证码非法")
 		return
 	}
 	user, err := model.Login(email, password, r.RemoteAddr)
 	if err != nil {
-		jResp(w, err.Error())
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	sess.Values[userKey] = user
@@ -64,7 +56,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		sess.Options.MaxAge = 0
 	}
 	if err = sess.Save(r, w); err != nil {
-		jResp(w, err.Error())
+		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	tokenMap.Store(user.ID, sess.ID)

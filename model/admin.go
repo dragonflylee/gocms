@@ -50,15 +50,15 @@ func (m *Admin) GobDecode(data []byte) error {
 func (m *Admin) Create() error {
 	m.Email = strings.ToLower(m.Email)
 	m.Headpic = "/static/img/avatar.png"
-	db := db.Unscoped().Model(m).
+	r := db.Unscoped().Model(m).
 		Where("email = ?", m.Email).
 		Updates(map[string]interface{}{
 			"group_id":   m.GroupID,
 			"deleted_at": nil})
-	if db.Error != nil {
-		return db.Error
+	if r.Error != nil {
+		return r.Error
 	}
-	if db.RowsAffected > 0 {
+	if r.RowsAffected > 0 {
 		return nil
 	}
 	return db.Create(m).Error
@@ -192,7 +192,7 @@ type AdminLog struct {
 	UA        string     `gorm:"size:255" xlsx:"-"`
 	Commit    string     `gorm:"type:text" xlsx:"注释"`
 	IP        string     `gorm:"size:16" xlsx:"IP"`
-	CreatedAt *time.Time `gorm:"type(datetime)" xlsx:"时间"`
+	CreatedAt *time.Time `gorm:"not null" xlsx:"时间"`
 }
 
 // Create 插入日志

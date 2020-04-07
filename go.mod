@@ -13,7 +13,9 @@ require (
 	github.com/jinzhu/gorm v1.9.11
 	github.com/makiuchi-d/gozxing v0.0.0-20190830103442-eaff64b1ceb7
 	github.com/quasoft/memstore v0.0.0-20191010062613-2bce066d2b0b
+	github.com/russross/blackfriday/v2 v2.0.1
 	github.com/shopspring/decimal v0.0.0-20191009025716-f1972eb1d1f5
+	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/tealeg/xlsx v1.0.5
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
