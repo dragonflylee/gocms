@@ -1,0 +1,13 @@
+image: "golang:latest"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache
+
+build:
+  script:
+    - mkdir -p .cache
+    - GOPATH="$CI_PROJECT_DIR/.cache" go build -v
+  tags:
+    - golang

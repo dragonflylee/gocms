@@ -31,3 +31,11 @@ git clone https://github.com/dragonflylee/gocms.git && cd gocms && make
     <button type="submit">保存</button>
 </form>
 ```
+
+2. 模态框
+
+使用的 [Bootstrap](https://v3.bootcss.com/javascript/#modals) 的 modal 组件。
+
+```html
+<span class="btn btn-xs bg-navy pull-right" data-href="/group/edit/1" data-target="#modal-node" data-toggle="modal"><i class="fa fa-edit"></i></span>
+```
