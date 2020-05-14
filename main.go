@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/dchest/captcha"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/configor"
@@ -56,7 +55,6 @@ func main() {
 	// 登录相关
 	s.Handle("/login", handler.Limit(2, handler.Login)).Methods(http.MethodPost)
 	s.Handle("/bingpic", handler.Limit(2, handler.BingPic)).Methods(http.MethodGet)
-	s.Handle("/captcha/{png}", captcha.Server(120, 35)).Methods(http.MethodGet)
 
 	s.HandleFunc("/login", handler.Login).Methods(http.MethodGet)
 	s.HandleFunc("/logout", handler.Logout)

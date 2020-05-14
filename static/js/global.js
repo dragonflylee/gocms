@@ -70,9 +70,10 @@ var Admin = {
               $overlay.remove();
             },
             success: function (resp) {
-              if (resp.code != 200) Admin.alert({
-                container: target, type: 'danger', message: resp.msg });
-              else if (typeof resp.data === 'string')
+              if (resp.code != 200) {
+                Admin.alert({container: target, type: 'danger', message: resp.msg });
+                if (window.grecaptcha) grecaptcha.reset();
+              } else if (typeof resp.data === 'string')
                 window.location = resp.data;
               else if (typeof resp.msg !== 'string')
                 location.reload();

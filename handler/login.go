@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-
-	"github.com/dchest/captcha"
 )
 
 var tokenMap sync.Map
@@ -22,7 +20,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == http.MethodGet {
 		t.ExecuteTemplate(w, "login.tpl", map[string]string{
-			"Ref": r.Referer(), "Captcha": captcha.New()})
+			"Ref": r.Referer(), "Key": model.Config.Captcha.Key,
+		})
 		return
 	}
 	if err = r.ParseForm(); err != nil {
@@ -39,10 +38,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		jFailed(w, http.StatusBadRequest, "密码不正确")
 		return
 	}
-
-	id := r.Form.Get("id")
-	defer captcha.Reload(id)
-	if !captcha.VerifyString(id, r.PostForm.Get("code")) {
+	if err = model.Recaptcha(r); err != nil {
 		jFailed(w, http.StatusBadRequest, "验证码非法")
 		return
 	}

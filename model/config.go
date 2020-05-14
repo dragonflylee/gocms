@@ -11,4 +11,9 @@ var Config struct {
 		Pass string `yaml:"pass,omitempty"`
 		Name string `yaml:"name,omitempty"`
 	}
+	Captcha struct {
+		API    string `default:"https://recaptcha.net/recaptcha/api/siteverify"`
+		Key    string `required:"true"`
+		Secret string `required:"true"`
+	}
 }

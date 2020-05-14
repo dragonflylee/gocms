@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   {{template "header" "Login"}}
   <style>
     .backstretch { opacity: .5 }
   </style>
 </head>
-
 <body class="hold-transition login-page bg-black">
   <div class="login-box">
     <div class="login-logo">
@@ -24,16 +22,14 @@
           <input name="password" type="password" class="form-control" autocomplete="off" placeholder="请输入密码" data-rule="{'messages':{'required':'密码不能为空'}}" required>
           <span class="glyphicon glyphicon-lock form-control-feedback"></span>
         </div>
+        <div class="form-group">
+          <div class="g-recaptcha" data-callback="onsubmit" data-sitekey="{{.Key}}"></div>
+        </div>
         <div class="row">
-          <div class="col-xs-6 form-group has-feedback">
-            <input name="code" type="text" class="form-control" autocomplete="off" placeholder="验证码" data-rule="{'maxlength':6,'digits':true,'messages':{'required':'验证码不能为空'}}" required>
-          </div>
           <div class="col-xs-4 pull-right">
-            <input type="hidden" name="id" value="{{.Captcha}}">
-            <button type="submit" class="btn btn-primary btn-block btn-flat">登录</button>
+            <button id="submit" type="submit" class="btn btn-primary btn-block btn-flat" disabled>登录</button>
           </div>
         </div>
-        <img class="img-responsive" src="/captcha/{{.Captcha}}.png?">
       </form>
     </div>
   </div>
@@ -43,17 +39,15 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+  <script src='//recaptcha.net/recaptcha/api.js?onload=onload'></script>
   <script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
   <script type="text/javascript">
+    var onsubmit = function() {
+      document.getElementById('submit').disabled = false;
+    }
     $(document).ready(function () {
-      $('img.img-responsive').click(function (e) {
-        var src = e.target.src;
-        e.target.src = src.substr(0, src.indexOf('?') + 1) +
-          'reload=' + new Date().getTime();
-      });
       $.backstretch('/bingpic');
     })
   </script>
 </body>
-
 </html>
