@@ -43,10 +43,10 @@
                 <h3 class="box-title">密码安全</h3>
               </div>
               <div class="box-body">
-                <form class="form-horizontal" action="/password" method="post">
+                <form class="form-horizontal" action="?action=password" method="post">
                   {{if not .User.Status}}
                   <div class="form-group">
-                    <div class="col-sm-6 col-sm-offset-2">
+                    <div class="col-sm-8 col-sm-offset-1">
                       <div class="callout callout-warning">
                         <i class="icon fa fa-warning"></i> 请修改密码激活管理员账户
                       </div>

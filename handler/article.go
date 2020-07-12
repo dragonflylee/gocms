@@ -70,10 +70,6 @@ func EditArticle(w http.ResponseWriter, r *http.Request) {
 		rLayout(w, r, "article_edit.tpl", v)
 		return
 	}
-	if err = r.ParseForm(); err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
-		return
-	}
 	v.Title = r.PostForm.Get("title")
 	v.Content = r.PostForm.Get("content")
 

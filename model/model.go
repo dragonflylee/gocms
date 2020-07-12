@@ -45,6 +45,7 @@ func Open(debug bool) (err error) {
 		new(Admin),
 		new(Group),
 		new(AdminLog),
+		new(AdminRecord),
 		new(Node),
 		new(Article),
 	).Error; err != nil {

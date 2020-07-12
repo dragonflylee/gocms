@@ -17,23 +17,17 @@ func Install(path string, debug bool, s *mux.Router) http.Handler {
 			return
 		}
 		if err := r.ParseForm(); err != nil {
-			jFailed(w, http.StatusInternalServerError, err.Error())
+			jFailed(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		user := &model.Admin{
-			Email:    strings.ToLower(strings.TrimSpace(r.PostForm.Get("email"))),
+		u := &model.Admin{
+			Email:    strings.TrimSpace(r.PostForm.Get("email")),
 			Password: strings.TrimSpace(r.PostForm.Get("password")),
-			Headpic:  "/static/img/avatar.png",
-			Group:    model.Group{Name: "超级管理员"},
-			LastIP:   r.RemoteAddr,
-			Status:   true,
+			Headpic:  "/static/img/avatar.png", LastIP: r.RemoteAddr,
+			Group: model.Group{Name: "超级管理员"},
 		}
-		if !emailRegexp.MatchString(user.Email) {
+		if u.Email = strings.ToLower(u.Email); !emailRegexp.MatchString(u.Email) {
 			jFailed(w, http.StatusBadRequest, "邮箱格式非法")
-			return
-		}
-		if !md5Regexp.MatchString(user.Password) {
-			jFailed(w, http.StatusBadRequest, "密码不正确")
 			return
 		}
 		if err := util.ParseForm(r.PostForm, &model.Config.DB); err != nil {
@@ -44,7 +38,7 @@ func Install(path string, debug bool, s *mux.Router) http.Handler {
 			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		if err := model.Install(user, path); err != nil {
+		if err := model.Install(u, path); err != nil {
 			jFailed(w, http.StatusInternalServerError, err.Error())
 			return
 		}

@@ -20,11 +20,8 @@
 /node_modules
 /vendor
 /wallet
-/static/js
-/static/img
 /package-lock.json
 
 *.tar.gz
 *.db
 .DS_Store
-go.sum

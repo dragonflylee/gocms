@@ -27,7 +27,7 @@
         </div>
         <div class="row">
           <div class="col-xs-4 pull-right">
-            <button id="submit" type="submit" class="btn btn-primary btn-block btn-flat" disabled>登录</button>
+            <button type="submit" class="btn btn-primary btn-block btn-flat">登录</button>
           </div>
         </div>
       </form>
@@ -39,15 +39,62 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
-  <script src='//recaptcha.net/recaptcha/api.js?onload=onload'></script>
+  <script src='//recaptcha.net/recaptcha/api.js'></script>
   <script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
   <script type="text/javascript">
     var onsubmit = function() {
-      document.getElementById('submit').disabled = false;
+      $('form').submit();
     }
+
+    $(document).on('click', '.btn-verify', function (e) {
+      var timeout = 90, btn = $(e.target).
+        attr('disabled', true).text(timeout + ' s'),
+        count = setInterval(function () {
+          if (--timeout > 0)
+            return btn.text(timeout + ' s')
+          clearInterval(count);
+          btn.text('点击获取').attr('disabled', false);
+        }, 1000);
+      // send code
+      var form = btn.closest('form').ajaxSubmit({
+        url: btn.data('href'),
+        dataType: 'json',
+        success: function (resp) {
+          if (resp.code != 200) return Admin.alert({ 
+            container: form, type: 'danger', message: resp.msg });
+
+          $(':submit').attr('disabled', false);
+        }
+      })
+    })
+
     $(document).ready(function () {
       $.backstretch('/bingpic');
     })
   </script>
 </body>
 </html>
+
+{{define "login-verify"}}
+<div class="form-group has-feedback">
+  {{if .Phone}}
+  <p class="form-control-static">手机号码: {{.Phone}}</p>
+  {{else}}
+  <p class="form-control-static">电子邮箱: {{.Email}}</p>
+  {{end}}
+  <input name="token" type="hidden" value="{{.Token}}">
+</div>
+<div class="form-group has-feedback">
+  <div class="input-group">
+    <input name="code" type="text" class="form-control" placeholder="请输入验证码" data-rule="{'messages':{'required':'请输入验证码'}}" data-target=".input-group" required>
+    <span class="input-group-btn">
+      <button class="btn btn-default btn-verify" data-href="/verify?type=login" type="button">点击获取</button>
+    </span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-4 pull-right">
+    <button type="submit" class="btn btn-primary btn-block btn-flat" disabled>Continue</button>
+  </div>
+</div>
+{{end}}

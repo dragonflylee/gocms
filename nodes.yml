@@ -9,11 +9,13 @@
   type: 1
 - name: 系统管理
   icon: fa fa-gears
+  type: 2
   status: true
   child:
   - name: 日志查看
     icon: fa fa-sticky-note-o
     path: Logs
+    type: 2
     status: true
   - name: 用户管理
     icon: fa fa-users

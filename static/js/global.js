@@ -69,13 +69,17 @@ var Admin = {
             complete: function (xhr, resp) {
               $overlay.remove();
             },
-            success: function (resp) {
+            success: function (resp, status, xhr) {
               if (resp.code != 200) {
                 Admin.alert({container: target, type: 'danger', message: resp.msg });
                 if (window.grecaptcha) grecaptcha.reset();
-              } else if (typeof resp.data === 'string')
-                window.location = resp.data;
-              else if (typeof resp.msg !== 'string')
+              } else if (typeof resp.data === 'string') {
+                if (action = xhr.getResponseHeader('X-Form-Action')) {
+                  $(form).attr('action', action).html(resp.data);
+                } else {
+                  window.location = resp.data;
+                }
+              } else if (typeof resp.msg !== 'string')
                 location.reload();
               else Admin.alert({container: target,
                 message: resp.msg, closeInSeconds: 3 });

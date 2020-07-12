@@ -14,12 +14,12 @@ import (
 type NodeType int8
 
 const (
-	// NodeTypeNormal 普通节点
-	NodeTypeNormal NodeType = iota
-	// NodeTypeEssensial 必要节点
-	NodeTypeEssensial
-	// NodeTypeAdmin 管理员
-	NodeTypeAdmin
+	// NodeNormal 普通节点
+	NodeNormal NodeType = iota
+	// NodeAll 必要节点
+	NodeAll
+	// NodeAdmin 管理员
+	NodeAdmin
 )
 
 // Node 节点模型
@@ -46,7 +46,7 @@ func (m Menu) Assign(g int64, n *Node) map[string]interface{} {
 
 func loadNodes() (map[int]*Node, error) {
 	var list Menu
-	n := map[int]*Node{0: &Node{ID: 0, Path: "#"}}
+	n := map[int]*Node{0: {ID: 0, Path: "#"}}
 	err := db.Order("id").Preload("Groups").Find(&list).Error
 	if err != nil {
 		return nil, err
@@ -63,33 +63,31 @@ func loadNodes() (map[int]*Node, error) {
 	return n, nil
 }
 
+func walkNode(root *Menu, m Menu, id int) int {
+	var i = id
+	for _, v := range m {
+		v.Parent = id
+		i = i + 1
+		if v.ID = i; len(v.Child) > 0 {
+			i = walkNode(root, v.Child, v.ID)
+			v.Child = nil
+		}
+		*root = append(*root, v)
+	}
+	return i
+}
+
 // Install 初始化节点
 func Install(u *Admin, path string) error {
 	data, err := ioutil.ReadFile("nodes.yml")
 	if err != nil {
 		return err
 	}
-	var (
-		walk func(m Menu, id int) int
-		list Menu
-	)
+	var list Menu
 	if err = yaml.Unmarshal(data, &list); err != nil {
 		return err
 	}
-	walk = func(m Menu, id int) int {
-		var i = id
-		for _, v := range m {
-			v.Parent = id
-			i = i + 1
-			if v.ID = i; len(v.Child) > 0 {
-				i = walk(v.Child, v.ID)
-				v.Child = nil
-			}
-			u.Group.Nodes = append(u.Group.Nodes, v)
-		}
-		return i
-	}
-	walk(list, 0)
+	walkNode(&u.Group.Nodes, list, 0)
 
 	db := db.Begin().Set("gorm:association_autoupdate", true)
 	if err = db.Save(&u.Group).Error; err != nil {
@@ -99,7 +97,6 @@ func Install(u *Admin, path string) error {
 	u.GroupID = u.Group.ID
 	u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
 	u.Password = util.MD5(u.Password + util.MD5(u.Salt))
-	u.Status = true
 	if err = db.Save(u).Error; err != nil {
 		db.Rollback()
 		return err
@@ -170,7 +167,7 @@ func (n *Node) Parents() Menu {
 
 // HasGroup 判断指定节点是否能被某角色访问
 func (n *Node) HasGroup(id int64) bool {
-	if n == nil || n.Type == NodeTypeEssensial {
+	if n == nil || n.Type == NodeAll {
 		return true
 	}
 	for _, role := range n.Groups {

@@ -38,11 +38,12 @@ const (
 )
 
 var (
-	t           *template.Template
-	build       = "0"
-	md5Regexp   = regexp.MustCompile("[a-fA-F0-9]{32}$")
+	t *template.Template
+
+	build = "0"
+	store = memstore.NewMemStore(securecookie.GenerateRandomKey(32))
+
 	emailRegexp = regexp.MustCompile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$")
-	store       = memstore.NewMemStore(securecookie.GenerateRandomKey(32))
 )
 
 func aLog(r *http.Request, format string, a ...interface{}) error {
@@ -81,9 +82,9 @@ func jFailed(w http.ResponseWriter, code int, format string, a ...interface{}) {
 // rLayout 渲染模板
 func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
 	if sess, err := store.Get(r, sessName); err != nil {
-		Error(w, http.StatusBadRequest, "页面错误 %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else if s := mux.CurrentRoute(r); s == nil {
-		Error(w, http.StatusBadRequest, "页面错误")
+		http.Error(w, "BadRequest", http.StatusBadRequest)
 	} else if err = t.ExecuteTemplate(w, name, map[string]interface{}{
 		"Menu": model.GetNodes(),
 		"Node": model.GetNodeByPath(s.GetName()),
@@ -92,15 +93,6 @@ func rLayout(w http.ResponseWriter, r *http.Request, name string, data interface
 	}); err != nil {
 		fmt.Fprint(w, err)
 	}
-}
-
-// Error 错误页面
-func Error(w http.ResponseWriter, code int, format string, a ...interface{}) {
-	w.WriteHeader(code)
-	t.ExecuteTemplate(w, "error.tpl", map[string]interface{}{
-		"Code": code, "Text": http.StatusText(code),
-		"Msg": fmt.Sprintf(format, a...),
-	})
 }
 
 // Check 检查用户登录
@@ -116,14 +108,14 @@ func Check(h http.Handler) http.Handler {
 			sess.Options.MaxAge = -1
 			sess.Save(r, w)
 			http.Redirect(w, r, "/login", http.StatusFound)
-		} else if !user.Status && r.URL.Path != "/profile" {
+		} else if !user.Status() && r.URL.Path != "/profile" {
 			http.Redirect(w, r, "/profile", http.StatusFound)
 		} else if c := mux.CurrentRoute(r); c == nil {
-			Error(w, http.StatusNotFound, "页面错误")
+			http.Error(w, "BadRequest", http.StatusBadRequest)
 		} else if user.Access(c.GetName()) {
 			h.ServeHTTP(w, r)
 		} else {
-			Error(w, http.StatusForbidden, "无权访问 %s", r.URL)
+			http.Error(w, r.URL.RawPath, http.StatusForbidden)
 		}
 	})
 }
@@ -146,7 +138,7 @@ func Limit(b int, f func(http.ResponseWriter, *http.Request)) http.Handler {
 			f(w, r)
 			return
 		}
-		Error(w, http.StatusTooManyRequests, "请求太频繁")
+		http.Error(w, "TooManyRequests", http.StatusTooManyRequests)
 	})
 }
 

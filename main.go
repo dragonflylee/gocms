@@ -46,7 +46,7 @@ func main() {
 			return handler.Install(*path, config.Debug, s.Router)
 		})
 	}
-	s.Use(handlers.ProxyHeaders, handler.LogHandler,
+	s.Use(handlers.ProxyHeaders, handlers.HTTPMethodOverrideHandler, handler.LogHandler,
 		handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
 	// 初始化模板
 	if err := handler.Watch(filepath.Join(dir, "views"), s.Router); err != nil {
@@ -58,7 +58,6 @@ func main() {
 
 	s.HandleFunc("/login", handler.Login).Methods(http.MethodGet)
 	s.HandleFunc("/logout", handler.Logout)
-	s.HandleFunc("/password", handler.Password).Methods(http.MethodPost)
 	// 后台主页
 	s = handler.RouterWrap{Router: s.PathPrefix("/").Subrouter()}
 	// 检查登陆状态
@@ -66,7 +65,7 @@ func main() {
 	// 系统管理
 	s.HandleFunc("/users", handler.Users).Methods(http.MethodGet)
 	s.HandleFunc("/user/add", handler.UserAdd).Methods(http.MethodPost)
-	s.HandleFunc("/user/delete/{id:[0-9]+}", handler.UserDelete)
+	s.HandleFunc("/user/delete/{id:[0-9]+}", handler.UserDelete).Methods(http.MethodPost)
 	s.HandleFunc("/group/{id:[0-9]+}", handler.GroupEdit)
 	s.HandleFunc("/group/add", handler.GroupAdd).Methods(http.MethodPost)
 	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
@@ -75,7 +74,7 @@ func main() {
 	s.HandleFunc("/article/{id:[0-9]+}", handler.GetArticle)
 	s.HandleFunc("/article/edit/{id:[0-9]+}", handler.EditArticle)
 	// 个人中心
-	s.HandleFunc("/profile", handler.Profile).Methods(http.MethodGet)
+	s.HandleFunc("/profile", handler.Profile)
 	// 文件上传
 	s.HandleFunc("/upload", handler.Upload).Methods(http.MethodPost)
 	s.HandleFunc("/", handler.Home)

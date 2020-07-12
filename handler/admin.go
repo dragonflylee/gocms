@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/hex"
 	"gocms/model"
 	"gocms/util"
 	"net/http"
@@ -9,40 +10,67 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
 	"github.com/jinzhu/gorm"
 )
 
 // Profile 个人中心
 func Profile(w http.ResponseWriter, r *http.Request) {
-	rLayout(w, r, "profile.tpl", nil)
-}
-
-// Password 密码修改
-func Password(w http.ResponseWriter, r *http.Request) {
-	if sess, err := store.Get(r, sessName); err != nil {
-		Error(w, http.StatusNotFound, "页面错误 %v", err)
-	} else if cookie, exist := sess.Values[userKey]; !exist {
-		Error(w, http.StatusNotFound, "页面错误")
-	} else if user, ok := cookie.(*model.Admin); !ok {
-		Error(w, http.StatusNotFound, "页面错误")
-	} else if user.Password = r.PostFormValue("password"); len(user.Password) < 8 {
-		jFailed(w, http.StatusBadRequest, "密码不能少于8个字符")
-	} else if err = user.UpdatePasswd(); err != nil {
-		jFailed(w, http.StatusInternalServerError, err.Error())
-	} else {
-		sess.Values[userKey] = user
-		sess.Save(r, w)
-		aLog(r, "修改管理员密码")
-		jFailed(w, http.StatusOK, "修改密码成功")
+	if r.Method == http.MethodGet {
+		rLayout(w, r, "profile.tpl", map[string]string{
+			"recaptcha": model.Config.Captcha.Key,
+		})
+		return
 	}
+
+	sess, err := store.Get(r, sessName)
+	if err != nil {
+		return
+	}
+	u := sess.Values[userKey].(*model.Admin)
+
+	if err = r.ParseForm(); err != nil {
+		jFailed(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	switch r.Form.Get("action") {
+	case "password":
+
+		if u.Password = r.PostForm.Get("password"); len(u.Password) < 8 {
+			jFailed(w, http.StatusBadRequest, "密码不能少于8个字符")
+			return
+		}
+		u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
+		u.Password = util.MD5(u.Password + util.MD5(u.Salt))
+		u.Flags = u.Flags ^ model.FlagResetPassNext | model.FlagPassNeverExpire
+		if err = u.Update("password", "salt", "status"); err != nil {
+			jFailed(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		aLog(r, "修改管理员密码")
+
+	case "phone":
+
+		code := strings.TrimSpace(r.PostForm.Get("code"))
+		if len(code) < 1 {
+			jFailed(w, http.StatusForbidden, "验证码非法")
+			return
+		}
+		aLog(r, "绑定手机号")
+
+	default:
+		jFailed(w, http.StatusBadRequest, "操作非法")
+		return
+	}
+
+	sess.Values[userKey] = u
+	sess.Save(r, w)
+	jFailed(w, http.StatusOK, "修改成功")
 }
 
 // Users 用户管理
 func Users(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		Error(w, http.StatusBadRequest, err.Error())
-		return
-	}
 	filter := func(db *gorm.DB) *gorm.DB {
 		if email := strings.TrimSpace(r.Form.Get("email")); len(email) > 0 {
 			db = db.Where("email = ?", strings.ToLower(email))
@@ -75,10 +103,6 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 	sess, err := store.Get(r, sessName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if err = r.ParseForm(); err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if user.Email = strings.ToLower(r.PostForm.Get("email")); len(user.Email) < 0 {
@@ -130,7 +154,7 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if group.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
-		Error(w, http.StatusBadRequest, err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	if r.Method == http.MethodGet {
@@ -145,10 +169,6 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 	}
 	if group.ID == sess.Values[userKey].(*model.Admin).GroupID {
 		jFailed(w, http.StatusForbidden, "无权操作")
-		return
-	}
-	if err = r.ParseForm(); err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if group.Name = strings.TrimSpace(r.PostForm.Get("name")); len(group.Name) <= 0 {
@@ -174,32 +194,22 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 
 // GroupAdd 添加角色
 func GroupAdd(w http.ResponseWriter, r *http.Request) {
-	var (
-		group model.Group
-		err   error
-	)
-	if err = r.ParseForm(); err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	if group.Name = strings.TrimSpace(r.PostForm.Get("name")); len(group.Name) <= 0 {
+	var g model.Group
+
+	if g.Name = strings.TrimSpace(r.PostForm.Get("name")); len(g.Name) <= 0 {
 		jFailed(w, http.StatusBadRequest, "用户组不能为空")
 		return
 	}
-	if err = group.Create(); err != nil {
+	if err := g.Create(); err != nil {
 		jFailed(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	aLog(r, "新增角色: %s", group.Name)
+	aLog(r, "新增角色: %s", g.Name)
 	jSuccess(w, nil)
 }
 
 // Logs 操作日志
 func Logs(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		Error(w, http.StatusBadRequest, err.Error())
-		return
-	}
 	filter := func(db *gorm.DB) *gorm.DB {
 		if id, err := strconv.ParseInt(r.Form.Get("id"), 10, 64); err == nil {
 			db = db.Where("admin_id = ?", id)

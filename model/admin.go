@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/gob"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,21 +10,33 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/securecookie"
 	"github.com/jinzhu/gorm"
+	"golang.org/x/xerrors"
+)
+
+const ipChangeLimit = 3 // 信任IP数量
+
+// AdminFlag 管理员选项
+type AdminFlag int
+
+const (
+	_                     AdminFlag = iota
+	FlagResetPassNext               = 1 // 下次必须重置密码
+	FlagPassNeverExpire             = 2 // 密码永不过期
+	FlagSecondLoginVerify           = 4 // 二次登入验证
 )
 
 // Admin 管理员
 type Admin struct {
-	ID        int64  `gorm:"primary_key;auto_increment"`
-	Email     string `gorm:"size:255;unique_index;not null"`
-	Password  string `gorm:"size:64;not null" json:"-"`
-	Salt      string `gorm:"size:10;not null" json:"-"`
-	GroupID   int64  `gorm:"not null"`
-	Headpic   string `gorm:"size:255"`
-	LastIP    string `gorm:"size:16"`
-	Status    bool   `gorm:"default:false;not null"`
-	LastLogin *time.Time
+	ID        int64      `gorm:"primary_key;auto_increment"`
+	Email     string     `gorm:"size:255;unique_index;not null"`
+	Password  string     `gorm:"size:64;not null" json:"-"`
+	Salt      string     `gorm:"size:10;not null" json:"-"`
+	GroupID   int64      `gorm:"not null"`
+	Headpic   string     `gorm:"size:255" json:",omitempty"`
+	LastIP    string     `gorm:"size:16" json:",omitempty"`
+	Flags     AdminFlag  `gorm:"default:1;not null"`
+	LastLogin *time.Time `json:",omitempty"`
 	CreatedAt *time.Time `gorm:"not null"`
 	UpdatedAt *time.Time `json:"-"`
 	DeletedAt *time.Time `json:"-"`
@@ -34,6 +45,14 @@ type Admin struct {
 
 func (m *Admin) String() string {
 	return m.Email
+}
+
+// Status 判断管理员状态
+func (m *Admin) Status() bool {
+	if m.Flags&FlagResetPassNext > 0 {
+		return false
+	}
+	return true
 }
 
 // GobEncode 序列化
@@ -69,16 +88,9 @@ func (m *Admin) Delete() error {
 	return db.Delete(m).Error
 }
 
-// UpdatePasswd 更新密码
-func (m *Admin) UpdatePasswd(v ...interface{}) error {
-	m.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
-	m.Password = util.MD5(m.Password + util.MD5(m.Salt))
-	v = append(v, "salt")
-	if !m.Status {
-		m.Status = true
-		v = append(v, "status")
-	}
-	return db.Model(m).Select("password", v...).Updates(m).Error
+// Update 更新
+func (m *Admin) Update(v ...interface{}) error {
+	return db.Model(m).Select(v).Updates(m).Error
 }
 
 // Access 该用户能否访问指定节点
@@ -90,20 +102,43 @@ func (m *Admin) Access(tpl string) bool {
 	return true
 }
 
+// AdminLogin 登录请求
+type AdminLogin struct {
+	Email    string
+	Password string
+	IP       string
+	UA       string
+	Verifyed bool // 已通过短信验证
+}
+
 // Login 用户登录
-func Login(email, passwd, ip string) (*Admin, error) {
+func (p *AdminLogin) Login() (*Admin, error) {
 	var m Admin
-	if err := db.Take(&m, "email = ?", strings.ToLower(email)).Error; err != nil {
+	if err := db.Take(&m, "email = ?", p.Email).Error; err != nil {
 		return nil, errors.New("用户不存在")
 	}
 	if err := db.Take(&m.Group, m.GroupID).Error; err != nil {
 		return nil, errors.New("用户组不存在")
 	}
-	if m.Status && util.MD5(passwd+util.MD5(m.Salt)) != m.Password {
+	if util.MD5(p.Password+util.MD5(m.Salt)) != m.Password {
 		return nil, errors.New("密码不正确")
 	}
-	err := db.Model(&m).UpdateColumns(map[string]interface{}{
-		"last_ip": ip, "last_login": time.Now()}).Error
+	// 二次登录验证
+	if !p.Verifyed && (m.Flags&FlagSecondLoginVerify > 0) {
+		if err := JudgeAdmin(&m, p.IP); err != nil {
+			return &m, xerrors.Errorf("JudgeAdmin %w", err)
+		}
+	}
+	// 记录此次登录 IP
+	err := db.Transaction(func(tx *gorm.DB) error {
+		ctx := tx.Model(&m).UpdateColumns(map[string]interface{}{
+			"last_ip": p.IP, "last_login": time.Now().UTC()})
+		if ctx.Error != nil {
+			return ctx.Error
+		}
+		return tx.Create(&AdminRecord{AdminID: m.ID, IP: p.IP,
+			UA: p.UA, Action: actionLogin}).Error
+	})
 	return &m, err
 }
 
@@ -130,11 +165,8 @@ type Group struct {
 
 // Create 新建用户组
 func (m *Group) Create() error {
-	err := db.Select("id").Find(&m.Nodes, "type = ?", NodeTypeEssensial).Error
+	err := db.Create(m).Error
 	if err != nil {
-		return err
-	}
-	if err = db.Create(m).Error; err != nil {
 		return err
 	}
 	if mapNodes, err = loadNodes(); err != nil {
@@ -214,6 +246,50 @@ func GetLogNum(filter ...func(*gorm.DB) *gorm.DB) (int64, error) {
 	var nums int64
 	err := db.Model(&AdminLog{}).Scopes(filter...).Count(&nums).Error
 	return nums, err
+}
+
+// AdminAction 管理员行为
+type AdminAction int
+
+const (
+	_ AdminAction = iota
+	actionLogin
+	actionResetPassward
+	actionBindPhone
+)
+
+// AdminRecord 管理员操作记录
+type AdminRecord struct {
+	ID        int64       `gorm:"primary_key;auto_increment" xlsx:"-"`
+	AdminID   int64       `gorm:"not null" xlsx:"-"`
+	Action    AdminAction `gorm:"int4;index" xlsx:"动作"`
+	IP        string      `gorm:"size:16" xlsx:"IP"`
+	UA        string      `gorm:"size:255" xlsx:"-"`
+	CreatedAt *time.Time  `gorm:"type:timestamp" xlsx:"时间"`
+}
+
+// JudgeAdmin 判断管理员登录IP
+func JudgeAdmin(u *Admin, ip string) error {
+	if u.LastIP == ip {
+		return nil
+	}
+	// 判断近期登录 IP
+	var recent []AdminRecord
+	err := db.Model(&AdminRecord{}).Limit(ipChangeLimit).
+		Select([]string{`ip`, `MAX("id") "id"`}).Group("ip").
+		Order("id DESC").Find(&recent, "admin_id = ?", u.ID).Error
+	if err != nil {
+		return err
+	}
+	if len(recent) == 0 {
+		return nil
+	}
+	for _, v := range recent {
+		if v.IP == ip {
+			return nil
+		}
+	}
+	return errors.New("IPChange")
 }
 
 func init() {

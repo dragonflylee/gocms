@@ -179,7 +179,7 @@
 </div>
 <div class="modal" id="modal-confirm">
   <div class="modal-dialog modal-sm">
-    <form class="modal-content">
+    <form class="modal-content" method="POST">
       <div class="modal-header">
         <a class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></a>
         <h4 class="modal-title">确定？</h4>
