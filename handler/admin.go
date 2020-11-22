@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 // Profile 个人中心

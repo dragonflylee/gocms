@@ -2,7 +2,7 @@ package model
 
 // Config 数据库配置项
 var Config struct {
-	Addr string `default:":8081"`
+	Addr string `default:":8081" env:"LISTEN_ADDR"`
 	DB   struct {
 		Type string `required:"true"`
 		Host string `required:"true"`

@@ -24,15 +24,15 @@ const (
 
 // Node 节点模型
 type Node struct {
-	ID     int      `gorm:"primary_key;auto_increment" yaml:"-"`
+	ID     int      `gorm:"primaryKey" yaml:"-"`
 	Name   string   `gorm:"size:64;not null"`
 	Parent int      `gorm:"default:0;not null" yaml:"-"`
-	Icon   string   `gorm:"size:32;default:null" yaml:",omitempty"`
+	Icon   string   `gorm:"size:32;default:fa fa-circlo-o" yaml:",omitempty"`
 	Remark string   `gorm:"type:text" yaml:",omitempty"`
-	Path   string   `gorm:"size:255;default:null"`
+	Path   string   `gorm:"size:255"`
 	Type   NodeType `gorm:"default:0;not null" yaml:",omitempty"`
 	Status bool     `gorm:"default:false;not null"`
-	Child  Menu     `yaml:",omitempty"`
+	Child  Menu     `gorm:"-" yaml:",omitempty"`
 	Groups []Group  `gorm:"many2many:node_groups" yaml:"-"`
 }
 
@@ -89,19 +89,21 @@ func Install(u *Admin, path string) error {
 	}
 	walkNode(&u.Group.Nodes, list, 0)
 
-	db := db.Begin().Set("gorm:association_autoupdate", true)
-	if err = db.Save(&u.Group).Error; err != nil {
-		db.Rollback()
+	tx := db.Begin()
+
+	if err = tx.Save(&u.Group).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 	u.GroupID = u.Group.ID
 	u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
 	u.Password = util.MD5(u.Password + util.MD5(u.Salt))
-	if err = db.Save(u).Error; err != nil {
-		db.Rollback()
+	if err = tx.Save(u).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
-	if err = db.Commit().Error; err != nil {
+
+	if err = tx.Commit().Error; err != nil {
 		return err
 	}
 	f, err := os.Create(path)

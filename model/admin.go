@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"golang.org/x/xerrors"
+	"gorm.io/gorm"
 )
 
 const ipChangeLimit = 3 // 信任IP数量
@@ -28,8 +28,8 @@ const (
 
 // Admin 管理员
 type Admin struct {
-	ID        int64      `gorm:"primary_key;auto_increment"`
-	Email     string     `gorm:"size:255;unique_index;not null"`
+	ID        int64      `gorm:"primaryKey"`
+	Email     string     `gorm:"size:255;uniqueIndex;not null"`
 	Password  string     `gorm:"size:64;not null" json:"-"`
 	Salt      string     `gorm:"size:10;not null" json:"-"`
 	GroupID   int64      `gorm:"not null"`
@@ -158,9 +158,9 @@ func GetAdminNum(filter ...func(*gorm.DB) *gorm.DB) (int64, error) {
 
 // Group 用户组
 type Group struct {
-	ID    int64  `gorm:"primary_key;auto_increment"`
+	ID    int64  `gorm:"primaryKey"`
 	Name  string `gorm:"size:64;unique;not null"`
-	Nodes Menu   `gorm:"many2many:node_groups;association_autoupdate:false"`
+	Nodes Menu   `gorm:"many2many:node_groups"`
 }
 
 // Create 新建用户组
@@ -186,11 +186,11 @@ func (m *Group) Select() error {
 
 // Update 更新角色
 func (m *Group) Update() error {
-	err := db.Model(m).Association("Nodes").Replace(m.Nodes).Error
+	err := db.Model(m).Association("Nodes").Replace(m.Nodes)
 	if err != nil {
 		return err
 	}
-	err = db.Model(m).Set("gorm:association_save_reference", false).Updates(m).Error
+	err = db.Model(m).Omit("Nodes").Updates(m).Error
 	if err != nil {
 		return err
 	}
