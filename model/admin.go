@@ -28,19 +28,19 @@ const (
 
 // Admin 管理员
 type Admin struct {
-	ID        int64      `gorm:"primaryKey"`
-	Email     string     `gorm:"size:255;uniqueIndex;not null"`
-	Password  string     `gorm:"size:64;not null" json:"-"`
-	Salt      string     `gorm:"size:10;not null" json:"-"`
-	GroupID   int64      `gorm:"not null"`
-	Headpic   string     `gorm:"size:255" json:",omitempty"`
-	LastIP    string     `gorm:"size:16" json:",omitempty"`
-	Flags     AdminFlag  `gorm:"default:1;not null"`
-	LastLogin *time.Time `json:",omitempty"`
-	CreatedAt *time.Time `gorm:"not null"`
-	UpdatedAt *time.Time `json:"-"`
-	DeletedAt *time.Time `json:"-"`
-	Group     Group      `gorm:"-"`
+	ID        int64          `gorm:"primaryKey"`
+	Email     string         `gorm:"size:255;uniqueIndex;not null"`
+	Password  string         `gorm:"size:64;not null" json:"-"`
+	Salt      string         `gorm:"size:10;not null" json:"-"`
+	GroupID   int64          `gorm:"not null"`
+	Headpic   string         `gorm:"size:255" json:",omitempty"`
+	LastIP    string         `gorm:"size:16" json:",omitempty"`
+	Flags     AdminFlag      `gorm:"default:1;not null"`
+	LastLogin *time.Time     `json:",omitempty"`
+	CreatedAt *time.Time     `gorm:"not null"`
+	UpdatedAt *time.Time     `json:"-"`
+	DeletedAt gorm.DeletedAt `json:"-"`
+	Group     Group          `gorm:"-"`
 }
 
 func (m *Admin) String() string {
@@ -89,7 +89,7 @@ func (m *Admin) Delete() error {
 }
 
 // Update 更新
-func (m *Admin) Update(v ...interface{}) error {
+func (m *Admin) Update(v ...string) error {
 	return db.Model(m).Select(v).Updates(m).Error
 }
 

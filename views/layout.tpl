@@ -1,26 +1,23 @@
 {{define "header"}}
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>{{.}}</title>
-<meta content="noarchive" name="robots">
-<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-<link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-<link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-
-<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet">
-<link href="//cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/skins/all.css" rel="stylesheet">
-<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css" rel="stylesheet">
-<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker3.min.css" rel="stylesheet">
-
-<link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.10/css/AdminLTE.min.css" rel="stylesheet">
-<link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.10/css/skins/_all-skins.min.css" rel="stylesheet">
-<link href="/static/css/custom.min.css?v{{version}}" rel="stylesheet" type="text/css">
-
-{{html "<!--[if lt IE 9]>"}}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
-{{html "<![endif]-->"}}
-{{end}}
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{{.}}</title>
+  <meta content="noarchive" name="robots">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.3/skins/square/blue.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/css/AdminLTE.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/css/skins/_all-skins.min.css" rel="stylesheet">
+  <link href="/static/css/custom.min.css?v{{version}}" rel="stylesheet" type="text/css">
+  {{html "<!--[if lt IE 9]>"}}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+  {{html "<![endif]-->"}}
+{{- end}}
 
 {{define "navbar"}}
 <header class="main-header">
@@ -35,7 +32,6 @@
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
     </a>
-
     <div class="navbar-custom-menu">
       <ul class="nav navbar-nav">
         <li class="dropdown user user-menu">
@@ -66,7 +62,6 @@
     </div>
   </nav>
 </header>
-
 <aside class="main-sidebar">
   <section class="sidebar">
     <div class="user-panel">
@@ -87,66 +82,65 @@
       </div>
     </form>
     <ul class="sidebar-menu" data-widget="tree">
-      {{template "sidebar" .Menu.Assign .User.GroupID .Node}}
+      {{- template "sidebar" .Menu.Assign .User.GroupID .Node}}
     </ul>
   </section>
 </aside>
-{{end}}
+{{- end}}
 
 {{define "footer"}}
-<footer class="main-footer">
-  <div class="pull-right hidden-xs">
-    Powered by <b>{{version}}</b>
-  </div>
-  <strong>版权所有 &copy; 2019 <a href="https://github.com/dragonflylee/gocms">GoCMS</a>.</strong>
-</footer>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jQuery-slimScroll/1.3.8/jquery.slimscroll.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.10/js/adminlte.min.js"></script>
-
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/Sortable/1.8.3/Sortable.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
-
-<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/i18n/zh-CN.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
-
-<script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
-{{end}}
+  {{- if not .}}
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+      Powered by <b>{{version}}</b>
+    </div>
+    <strong>版权所有 &copy; 2020 <a href="https://github.com/dragonflylee/gocms">GoCMS</a>.</strong>
+  </footer>
+  {{- end}}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/admin-lte/2.4.18/js/adminlte.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.2/jquery.validate.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.18.0/js/md5.min.js"></script>
+  {{- if not .}}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/Sortable/1.8.3/Sortable.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.3/icheck.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/i18n/zh-CN.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+  {{- end}}
+  <script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
+{{- end}}
 
 {{define "sidebar"}}
-  {{range .m}}
-  {{if and .Status (.HasGroup $.Group)}}
-  {{if and .Child (not .Path)}}
-  <li class="treeview {{if $.Node.HasParent .ID}}active{{end}}">
-    <a href="#">
-      <i class="{{.Icon}}"></i> <span>{{.Name}}</span>
-      <span class="pull-right-container">
-        <i class="fa fa-angle-left pull-right"></i>
-      </span>
-    </a>
-    <ul class="treeview-menu">
-      {{template "sidebar" .Child.Assign $.Group $.Node}}
-    </ul>
-  </li>
-  {{else}}
-  <li {{if $.Node.HasParent .ID}} class="active" {{end}}>
-    <a href="{{urlfor .Path}}">
-      <i class="{{.Icon}}"></i>
-      <span>{{.Name}}</span>
-    </a>
-  </li>
-  {{end}}
-  {{end}}
-  {{end}}
-{{end}}
+  {{- range .m}}
+  {{- if and .Status (.HasGroup $.Group)}}
+  {{- if and .Child (not .Path)}}
+    <li class="treeview {{if $.Node.HasParent .ID}}active{{end}}">
+      <a href="#">
+        <i class="{{.Icon}}"></i> <span>{{.Name}}</span>
+        <span class="pull-right-container">
+          <i class="fa fa-angle-left pull-right"></i>
+        </span>
+      </a>
+      <ul class="treeview-menu">
+        {{- template "sidebar" .Child.Assign $.Group $.Node}}
+      </ul>
+    </li>
+    {{- else}}
+    <li {{if $.Node.HasParent .ID}} class="active" {{end}}>
+      <a href="{{urlfor .Path}}">
+        <i class="{{.Icon}}"></i>
+        <span>{{.Name}}</span>
+      </a>
+    </li>
+  {{- end}}
+  {{- end}}
+  {{- end}}
+{{- end}}
 
 {{define "title"}}
 <section class="content-header">
@@ -156,13 +150,13 @@
   </h1>
   <ol class="breadcrumb">
     <li><a href="#"><i class="fa fa-dashboard"></i> 首页</a></li>
-    {{range .Node.Parents}}
+    {{- range .Node.Parents}}
     <li><a href="{{urlfor .Path}}"> {{.Name}}</a></li>
-    {{end}}
+    {{- end}}
     <li class="active">{{.Node}}</li>
   </ol>
 </section>
-{{end}}
+{{- end}}
 
 {{define "modal"}}
 <div class="modal" id="modal-edit">
@@ -191,25 +185,25 @@
     </form>
   </div>
 </div>
-{{end}}
+{{- end}}
 
 {{define "paginator"}}
-{{if and . .Page}}
+{{- if and . .Page}}
 <span style="padding-left: 10px;">共 {{.Page.Nums}} 条记录</span>
-{{end}}
-{{if and . .Page .Page.HasPages}}
+{{- end}}
+{{- if and . .Page .Page.HasPages}}
 <ul class="pagination pagination-sm no-margin pull-right">
-  {{if .Page.HasPrev}}
+  {{- if .Page.HasPrev}}
   <li><a href="{{.Page.PageLinkFirst}}"><i class="fa fa-angle-double-left"></i></a></li>
-  {{end}}
-  {{range $index, $page := .Page.Pages}}
+  {{- end}}
+  {{- range $index, $page := .Page.Pages}}
   <li {{if $.Page.IsActive .}} class="active" {{end}}>
     <a href="{{$.Page.PageLink $page}}">{{$page}}</a>
   </li>
-  {{end}}
-  {{if .Page.HasNext}}
+  {{- end}}
+  {{- if .Page.HasNext}}
   <li><a href="{{.Page.PageLinkLast}}"><i class="fa fa-angle-double-right"></i></a></li>
-  {{end}}
+  {{- end}}
 </ul>
-{{end}}
-{{end}}
+{{- end}}
+{{- end}}

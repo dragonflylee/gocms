@@ -1,101 +1,56 @@
-if (jQuery().validate) {
-  // 表单验证提示中文化
-  $.extend($.validator.messages, {
-    required: '该项不能为空',
-    remote: '请修正此字段',
-    email: '请输入有效的电子邮件地址',
-    url: '请输入有效的网址',
-    date: '请输入有效的日期',
-    dateISO: '请输入有效的日期 (YYYY-MM-DD)',
-    number: '请输入有效的数字',
-    digits: '只能输入数字',
-    creditcard: '请输入有效的信用卡号码',
-    equalTo: '你的输入不相同',
-    extension: '请输入有效的后缀',
-    maxlength: $.validator.format('最多可以输入 {0} 个字符'),
-    minlength: $.validator.format('最少要输入 {0} 个字符'),
-    rangelength: $.validator.format('请输入长度在 {0} 到 {1} 之间的字符串'),
-    range: $.validator.format('请输入范围在 {0} 到 {1} 之间的数值'),
-    max: $.validator.format('请输入不大于 {0} 的数值'),
-    min: $.validator.format('请输入不小于 {0} 的数值')
-  });
-  // 手机号校验
-  $.validator.addMethod('mobile', function (value, element) {
-    var mobile = /^((\+?86)|(\(\+86\)))?(13[0-9][0-9]{8}|15[0-9][0-9]{8}|18[0-9][0-9]{8}|17[0678][0-9]{8}|147[0-9]{8}|1349[0-9]{7})$/;
-    return this.optional(element) || (value.length == 11 && mobile.test(value));
-  }, '请填写正确的手机号码');
-  // 密码验证正则表达式
-  $.validator.addMethod('regexPasswd', function (value, element) {
-    return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,}$/.test(value);
-  }, '密码至少包大小写字母及数字，长度至少8位');
-}
+// 表单验证提示中文化
+$.extend($.validator.messages, {
+  required: '该项不能为空',
+  remote: '请修正此字段',
+  email: '请输入有效的电子邮件地址',
+  url: '请输入有效的网址',
+  date: '请输入有效的日期',
+  dateISO: '请输入有效的日期 (YYYY-MM-DD)',
+  number: '请输入有效的数字',
+  digits: '只能输入数字',
+  creditcard: '请输入有效的信用卡号码',
+  equalTo: '你的输入不相同',
+  extension: '请输入有效的后缀',
+  maxlength: $.validator.format('最多可以输入 {0} 个字符'),
+  minlength: $.validator.format('最少要输入 {0} 个字符'),
+  rangelength: $.validator.format('请输入长度在 {0} 到 {1} 之间的字符串'),
+  range: $.validator.format('请输入范围在 {0} 到 {1} 之间的数值'),
+  max: $.validator.format('请输入不大于 {0} 的数值'),
+  min: $.validator.format('请输入不小于 {0} 的数值')
+});
+// 手机号校验
+$.validator.addMethod('mobile', function (value, element) {
+  var mobile = /^((\+?86)|(\(\+86\)))?(13[0-9][0-9]{8}|15[0-9][0-9]{8}|18[0-9][0-9]{8}|17[0678][0-9]{8}|147[0-9]{8}|1349[0-9]{7})$/;
+  return this.optional(element) || (value.length == 11 && mobile.test(value));
+}, '请填写正确的手机号码');
+// 密码验证正则表达式
+$.validator.addMethod('regexPasswd', function (value, element) {
+  return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,}$/.test(value);
+}, '密码至少包大小写字母及数字，长度至少8位');
+// 默认值
+$.validator.setDefaults({
+  focusInvalid: false, errorElement: 'span', errorClass: 'help-inline help-block',
+  highlight: function (el) {
+    $(el).closest('.form-group').removeClass('has-success').addClass('has-error');
+  },
+  unhighlight: function (el) {
+    $(el).closest('.form-group').removeClass('has-error').addClass('has-success');
+  },
+  errorPlacement: function (err, el) {
+    var target = el.data('target');
+    if (target) {
+      $(target).append(el);
+    } else if (el.prop('type') === 'checkbox') {
+      err.appendTo(el.closest('.checkbox-inline'));
+    } else if (el.prop('type') === 'radio') {
+      err.appendTo(el.closest('.radio-inline'));
+    } else {
+      err.insertAfter(el);
+    }
+  }
+});
 
 var Admin = {
-  // 通用表单验证
-  validate: function (selector, options) {
-    if (jQuery().validate) $(selector).each(function (i, form) {
-      $(form).validate({
-        errorElement: 'span', focusInvalid: false,
-        errorClass: 'help-inline help-block',
-        highlight: function (el) {
-          $(el).closest('.form-group').removeClass('has-success').addClass('has-error');
-        },
-        unhighlight: function (el) {
-          $(el).closest('.form-group').removeClass('has-error').addClass('has-success');
-        },
-        errorPlacement: function (err, el) {
-          var target = el.data('target');
-          if (target) {
-            err.insertAfter($(target));
-          } else if (el.prop('type') === 'checkbox') {
-            err.appendTo(el.closest('.checkbox-inline'));
-          } else if (el.prop('type') === 'radio') {
-            err.appendTo(el.closest('.radio-inline'));
-          } else {
-            err.insertAfter(el);
-          }
-        },
-        submitHandler: function () {
-          var $overlay = $('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
-          $(form).hasClass('box') ? $(form).append($overlay) : $(form).closest('.box').append($overlay);
-
-          var target = $(form).data('target');
-          if (typeof target !== 'undefined') target = $(form).find(target)
-          else if ($(form).hasClass('box')) target = $(form).find('.box-footer')
-          else if ((target = $(form).find('.modal-footer')).length == 0) target = $(form);
-
-          $(form).ajaxSubmit($.extend(true, {
-            dataType: 'json',
-            complete: function (xhr, resp) {
-              $overlay.remove();
-            },
-            success: function (resp, status, xhr) {
-              if (resp.code != 200) {
-                Admin.alert({container: target, type: 'danger', message: resp.msg });
-                if (window.grecaptcha) grecaptcha.reset();
-              } else if (typeof resp.data === 'string') {
-                if (action = xhr.getResponseHeader('X-Form-Action')) {
-                  $(form).attr('action', action).html(resp.data);
-                } else {
-                  window.location = resp.data;
-                }
-              } else if (typeof resp.msg !== 'string')
-                location.reload();
-              else Admin.alert({container: target,
-                message: resp.msg, closeInSeconds: 3 });
-            },
-            error: function () {
-              Admin.alert({container: target,
-                type: 'danger', message: '请求失败' });
-            }
-          }, options));
-        }
-      });
-      $('[data-rule]', $(form)).each(function (i, o) {
-        $(o).rules('add', $.parseJSON($(o).data('rule').replace(/'/g, '"')));
-      });
-    })
-  },
   // 表单提示
   alert: function (options) {
     options = $.extend(true, {
@@ -130,22 +85,40 @@ var Admin = {
     }
     return id;
   },
-  modal: function ($selector, options) {
-    $($selector).on('show.bs.modal', function (e) {
-      if (e.namespace === 'bs.modal') {
-        $(this).find('.modal-content').load($(e.relatedTarget).data('href'),
-          function (resp, status) {
-            if (status == 'success') {
-              Admin.init($(this));
-              $(this).find('form').each(function (i, el) {
-                Admin.validate(el, options);
-              })
-            }
-          }).empty();
+  submit: function (form, options) {
+    var $overlay = $('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
+    $(form).hasClass('box') ? $(form).append($overlay) : $(form).closest('.box').append($overlay);
+
+    var target = $(form).data('target');
+    if (typeof target !== 'undefined') target = $(form).find(target)
+    else if ($(form).hasClass('box')) target = $(form).find('.box-footer')
+    else if ((target = $(form).find('.modal-footer')).length == 0) target = $(form);
+
+    return $(form).ajaxSubmit($.extend(true, {
+      dataType: 'json',
+      complete: function () {
+        $overlay.remove();
+      },
+      success: function (resp, status, xhr) {
+        if (resp.code != 200) {
+          Admin.alert({ container: target, type: 'danger', message: resp.msg });
+          if (window.grecaptcha) grecaptcha.reset();
+        } else if (typeof resp.data === 'string') {
+          if (action = xhr.getResponseHeader('X-Form-Action')) {
+            $(form).attr('action', action).html(resp.data);
+          } else {
+            window.location = resp.data;
+          }
+        } else if (typeof resp.msg !== 'string') {
+          location.reload();
+        } else {
+          Admin.alert({ container: target, message: resp.msg, closeInSeconds: 3 });
+        }
+      },
+      error: function () {
+        Admin.alert({ container: target, type: 'danger', message: '请求失败' });
       }
-    }).on('hide.bs.modal', function () {
-      $(this).removeData('bs.modal');
-    });
+    }, options));
   },
   init: function ($container) {
     if (jQuery().tooltip) {
@@ -173,8 +146,8 @@ var Admin = {
     }
     if (jQuery().iCheck) {
       $('.icheck :checkbox, .icheck :radio', $container).iCheck({
-        checkboxClass: 'icheckbox_minimal-blue',
-        radioClass: 'iradio_minimal-blue',
+        checkboxClass: 'icheckbox_square-blue',
+        radioClass: 'iradio_square-blue',
         increaseArea: '20%' // optional
       });
       // 表格复选框
@@ -212,19 +185,14 @@ var Admin = {
 $(document).on('click', '.modal-content .pagination a,.modal-content .nav-tabs-custom a', function (e) {
   if (e.target.target == '_blank') return;
   e.preventDefault();
-  $(this).closest('.modal-content').load(e.target.href, function () {
-    Admin.init($(this));
-    $(this).find('form').each(function (i, el) {
-      Admin.validate(el);
-    })
-  });
+  $(this).closest('.modal-content').load(e.target.href);
 })
 
 if (typeof Storage !== 'undefined') {
   // 侧边栏
-  $(document).on('expanded.pushMenu', function() {
+  $(document).on('expanded.pushMenu', function () {
     localStorage.removeItem('sidebar');
-  }).on('collapsed.pushMenu', function() {
+  }).on('collapsed.pushMenu', function () {
     localStorage.setItem('sidebar', 'sidebar-collapse');
   })
   var sidebar = localStorage.getItem('sidebar');
@@ -237,25 +205,43 @@ $(document).ready(function () {
   // 模态框表单
   $('.modal:has(form)').on('show.bs.modal', function (e) {
     $(this).find('.modal-title').text(e.relatedTarget.title);
-    $(this).find('form').each(function (i, el) {
-      Admin.validate(el, {
-        'url': $(e.relatedTarget).data('href')
-      });
+    $(this).find('form').validate({
+      submitHandler: function (form) {
+        Admin.submit(form, { 'url': $(e.relatedTarget).data('href') })
+      }
     })
   }).on('hidden.bs.modal', function () {
     $(this).find('.custom-alerts').remove();
-    $(this).find('form').each(function (i, el) {
-      $(el).off('.validate').removeData('validator').resetForm();
-    })
+    $(this).find('form').off('.validate').removeData('validator').resetForm();
   });
   // 远端模态框
-  Admin.modal('#modal-edit, #modal-detail');
+  $('#modal-edit, #modal-detail').on('show.bs.modal', function (e) {
+    if (e.namespace === 'bs.modal') {
+      var url = $(e.relatedTarget).data('href');
+      $(this).find('.modal-content').load(url, function () {
+        if (status == 'success') {
+          Admin.init($(this));
+          $(this).find('form').validate({
+            submitHandler: function (form) {
+              Admin.submit(form)
+            }
+          })
+        }
+      })
+    }
+  }).on('hide.bs.modal', function () {
+    $(this).removeData('bs.modal');
+  });
   // 页面表单
-  Admin.validate('form:has([name="password"])', {
-    beforeSubmit: function (arr) {
-      for (var i = 0; i < arr.length; i++)
-        if (arr[i].name == 'password')
-          arr[i].value = md5(arr[i].value);
+  $('form:has(:password)').validate({
+    submitHandler: function (form) {
+      Admin.submit(form, {
+        beforeSubmit: function (arr) {
+          for (var i = 0; i < arr.length; i++)
+            if (arr[i].name == 'password')
+              arr[i].value = md5(arr[i].value);
+        }
+      })
     }
   });
 })

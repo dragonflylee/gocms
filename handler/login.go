@@ -73,9 +73,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			jFailed(w, http.StatusBadRequest, "邮箱格式非法")
 			return
 		}
-		if err = model.Recaptcha(r); err != nil {
-			jFailed(w, http.StatusBadRequest, "验证码非法")
-			return
+		if model.Config.Captcha.Key != "" {
+			if err = model.Recaptcha(r); err != nil {
+				jFailed(w, http.StatusBadRequest, "验证码非法")
+				return
+			}
 		}
 	}
 	u, err := p.Login()

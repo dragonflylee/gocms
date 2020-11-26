@@ -35,6 +35,7 @@ const (
 
 	defaultMaxMemory = 32 << 20 // 32 MB
 	dateFormate      = "2006-01-02"
+	timeFormate      = "2006-01-02 15:04:05"
 )
 
 var (
@@ -176,7 +177,7 @@ func Watch(tpl string, r *mux.Router) error {
 			if t == nil {
 				return "-"
 			}
-			return t.In(time.Local).Format("2006-01-02 15:04:05")
+			return t.In(time.Local).Format(timeFormate)
 		},
 		"urlfor": func(name string, pair ...string) (*url.URL, error) {
 			if s := r.Get(name); s != nil {

@@ -25,9 +25,9 @@ git clone https://github.com/dragonflylee/gocms.git && cd gocms && make
 使用 [jQeury Validate](https://jqueryvalidation.org/documentation/) 校验表单，支持使用 `data-rule` 标签配置规则，示例如下
 ```html
 <form method="post">
-    <input name="username" type="text" data-rule="{'messages':{'required':'登录名称不能为空'}}" required>
-    <input name="password" type="password" id="register_password" placeholder="请输入新密码" data-rule="{'regexPasswd':true}" required>
-    <input name="rpasswd" type="password" data-rule="{'equalTo':'#register_password','messages':{'equalTo':'两次输入的密码不一致'}}" placeholder="请再次输入新密码" required>
+    <input name="username" type="text" data-msg-required="登录名称不能为空" required>
+    <input name="password" type="password" id="register_password" placeholder="请输入新密码" data-rule-regexPasswd="true" required>
+    <input name="rpasswd" type="password" data-rule-equalTo="#register_password" data-msg-equalTo="两次输入的密码不一致" placeholder="请再次输入新密码" required>
     <button type="submit">保存</button>
 </form>
 ```

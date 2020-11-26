@@ -13,7 +13,7 @@ var Config struct {
 	}
 	Captcha struct {
 		API    string `default:"https://recaptcha.net/recaptcha/api/siteverify"`
-		Key    string `required:"true"`
-		Secret string `required:"true"`
+		Key    string
+		Secret string
 	}
 }

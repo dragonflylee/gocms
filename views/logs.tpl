@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" .Node}}
+  {{- template "header" .Node}}
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
-    {{template "navbar" .}}
+    {{- template "navbar" .}}
     <div class="content-wrapper">
-      {{template "title" .}}
+      {{- template "title" .}}
       <section class="content">
         <div class="box">
           <div class="box-header with-border">
@@ -30,7 +30,7 @@
               </form>
             </div>
           </div>
-          {{if .Data.List}}
+          {{- if .Data.List}}
           <div class="box-body table-responsive">
             <table class="table table-bordered">
               <tbody>
@@ -42,7 +42,7 @@
                   <th>IP</th>
                   <th>操作时间</th>
                 </tr>
-                {{range .Data.List}}
+                {{- range .Data.List}}
                 <tr>
                   <td>{{.ID}}</td>
                   <td>{{.Admin}}</td>
@@ -51,22 +51,22 @@
                   <td><span class="last-ip" data-toggle="popover" data-trigger="hover" data-content="请稍等...">{{.IP}}</span></td>
                   <td>{{date .CreatedAt}}</td>
                 </tr>
-                {{end}}
+                {{- end}}
               </tbody>
             </table>
           </div>
           <div class="box-footer clearfix">
-            {{template "paginator" .Data}}
+            {{- template "paginator" .Data}}
           </div>
-          {{else}}
+          {{- else}}
           <div class="box-body">
             <p class="lead text-center">无数据</p>
           </div>
-          {{end}}
+          {{- end}}
         </div>
       </section>
     </div>
-    {{template "footer"}}
+    {{- template "footer"}}
   </div>
 </body>
 </html>

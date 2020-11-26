@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  {{template "header" .Node}}
+  {{- template "header" .Node}}
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
 </head>
-
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
-    {{template "navbar" .}}
+    {{- template "navbar" .}}
     <div class="content-wrapper">
-      {{template "title" .}}
+      {{- template "title" .}}
       <section class="content">
         <div class="row">
           <div class="col-lg-3 col-xs-6">
@@ -123,7 +121,7 @@
         </div>
       </section>
     </div>
-    {{template "footer"}}
+    {{- template "footer"}}
     <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-filestyle/1.2.3/bootstrap-filestyle.min.js"></script>
@@ -139,18 +137,16 @@
         });
         $('#area-chart').boxRefresh({
           loadInContent: false, responseType: 'json',
-          onLoadStart: function() {
-            this.get(0).options.params = 
+          onLoadStart: function () {
+            this[0].options.params =
               $('#area-chart input,select').serializeArray();
           },
           onLoadDone: function (e) {
             area.setData(e.data);
           }
         })
-        Admin.validate('form.box');
       })
     </script>
   </div>
 </body>
-
 </html>

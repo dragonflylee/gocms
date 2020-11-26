@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  {{template "header" "Login"}}
+  {{- template "header" "Login"}}
   <style>
     .backstretch { opacity: .5 }
   </style>
@@ -15,16 +15,18 @@
       <p class="login-box-msg">登录系统后台</p>
       <form action="?refer={{urlquery .Ref}}" method="post">
         <div class="form-group has-feedback">
-          <input name="username" type="email" class="form-control" autocomplete="off" placeholder="请输入管理员邮箱" data-rule="{'messages':{'required':'登录名称不能为空'}}" required>
+          <input name="username" type="email" class="form-control" autocomplete="off" placeholder="请输入管理员邮箱" data-msg-required="登录名称不能为空" required>
           <span class="glyphicon glyphicon-user form-control-feedback"></span>
         </div>
         <div class="form-group has-feedback">
-          <input name="password" type="password" class="form-control" autocomplete="off" placeholder="请输入密码" data-rule="{'messages':{'required':'密码不能为空'}}" required>
+          <input name="password" type="password" class="form-control" autocomplete="off" placeholder="请输入密码" data-msg-required="密码不能为空" required>
           <span class="glyphicon glyphicon-lock form-control-feedback"></span>
         </div>
+        {{- if .Key}}
         <div class="form-group">
           <div class="g-recaptcha" data-callback="onsubmit" data-sitekey="{{.Key}}"></div>
         </div>
+        {{- end}}
         <div class="row">
           <div class="col-xs-4 pull-right">
             <button type="submit" class="btn btn-primary btn-block btn-flat">登录</button>
@@ -33,19 +35,15 @@
       </form>
     </div>
   </div>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.10.0/js/md5.min.js"></script>
+  {{- template "footer" "login"}}
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+  {{- if .Key}}
   <script src='//recaptcha.net/recaptcha/api.js'></script>
-  <script src="/static/js/global.js?v{{version}}" type="text/javascript"></script>
+  {{- end}}
   <script type="text/javascript">
-    var onsubmit = function() {
+    var onsubmit = function () {
       $('form').submit();
     }
-
     $(document).on('click', '.btn-verify', function (e) {
       var timeout = 90, btn = $(e.target).
         attr('disabled', true).text(timeout + ' s'),
@@ -60,14 +58,12 @@
         url: btn.data('href'),
         dataType: 'json',
         success: function (resp) {
-          if (resp.code != 200) return Admin.alert({ 
-            container: form, type: 'danger', message: resp.msg });
-
-          $(':submit').attr('disabled', false);
+          if (resp.code != 200) return Admin.alert({
+            container: form, type: 'danger', message: resp.msg
+          });
         }
       })
     })
-
     $(document).ready(function () {
       $.backstretch('/bingpic');
     })
@@ -77,16 +73,16 @@
 
 {{define "login-verify"}}
 <div class="form-group has-feedback">
-  {{if .Phone}}
+  {{- if .Phone}}
   <p class="form-control-static">手机号码: {{.Phone}}</p>
-  {{else}}
+  {{- else}}
   <p class="form-control-static">电子邮箱: {{.Email}}</p>
-  {{end}}
+  {{- end}}
   <input name="token" type="hidden" value="{{.Token}}">
 </div>
 <div class="form-group has-feedback">
   <div class="input-group">
-    <input name="code" type="text" class="form-control" placeholder="请输入验证码" data-rule="{'messages':{'required':'请输入验证码'}}" data-target=".input-group" required>
+    <input name="code" type="text" class="form-control" placeholder="请输入验证码" data-msg-required="请输入验证码" data-target=".input-group" required>
     <span class="input-group-btn">
       <button class="btn btn-default btn-verify" data-href="/verify?type=login" type="button">点击获取</button>
     </span>
@@ -97,4 +93,4 @@
     <button type="submit" class="btn btn-primary btn-block btn-flat" disabled>Continue</button>
   </div>
 </div>
-{{end}}
+{{- end}}
