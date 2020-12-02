@@ -63,7 +63,7 @@ func EditArticle(w http.ResponseWriter, r *http.Request) {
 	v := &model.Article{ID: id, Title: "新建文章"}
 	// 如果是get请求，则跳转到编辑页
 	if r.Method == http.MethodGet {
-		if err = v.Query("id = ?", id); err != nil {
+		if err = v.Query(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

@@ -162,9 +162,9 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		t.ExecuteTemplate(w, "group.tpl", map[string]interface{}{
-			"Group": &group, "Node": model.GetNodes(),
-		})
+		group.Nodes = model.GetNodes()
+
+		t.ExecuteTemplate(w, "group.tpl", group)
 		return
 	}
 	if group.ID == sess.Values[userKey].(*model.Admin).GroupID {
@@ -175,7 +175,7 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		jFailed(w, http.StatusBadRequest, "用户组不能为空")
 		return
 	}
-	if nodes, exist := r.PostForm["node"]; exist {
+	if nodes, exist := r.PostForm["node[]"]; exist {
 		group.Nodes = make([]*model.Node, 0, len(nodes))
 		for _, id := range nodes {
 			var n model.Node

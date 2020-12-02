@@ -2,7 +2,7 @@
 <html>
 <head>
   {{- template "header" .Node}}
-  <link href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/themes/default/style.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.10/themes/default/style.min.css" rel="stylesheet">
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
   <div class="wrapper">
@@ -32,7 +32,7 @@
                   <li class="active">
                     <a>{{$name}}
                       {{- if and ($.User.Access "GroupEdit") (ne $id $.User.GroupID)}}
-                      <span class="btn btn-xs bg-navy pull-right" data-href="{{urlfor "GroupEdit" "id" ($id|print)}}" data-target="#modal-node" data-toggle="modal"><i class="fa fa-edit"></i></span>
+                      <span class="btn btn-xs bg-navy pull-right" data-href="{{urlfor "GroupEdit" "id" ($id|print)}}" data-target="#modal-edit" data-toggle="modal"><i class="fa fa-edit"></i></span>
                       {{- end}}
                     </a>
                   </li>
@@ -54,7 +54,7 @@
             <div class="box">
               <div class="box-header with-border">
                 <h3 class="box-title">管理员列表</h3>
-                <div class="box-tools">
+                <div class="box-tools visible-lg">
                   <form class="form-inline">
                     <div class="form-group">
                       <div class="input-group input-group-sm">
@@ -184,27 +184,9 @@
       </div>
     </div>
     {{- end}}
-    {{- if .User.Access "GroupAdd"}}
-    <div class="modal" id="modal-node">
-      <div class="modal-dialog">
-        <div class="modal-content box">
-        </div>
-      </div>
-    </div>
-    {{- end}}
     {{- template "modal"}}
     {{- template "footer"}}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/jstree.min.js"></script>
-    <script type="text/javascript">
-      Admin.modal('#modal-node', {
-        beforeSubmit: function (arr) {
-          var n = $('.jstree').attr('name');
-          $.each($('.jstree').jstree('get_selected'), function (j, v) {
-            arr[arr.length] = { name: n, value: v };
-          })
-        }
-      });
-    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.10/jstree.min.js"></script>
   </div>
 </body>
 </html>

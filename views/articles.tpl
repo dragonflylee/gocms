@@ -29,7 +29,7 @@
           {{- if .Data.List}}
           <div class="box-body table-responsive">
             <table class="table table-bordered">
-              <tbody>
+              <tbody data-link="row" class="rowlink">
                 <tr>
                   <th>#</th>
                   <th>标题</th>
@@ -40,7 +40,7 @@
                 {{- range .Data.List}}
                 <tr>
                   <td>{{.ID}}</td>
-                  <td>{{.Title}}</td>
+                  <td><a href="/article/{{.ID}}" target="_blank">{{.Title}}</a></td>
                   <td>{{.Admin}}</td>
                   <td></td>
                   <td>{{date .UpdatedAt}}</td>

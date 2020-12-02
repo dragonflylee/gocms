@@ -30,7 +30,7 @@
               </form>
             </div>
           </div>
-          {{- if .Data.List}}
+          {{- with .Data}}
           <div class="box-body table-responsive">
             <table class="table table-bordered">
               <tbody>
@@ -42,7 +42,7 @@
                   <th>IP</th>
                   <th>操作时间</th>
                 </tr>
-                {{- range .Data.List}}
+                {{- range .List}}
                 <tr>
                   <td>{{.ID}}</td>
                   <td>{{.Admin}}</td>
@@ -56,7 +56,7 @@
             </table>
           </div>
           <div class="box-footer clearfix">
-            {{- template "paginator" .Data}}
+            {{- template "paginator" .}}
           </div>
           {{- else}}
           <div class="box-body">

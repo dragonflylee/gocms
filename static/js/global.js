@@ -24,7 +24,7 @@ $.validator.addMethod('mobile', function (value, element) {
   return this.optional(element) || (value.length == 11 && mobile.test(value));
 }, '请填写正确的手机号码');
 // 密码验证正则表达式
-$.validator.addMethod('regexPasswd', function (value, element) {
+$.validator.addMethod('passwd', function (value, element) {
   return this.optional(element) || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,}$/.test(value);
 }, '密码至少包大小写字母及数字，长度至少8位');
 // 默认值
@@ -140,7 +140,6 @@ var Admin = {
     if (jQuery().jstree) {
       $('.jstree', $container).jstree({
         "core": { "themes": { "variant": "large" } },
-        "checkbox": { "cascade": "undetermined", "three_state": false },
         "plugins": ["checkbox"]
       });
     }
@@ -216,32 +215,34 @@ $(document).ready(function () {
   });
   // 远端模态框
   $('#modal-edit, #modal-detail').on('show.bs.modal', function (e) {
-    if (e.namespace === 'bs.modal') {
-      var url = $(e.relatedTarget).data('href');
-      $(this).find('.modal-content').load(url, function () {
-        if (status == 'success') {
-          Admin.init($(this));
-          $(this).find('form').validate({
-            submitHandler: function (form) {
-              Admin.submit(form)
-            }
+    var url = $(e.relatedTarget).data('href');
+    $(this).find('.modal-content').load(url, function () {
+      Admin.init($(this));
+      $(this).find('form').validate({
+        submitHandler: function (form) {
+          var data = {}
+          $('.jstree').map(function (i, el) {
+            data[$(el).attr('name')] = $(el).jstree('get_selected');
           })
+          Admin.submit(form, { data: data })
         }
       })
-    }
+    })
   }).on('hide.bs.modal', function () {
     $(this).removeData('bs.modal');
   });
   // 页面表单
-  $('form:has(:password)').validate({
-    submitHandler: function (form) {
-      Admin.submit(form, {
-        beforeSubmit: function (arr) {
-          for (var i = 0; i < arr.length; i++)
-            if (arr[i].name == 'password')
-              arr[i].value = md5(arr[i].value);
-        }
-      })
-    }
-  });
+  $('form.box,form:has(:password)').each(function (i, el){
+    $(el).validate({
+      submitHandler: function (form) {
+        Admin.submit(form, {
+          beforeSubmit: function (arr) {
+            for (var i = 0; i < arr.length; i++)
+              if (arr[i].name == 'password')
+                arr[i].value = md5(arr[i].value);
+          }
+        })
+      }
+    })
+  })
 })

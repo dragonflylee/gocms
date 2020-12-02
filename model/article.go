@@ -30,7 +30,7 @@ func (a Article) Render() template.HTML {
 
 // Query 获取文章
 func (a *Article) Query(where ...interface{}) error {
-	return db.First(a, where...).Error
+	return db.Take(a, where...).Error
 }
 
 // Update 更新文章
