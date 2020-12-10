@@ -44,7 +44,7 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 		u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
 		u.Password = util.MD5(u.Password + util.MD5(u.Salt))
 		u.Flags = u.Flags ^ model.FlagResetPassNext | model.FlagPassNeverExpire
-		if err = u.Update("password", "salt", "status"); err != nil {
+		if err = u.Update("password", "salt", "flags"); err != nil {
 			jFailed(w, http.StatusBadRequest, err.Error())
 			return
 		}

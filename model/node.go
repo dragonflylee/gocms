@@ -98,6 +98,7 @@ func Install(u *Admin, path string) error {
 	u.GroupID = u.Group.ID
 	u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
 	u.Password = util.MD5(u.Password + util.MD5(u.Salt))
+	u.Flags = FlagPassNeverExpire
 	if err = tx.Save(u).Error; err != nil {
 		tx.Rollback()
 		return err
