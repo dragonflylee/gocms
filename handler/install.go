@@ -2,7 +2,6 @@ package handler
 
 import (
 	"gocms/model"
-	"gocms/util"
 	"net/http"
 	"strings"
 
@@ -30,7 +29,7 @@ func Install(path string, debug bool, s *mux.Router) http.Handler {
 			jFailed(w, http.StatusBadRequest, "邮箱格式非法")
 			return
 		}
-		if err := util.ParseForm(r.PostForm, &model.Config.DB); err != nil {
+		if err := decoder.Decode(&model.Config.DB, r.PostForm); err != nil {
 			jFailed(w, http.StatusBadRequest, err.Error())
 			return
 		}

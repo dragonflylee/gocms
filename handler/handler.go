@@ -22,6 +22,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"github.com/gorilla/securecookie"
 	"github.com/quasoft/memstore"
 	"golang.org/x/time/rate"
@@ -41,8 +42,9 @@ const (
 var (
 	t *template.Template
 
-	build = "0"
-	store = memstore.NewMemStore(securecookie.GenerateRandomKey(32))
+	build   = "0"
+	store   = memstore.NewMemStore(securecookie.GenerateRandomKey(32))
+	decoder = schema.NewDecoder()
 
 	emailRegexp = regexp.MustCompile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$")
 )
@@ -217,4 +219,6 @@ func Watch(tpl string, r *mux.Router) error {
 
 func init() {
 	gob.Register(userKey)
+
+	decoder.IgnoreUnknownKeys(true)
 }
