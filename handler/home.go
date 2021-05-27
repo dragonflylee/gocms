@@ -5,15 +5,18 @@ import (
 	"net/http"
 	"time"
 
+	"gocms/pkg/errors"
+
+	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 )
 
-// Home 首页
-func Home(w http.ResponseWriter, r *http.Request) {
-	switch r.FormValue("action") {
+// Dashboard 仪表盘
+func Dashboard(c *gin.Context) {
+	switch c.Query("action") {
 	case "user":
-		from, _ := time.Parse(dateFormate, r.Form.Get("from"))
-		to, _ := time.Parse(dateFormate, r.Form.Get("to"))
+		from, _ := time.Parse(dateFormate, c.Query("from"))
+		to, _ := time.Parse(dateFormate, c.Query("to"))
 		data := make([]struct {
 			Y     string          `json:"y"`
 			Item1 decimal.Decimal `json:"item1"`
@@ -24,8 +27,10 @@ func Home(w http.ResponseWriter, r *http.Request) {
 			data[i].Item1 = decimal.New(rand.Int63n(8000), -2)
 			data[i].Item2 = decimal.New(rand.Int63n(4000), -2)
 		}
-		jSuccess(w, data)
+		c.JSON(http.StatusOK, errors.OK(data))
+
 	default:
-		rLayout(w, r, "index.tpl", time.Now())
+		c.Set("Data", time.Now())
+		c.HTML(http.StatusOK, "index.html", c.Keys)
 	}
 }

@@ -1,62 +1,60 @@
 package handler
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"gocms/model"
 	"net"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
+	"gocms/model"
+	"gocms/pkg/auth"
+	"gocms/pkg/captcha"
+	"gocms/pkg/config"
+	"gocms/pkg/errors"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/patrickmn/go-cache"
 )
 
 var (
-	tokenMap sync.Map
-
 	tokenCache = cache.New(time.Minute*5, time.Hour)
+	session    = new(auth.Session)
 )
 
 // Login 登录页
-func Login(w http.ResponseWriter, r *http.Request) {
-	sess, err := store.Get(r, sessName)
-	if err == nil {
-		if _, exist := sess.Values[userKey]; exist {
-			http.Redirect(w, r, "/", http.StatusFound)
-			return
-		}
-	}
-	if r.Method == http.MethodGet {
-		t.ExecuteTemplate(w, "login.tpl", map[string]string{
-			"Ref": r.Referer(), "Key": model.Config.Captcha.Key,
-		})
+func Login(c *gin.Context) {
+	if c.Request.Method == http.MethodGet {
+		c.Set("Ref", c.Request.Referer())
+		c.Set("Captcha", config.Captcha())
+		c.HTML(http.StatusOK, "login.html", c.Keys)
 		return
 	}
+
 	var p *model.AdminLogin
 
-	switch r.FormValue("action") {
+	switch c.Query("action") {
 	case "verfiy":
 		// 二步验证
-		token := strings.TrimSpace(r.PostForm.Get("token"))
+		token := strings.TrimSpace(c.Query("token"))
 		if v, ok := tokenCache.Get(token); !ok {
-			jFailed(w, http.StatusForbidden, "非法请求")
+			c.Error(errors.ErrRequest)
 			return
 		} else if p, ok = v.(*model.AdminLogin); !ok {
-			jFailed(w, http.StatusForbidden, "非法请求")
+			c.Error(errors.ErrRequest)
 			return
 		}
-		if p.IP != r.RemoteAddr {
-			jFailed(w, http.StatusForbidden, "非法请求")
+		if p.IP != c.ClientIP() {
+			c.Error(errors.ErrRequest)
 			return
 		}
-		code := strings.TrimSpace(r.PostForm.Get("code"))
+		code := strings.TrimSpace(c.Query("code"))
 		if len(code) < 1 {
-			jFailed(w, http.StatusForbidden, "验证码非法")
+			c.Error(errors.ErrCode)
 			return
 		}
 		p.Verifyed = true
@@ -65,64 +63,54 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		p = &model.AdminLogin{
-			Email:    strings.TrimSpace(r.PostForm.Get("username")),
-			Password: strings.TrimSpace(r.PostForm.Get("password")),
-			IP:       r.RemoteAddr, UA: r.UserAgent(),
+			IP: c.ClientIP(), UA: c.Request.UserAgent(),
 		}
-		if p.Email = strings.ToLower(p.Email); !emailRegexp.MatchString(p.Email) {
-			jFailed(w, http.StatusBadRequest, "邮箱格式非法")
+		err := c.MustBindWith(p, binding.FormPost)
+		if err != nil {
 			return
 		}
-		if model.Config.Captcha.Key != "" {
-			if err = model.Recaptcha(r); err != nil {
-				jFailed(w, http.StatusBadRequest, "验证码非法")
+		if config.Captcha() != nil {
+			if err = captcha.Recaptcha(c.Request); err != nil {
+				c.Error(errors.ErrCapcha)
 				return
 			}
 		}
 	}
+
 	u, err := p.Login()
 	if err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
+		c.Error(err)
 		return
 	}
 	if err == nil {
-		sess.Values[userKey] = u
-		if _, exist := r.PostForm["remember"]; !exist {
-			sess.Options.MaxAge = 0
-		}
-		if err = sess.Save(r, w); err != nil {
-			jFailed(w, http.StatusBadRequest, err.Error())
+		if err = session.Set(c.Request, c.Writer, u); err != nil {
+			c.Error(err)
 			return
 		}
-		tokenMap.Store(u.ID, sess.ID)
-		jSuccess(w, r.Form.Get("refer"))
+		c.JSON(http.StatusOK, errors.OK("/admin/"))
 		return
 	}
 	if u != nil {
-		hash := hmac.New(sha256.New, net.ParseIP(r.RemoteAddr))
-		fmt.Fprint(hash, u.ID, r.UserAgent(), time.Now().Unix())
+		hash := hmac.New(sha256.New, net.ParseIP(c.ClientIP()))
+		fmt.Fprint(hash, u.ID, c.Request.UserAgent(), time.Now().Unix())
 		token := base64.StdEncoding.EncodeToString(hash.Sum(nil))
 		tokenCache.SetDefault(token, p)
 
-		w.Header().Add("X-Form-Action", "?action=verfiy")
-
-		buff := &bytes.Buffer{}
-		t.ExecuteTemplate(buff, "login-verify", map[string]string{
+		c.Header("X-Form-Action", "?action=verfiy")
+		c.HTML(http.StatusOK, "login-verify", gin.H{
 			"Token": token, "Email": p.Email,
 		})
-		jSuccess(w, buff.String())
 		return
 	}
-	jFailed(w, http.StatusForbidden, err.Error())
+	c.AbortWithStatus(http.StatusForbidden)
 }
 
 // Logout 登出
-func Logout(w http.ResponseWriter, r *http.Request) {
-	if sess, err := store.Get(r, sessName); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	} else {
-		sess.Options.MaxAge = -1
-		sess.Save(r, w)
-		http.Redirect(w, r, "/login", http.StatusFound)
-	}
+func Logout(c *gin.Context) {
+	session.Flush(c.Request, c.Writer)
+	c.Redirect(http.StatusFound, "/login")
+}
+
+func init() {
+	auth.Register(session)
 }

@@ -1,0 +1,52 @@
+- name: menu.dashboard
+  icon: fas fa-tachometer-alt
+  path: /admin/
+  type: 1
+  status: true
+- name: menu.profile
+  icon: far fa-circle
+  path: /admin/profile
+  type: 1
+- name: menu.setting
+  icon: fas fa-cog
+  type: 2
+  status: true
+  child:
+  - name: menu.logs
+    icon: far fa-sticky-note
+    path: /admin/logs
+    type: 2
+    status: true
+  - name: menu.users
+    icon: fas fa-users
+    path: /admin/users
+    type: 2
+    status: true
+    child:
+    - name: users.add
+      icon: fas fa-user-plus
+      path: /admin/user/add
+      type: 2
+    - name: users.delete
+      path: /admin/user/del/:id
+      type: 2
+  - name: menu.groups
+    icon: fas fa-users
+    path: /admin/group/edit/:id
+    type: 2
+    child:
+      - name: groups.add
+        icon: fas fa-address-book
+        path: /admin/group/add
+        type: 2
+- name: menu.articles
+  icon: fas fa-book
+  path: /admin/articles
+  status: true
+  child:
+  - name: articles.detail
+    path: /admin/article/detail/:id
+  - name: articles.edit
+    path: /admin/article/edit/:id
+  - name: articles.delete
+    path: /admin/article/del/:id

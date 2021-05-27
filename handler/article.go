@@ -1,81 +1,84 @@
 package handler
 
 import (
-	"fmt"
-	"gocms/model"
-	"gocms/util"
+	"html/template"
 	"net/http"
 	"strconv"
-	"time"
+	"strings"
 
-	"github.com/gorilla/mux"
-	"gorm.io/gorm"
+	"gocms/model"
+	"gocms/pkg/errors"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/russross/blackfriday/v2"
 )
 
 // Articles 文章列表
-func Articles(w http.ResponseWriter, r *http.Request) {
-	filter := func(db *gorm.DB) *gorm.DB {
-		if from, err := time.ParseInLocation(dateFormate, r.Form.Get("from"), time.Local); err == nil {
-			db = db.Where("created_at >= ?", from)
-		}
-		if to, err := time.ParseInLocation(dateFormate, r.Form.Get("to"), time.Local); err == nil {
-			db = db.Where("created_at <= ?", to)
-		}
-		return db
+func Articles(c *gin.Context) {
+	req := new(model.DateRangeOpts)
+
+	if err := c.ShouldBindUri(req); err != nil {
+		return
 	}
-	data := make(map[string]interface{})
-	if nums, err := model.GetArticleNum(filter); err == nil && nums > 0 {
-		p := util.NewPaginator(r, nums)
-		if list, err := model.GetArticles(func(db *gorm.DB) *gorm.DB {
-			return db.Offset(p.Offset()).Limit(p.PerPageNums)
-		}, filter); err == nil {
-			data["List"] = list
+
+	if nums, err := model.GetArticleNum(req); err == nil && nums > 0 {
+		p := model.NewPaginator(c.Request.URL, nums)
+		if list, err := model.GetArticles(req, p); err == nil {
+			c.Set("List", list)
 		}
-		data["Page"] = p
+		c.Set("Page", p)
 	}
-	rLayout(w, r, "articles.tpl", data)
+	c.HTML(http.StatusOK, "articles.html", c.Keys)
 }
 
 // GetArticle 文章详情
-func GetArticle(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.ParseInt(vars["id"], 10, 64)
+func GetArticle(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.Error(err).SetType(gin.ErrorTypeBind)
 		return
 	}
 	var v model.Article
 	if err = v.Query(id); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.Error(err)
 		return
 	}
-	rLayout(w, r, "article_detail.tpl", v)
+	md := []byte(strings.ReplaceAll(v.Content, "\r\n", "\n"))
+	c.Set("Data", template.HTML(blackfriday.Run(md)))
+	c.HTML(http.StatusOK, "article_detail.html", c.Keys)
 }
 
 // EditArticle 编辑文章
-func EditArticle(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.ParseInt(vars["id"], 10, 64)
+func EditArticle(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.Error(err)
 		return
 	}
 	v := &model.Article{ID: id, Title: "新建文章"}
 	// 如果是get请求，则跳转到编辑页
-	if r.Method == http.MethodGet {
-		if err = v.Query(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	if c.Request.Method == http.MethodGet {
+		if v.ID > 0 {
+			if err = v.Query(); err != nil {
+				c.Error(err)
+				return
+			}
 		}
-		rLayout(w, r, "article_edit.tpl", v)
+		c.Set("Data", v)
+		c.HTML(http.StatusOK, "article_edit.html", c.Keys)
 		return
 	}
-	v.Title = r.PostForm.Get("title")
-	v.Content = r.PostForm.Get("content")
+
+	if err = c.MustBindWith(v, binding.FormPost); err != nil {
+		return
+	}
+
+	v.AdminID = c.MustGet(userKey).(*model.Admin).ID
 
 	if err = v.Update(); err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
+		c.Error(err)
 		return
 	}
-	jSuccess(w, fmt.Sprintf("/article/%d", v.ID))
+	c.JSON(http.StatusOK, errors.OK())
 }

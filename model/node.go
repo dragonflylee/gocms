@@ -1,13 +1,14 @@
 package model
 
 import (
-	"encoding/hex"
-	"gocms/util"
-	"io/ioutil"
-	"os"
+	_ "embed"
 
-	"github.com/gorilla/securecookie"
+	"gocms/pkg/config"
+	"gocms/pkg/util"
+
+	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v2"
+	"gorm.io/gorm"
 )
 
 // NodeType 节点类型
@@ -39,22 +40,22 @@ type Node struct {
 // Menu 菜单
 type Menu []*Node
 
-// Assign 用于递归生成菜单
-func (m Menu) Assign(g int64, n *Node) map[string]interface{} {
-	return map[string]interface{}{"m": m, "Group": g, "Node": n}
+func (m Menu) Recurve(data gin.H) gin.H {
+	data["Child"] = m
+	return data
 }
 
 func loadNodes() (map[int]*Node, error) {
-	var list Menu
+	var menus Menu
 	n := map[int]*Node{0: {ID: 0, Path: "#"}}
-	err := db.Order("id").Preload("Groups").Find(&list).Error
+	err := db.Order("id").Preload("Groups").Find(&menus).Error
 	if err != nil {
 		return nil, err
 	}
-	for _, node := range list {
+	for _, node := range menus {
 		n[node.ID] = node
 	}
-	for _, node := range list {
+	for _, node := range menus {
 		if node.ID > 0 {
 			p := n[node.Parent]
 			p.Child = append(p.Child, node)
@@ -77,43 +78,34 @@ func walkNode(root *Menu, m Menu, id int) int {
 	return i
 }
 
+//go:embed menu.yml
+var menu []byte
+
 // Install 初始化节点
 func Install(u *Admin, path string) error {
-	data, err := ioutil.ReadFile("nodes.yml")
+	var menus Menu
+	err := yaml.Unmarshal(menu, &menus)
 	if err != nil {
 		return err
 	}
-	var list Menu
-	if err = yaml.Unmarshal(data, &list); err != nil {
-		return err
-	}
-	walkNode(&u.Group.Nodes, list, 0)
 
-	tx := db.Begin()
+	walkNode(&u.Group.Nodes, menus, 0)
 
-	if err = tx.Save(&u.Group).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-	u.GroupID = u.Group.ID
-	u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
-	u.Password = util.MD5(u.Password + util.MD5(u.Salt))
-	u.Flags = FlagPassNeverExpire
-	if err = tx.Save(u).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err = tx.Commit().Error; err != nil {
-		return err
-	}
-	f, err := os.Create(path)
+	err = db.Transaction(func(tx *gorm.DB) error {
+		err := tx.Save(&u.Group).Error
+		if err != nil {
+			return err
+		}
+		u.GroupID = u.Group.ID
+		u.Salt = util.RandString(5)
+		u.Password = util.MD5(u.Password, util.MD5(u.Salt))
+		u.Flags = FlagPassNeverExpire
+		if err = tx.Save(u).Error; err != nil {
+			return err
+		}
+		return config.Save(path)
+	})
 	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if err = yaml.NewEncoder(f).Encode(&Config); err != nil {
 		return err
 	}
 	if mapNodes, err = loadNodes(); err != nil {
@@ -159,13 +151,13 @@ func (n *Node) String() string {
 }
 
 // Parents 获取指定节点的所有父节点
-func (n *Node) Parents() Menu {
-	list := make(Menu, 0)
+func (n *Node) Parents() []string {
+	var slice []string
 	for n.Parent != 0 {
 		n = mapNodes[n.Parent]
-		list = append(Menu{n}, list...)
+		slice = append(slice, n.Name)
 	}
-	return list
+	return slice
 }
 
 // HasGroup 判断指定节点是否能被某角色访问

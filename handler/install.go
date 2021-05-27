@@ -1,46 +1,46 @@
 package handler
 
 import (
-	"gocms/model"
+	"log"
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/mux"
+	"gocms/model"
+	"gocms/pkg/config"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Install 安装配置
-func Install(path string, debug bool, s *mux.Router) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			t.ExecuteTemplate(w, "install.tpl", nil)
-			return
-		}
-		if err := r.ParseForm(); err != nil {
-			jFailed(w, http.StatusBadRequest, err.Error())
-			return
-		}
+func Install(path string, srv *http.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		u := &model.Admin{
-			Email:    strings.TrimSpace(r.PostForm.Get("email")),
-			Password: strings.TrimSpace(r.PostForm.Get("password")),
-			Headpic:  "/static/img/avatar.png", LastIP: r.RemoteAddr,
-			Group: model.Group{Name: "超级管理员"},
+			Email:    strings.ToLower(c.PostForm("email")),
+			Password: strings.TrimSpace(c.PostForm("password")),
+			LastIP:   c.ClientIP(),
+			Group:    model.Group{Name: "Administrator"},
 		}
-		if u.Email = strings.ToLower(u.Email); !emailRegexp.MatchString(u.Email) {
-			jFailed(w, http.StatusBadRequest, "邮箱格式非法")
+
+		err := c.ShouldBind(config.DB())
+		if err != nil {
+			c.Error(err)
 			return
 		}
-		if err := decoder.Decode(&model.Config.DB, r.PostForm); err != nil {
-			jFailed(w, http.StatusBadRequest, err.Error())
+		if err = model.Open(); err != nil {
+			c.Error(err)
 			return
 		}
-		if err := model.Open(debug); err != nil {
-			jFailed(w, http.StatusInternalServerError, err.Error())
+		if err = model.Install(u, path); err != nil {
+			c.Error(err)
 			return
 		}
-		if err := model.Install(u, path); err != nil {
-			jFailed(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		jSuccess(w, "/login")
-	})
+
+		c.Redirect(http.StatusFound, "/login")
+
+		go func() {
+			if err := srv.Shutdown(c); err != nil {
+				log.Printf("Unable to shutdown the install server! Error: %v", err)
+			}
+		}()
+	}
 }

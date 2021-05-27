@@ -1,0 +1,91 @@
+{{- template "admin-header" .}}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+    </div>
+
+    <div class="col-md-10">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{{.i18n.Tr "label.user.list"}}</h3>
+          <div class="card-tools">
+            {{- if .User.Access "/admin/user/add"}}
+            <button type="button" class="btn bg-purple btn-sm" data-target="#user-add" data-toggle="modal">{{.i18n.Tr "label.user.add"}} <i class="fas fa-plus"></i></button>
+            {{- end}}
+          </div>
+        </div>
+        {{- if .List}}
+        <div class="card-body p-0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>{{.i18n.Tr "label.email"}}</th>
+                <th>{{.i18n.Tr "label.group"}}</th>
+                <th>{{.i18n.Tr "label.join_time"}}</th>
+                <th>{{.i18n.Tr "label.last_login"}}</th>
+                <th>{{.i18n.Tr "label.status"}}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {{- range .List}}
+              <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Email}}</td>
+                <td>{{index $.Group .GroupID}}</td>
+                <td>{{date .CreatedAt}}</td>
+                <td>{{date .LastLogin}} / {{.LastIP}}</td>
+                <td>
+                  {{- if .Status}}
+                  <span class="text-maroon">{{$.i18n.Tr "label.status.active"}}</span>
+                  {{- else}}
+                  <span class="text-navy">{{$.i18n.Tr "label.status.inactive"}}</span>
+                  {{- end}}
+                </td>
+                <td>
+                  {{- if and ($.User.Access "/admin/user/del/:id") (ne .ID $.User.ID)}}
+                  <a class="btn btn-default btn-xs" title="删除 {{.Email}}" data-href="/admin/user/del/0" data-target="#modal-confirm" data-toggle="modal"><i class="fa fa-trash-o text-red"></i></a>
+                  {{- end}}
+                </td>
+              </tr>
+              {{- end}}
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer clearfix">
+          {{- template "paginator" .}}
+        </div>
+        {{- end}}
+      </div>
+    </div>
+  </div>
+</div>
+
+{{- if .User.Access "/admin/user/add"}}
+<div class="modal fade" id="user-add">
+  <div class="modal-dialog">
+    <form class="modal-content needs-validation">
+      <div class="modal-header">
+        <h4 class="modal-title">{{.i18n.Tr "label.user.add"}}</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>{{.i18n.Tr "label.email"}}</label>
+          <input type="email" name="email" class="form-control" placeholder="Enter email" required>
+        </div>
+        <div class="form-group">
+          <label>{{.i18n.Tr "label.password"}}</label>
+          <input type="password" class="form-control" placeholder="Password" required>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <a class="btn btn-default" data-dismiss="modal">{{.i18n.Tr "label.cancel"}}</a>
+        <button type="submit" class="btn btn-primary">{{.i18n.Tr "label.submit"}}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{{- end}}
+{{- template "admin-footer"}}

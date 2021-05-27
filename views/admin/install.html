@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {{- template "header" .i18n.Tr "install.title"}}
+</head>
+<body class="hold-transition register-page">
+  <div class="register-box">
+    <div class="register-logo">
+      <a href="#">{{.i18n.Tr "install.title"}}</a>
+    </div>
+    <div class="card">
+      <div class="card-body register-card-body">
+        <form action="/install" method="post" class="tab-content needs-validation">
+
+          <div class="tab-pane active" id="database">
+            <p class="login-box-msg">{{.i18n.Tr "install.config.db"}}</p>
+
+            <div class="mb-3 has-validation">
+              <select name="db_type" class="form-control"></select>
+            </div>
+            <div class="input-group mb-3 has-validation">
+              <input type="text" name="db_host" class="form-control" placeholder="{{.i18n.Tr "install.db.host"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fab fa-ioxhost"></span></div>
+              </div>
+            </div>
+            <div class="input-group mb-3 has-validation">
+              <input type="text" name="db_user" class="form-control" placeholder="{{.i18n.Tr "install.db.user"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-terminal"></span></div>
+              </div>
+            </div>
+            <div class="input-group mb-3 has-validation">
+              <input type="password" name="db_pass" class="form-control" placeholder="{{.i18n.Tr "install.db.password"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-key"></span></div>
+              </div>
+            </div>
+            <div class="input-group mb-3 has-validation">
+              <input type="text" name="db_name" class="form-control" value="gocms" placeholder="{{.i18n.Tr "install.db.name"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-font"></span></div>
+              </div>
+            </div>
+
+            <div class="col-4">
+              <a class="btn btn-primary btn-block" data-toggle="tab" data-target="#admin">{{.i18n.Tr "install.next"}}</a>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="admin">
+            <p class="login-box-msg">{{.i18n.Tr "install.config.admin"}}</p>
+
+            <div class="input-group mb-3 has-validation">
+              <input type="email" name="email" class="form-control" placeholder="{{.i18n.Tr "label.email"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-envelope"></span></div>
+              </div>
+            </div>
+            <div class="input-group mb-3 has-validation">
+              <input type="password" name="password" id="register_password" class="form-control" placeholder="{{.i18n.Tr "label.password"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-lock"></span></div>
+              </div>
+            </div>
+            <div class="input-group mb-3 has-validation">
+              <input type="password" class="form-control" data-rule-equalTo="#register_password" placeholder="{{.i18n.Tr "label.repeat_password"}}" data-msg-equalTo="{{.i18n.Tr "validate.password_mismatch"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-check"></span></div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-8">
+                <div class="icheck-primary">
+                  <input type="checkbox" id="agreeTerms" name="terms" value="agree">
+                  <label for="agreeTerms">
+                    I agree to the <a href="#">terms</a>
+                  </label>
+                </div>
+              </div>
+              <div class="col-4">
+                <button type="submit" class="btn btn-primary btn-block">{{.i18n.Tr "install.start"}}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {{- template "footer"}}
+  <script type="text/javascript">
+    var options = {
+      'MySQL': { 'db_host': 'localhost:3306', 'db_user': 'root' },
+      'Postgres': { 'db_host': 'localhost:5432', 'db_user': 'postgres' },
+      'SQLite3': { 'db_host': 'gocms.db', 'db_user': 'admin', 'db_name': null },
+    };
+    $(function () {
+      var opts = $.map(options, function (el, i) {
+        return new Option(i)
+      })
+
+      $('[data-toggle="tab"]').on('show.bs.tab', function (ev) {
+        return $('input', ev.relatedTarget).valid()
+      })
+
+      $('select[name="db_type"]').on('change', function () {
+        $.each(options[this.value], function (i, e) {
+          var v = $('input[name="' + i + '"]').val(e).
+            attr('disabled', e ? false : true).parent();
+          e ? v.show() : v.hide();
+        })
+      }).append(opts).trigger('change')
+    })
+  </script>
+</body>
+</html>
