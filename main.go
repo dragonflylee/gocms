@@ -1,83 +1,86 @@
 package main
 
 import (
+	"embed"
 	"flag"
-	"gocms/handler"
-	"gocms/model"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
-	"time"
 
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/configor"
+	"gocms/handler"
+	"gocms/model"
+	"gocms/pkg/auth"
+	"gocms/pkg/config"
+	"gocms/pkg/i18n"
+	"gocms/pkg/route"
+
+	"github.com/gin-gonic/gin"
 )
 
-var (
-	config = configor.New(&configor.Config{AutoReload: true, AutoReloadInterval: time.Hour})
-	path   = flag.String("c", "config.yml", "配置文件路径")
-)
+//go:embed assets/* views/admin/*.html i18n/*.ini
+var content embed.FS
 
 func main() {
+	var p string
+	flag.StringVar(&p, "c", "config.yml", "config file path")
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	err := i18n.Load(content, "i18n/*.ini")
+	if err != nil {
+		log.Fatalf("local i18n: %v", err)
+	}
 	// 加载配置文件
-	if err := config.Load(&model.Config, *path); err == nil {
-		if err = model.Open(config.Debug); err != nil {
-			log.Panicf("open db failed: %v", err)
-		}
-	}
-	r := mux.NewRouter()
-	// 静态文件
-	dir := filepath.Dir(os.Args[0])
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
-		http.FileServer(http.Dir(filepath.Join(dir, "static")))))
-	// 404页面
-	r.NotFoundHandler = handler.Limit(2, http.NotFound)
-	s := handler.RouterWrap{Router: r.PathPrefix("/").Subrouter()}
-	if !model.IsOpen() {
-		s.Use(func(h http.Handler) http.Handler {
-			if model.IsOpen() {
-				return h
-			}
-			return handler.Install(*path, config.Debug, s.Router)
+	if err = config.Load(p); err != nil {
+		r := route.New(content)
+		r.GET("/", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "install.html", c.Keys)
 		})
+		srv := &http.Server{
+			Addr: config.HTTP().Addr, Handler: r,
+		}
+		r.POST("/install", handler.Install(p, srv))
+		done := route.Listen(srv)
+		select {
+		case <-done:
+			return
+		default:
+		}
+	} else if err = model.Open(); err != nil {
+		log.Panicf("open db failed: %v", err)
 	}
-	s.Use(handlers.ProxyHeaders, handlers.HTTPMethodOverrideHandler, handler.LogHandler,
-		handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
-	// 初始化模板
-	if err := handler.Watch(filepath.Join(dir, "views"), s.Router); err != nil {
-		log.Fatalf("watch failed: %v", err)
-	}
+
+	auth.Init()
+
+	r := route.New(content)
 	// 登录相关
-	s.Handle("/login", handler.Limit(2, handler.Login)).Methods(http.MethodPost)
-	s.Handle("/bingpic", handler.Limit(2, handler.BingPic)).Methods(http.MethodGet)
+	r.POST("/login", route.Limit(2), handler.Login)
+	r.GET("/bingpic", route.Limit(2), handler.BingPic)
+	r.GET("/avatar", handler.Avatar)
 
-	s.HandleFunc("/login", handler.Login).Methods(http.MethodGet)
-	s.HandleFunc("/logout", handler.Logout)
+	r.GET("/login", handler.Login)
+	r.GET("/logout", handler.Logout)
 	// 后台主页
-	s = handler.RouterWrap{Router: s.PathPrefix("/").Subrouter()}
-	// 检查登陆状态
-	s.Use(handler.Check, handlers.CompressHandler)
+	s := r.Group("/admin", handler.Auth)
 	// 系统管理
-	s.HandleFunc("/users", handler.Users).Methods(http.MethodGet)
-	s.HandleFunc("/user/add", handler.UserAdd).Methods(http.MethodPost)
-	s.HandleFunc("/user/delete/{id:[0-9]+}", handler.UserDelete).Methods(http.MethodPost)
-	s.HandleFunc("/group/{id:[0-9]+}", handler.GroupEdit)
-	s.HandleFunc("/group/add", handler.GroupAdd).Methods(http.MethodPost)
-	s.HandleFunc("/logs", handler.Logs).Methods(http.MethodGet)
+	s.GET("/users", handler.Users)
+	s.POST("/user/add", handler.UserAdd)
+	s.POST("/user/del/:id", handler.UserDelete)
+	s.GET("/group/:id", handler.GroupEdit)
+	s.POST("/group/add", handler.GroupAdd)
+	s.GET("/logs", handler.Logs)
 	// 文章管理
-	s.HandleFunc("/articles", handler.Articles)
-	s.HandleFunc("/article/{id:[0-9]+}", handler.GetArticle)
-	s.HandleFunc("/article/edit/{id:[0-9]+}", handler.EditArticle)
+	s.GET("/articles", handler.Articles)
+	s.GET("/article/edit/:id", handler.EditArticle)
+	s.POST("/article/edit/:id", handler.EditArticle)
 	// 个人中心
-	s.HandleFunc("/profile", handler.Profile)
+	s.GET("/profile", handler.Profile)
+	s.POST("/profile", handler.Profile)
 	// 文件上传
-	s.HandleFunc("/upload", handler.Upload).Methods(http.MethodPost)
-	s.HandleFunc("/", handler.Home)
+	s.GET("/upload", handler.Upload)
+	s.GET("/", handler.Dashboard)
 
-	log.Panic(http.ListenAndServe(model.Config.Addr, r))
+	<-route.Listen(&http.Server{
+		Addr: config.HTTP().Addr, Handler: r,
+	})
 }

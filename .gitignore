@@ -6,7 +6,8 @@
 *.dylib
 /gocms
 /debug
-/config.yml
+/__debug_bin
+config.yml
 
 # Test binary, build with `go test -c`
 *.test

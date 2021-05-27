@@ -1,0 +1,41 @@
+{{- template "admin-header" .}}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{.i18n.Tr "label.log.record"}}</h3>
+    <div class="card-tools">
+      
+    </div>
+  </div>
+  {{- if .List}}
+  <div class="card-body p-0">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>{{.i18n.Tr "label.user"}}</th>
+          <th>URL</th>
+          <th>{{.i18n.Tr "label.comment"}}</th>
+          <th>IP</th>
+          <th>{{.i18n.Tr "label.time"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{- range .List}}
+        <tr>
+          <td>{{.ID}}</td>
+          <td>{{.Admin}}</td>
+          <td>{{.Path}}</td>
+          <td>{{.Commit}}</td>
+          <td>{{.IP}}</td>
+          <td>{{date .CreatedAt}}</td>
+        </tr>
+        {{- end}}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer clearfix">
+    {{- template "paginator" .}}
+  </div>
+  {{- end}}
+</div>
+{{- template "admin-footer"}}

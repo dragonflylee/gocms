@@ -1,181 +1,149 @@
 package handler
 
 import (
-	"encoding/hex"
-	"gocms/model"
-	"gocms/util"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
-	"gorm.io/gorm"
+	"gocms/model"
+	"gocms/pkg/config"
+	"gocms/pkg/errors"
+	"gocms/pkg/util"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 // Profile 个人中心
-func Profile(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		rLayout(w, r, "profile.tpl", map[string]string{
-			"recaptcha": model.Config.Captcha.Key,
-		})
+func Profile(c *gin.Context) {
+	if c.Request.Method == http.MethodGet {
+		c.Set("Captcha", config.Captcha())
+		c.HTML(http.StatusOK, "profile.html", c.Keys)
 		return
 	}
 
-	sess, err := store.Get(r, sessName)
-	if err != nil {
-		return
-	}
-	u := sess.Values[userKey].(*model.Admin)
+	u := c.MustGet(userKey).(*model.Admin)
 
-	if err = r.ParseForm(); err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	switch r.Form.Get("action") {
+	switch c.Query("action") {
 	case "password":
+		if u.Password = c.PostForm("password"); len(u.Password) < 8 {
+			c.Error(errors.New("PasswordTooShort")) // 密码不能少于8个字符
+			return
+		}
+		u.Salt = util.RandString(5)
+		u.Password = util.MD5(u.Password, util.MD5(u.Salt))
+		u.Flags = (u.Flags & ^model.FlagResetPassNext) | model.FlagPassNeverExpire
 
-		if u.Password = r.PostForm.Get("password"); len(u.Password) < 8 {
-			jFailed(w, http.StatusBadRequest, "密码不能少于8个字符")
+		if err := u.Update("password", "salt", "flags"); err != nil {
+			c.Error(err)
 			return
 		}
-		u.Salt = hex.EncodeToString(securecookie.GenerateRandomKey(5))
-		u.Password = util.MD5(u.Password + util.MD5(u.Salt))
-		u.Flags = u.Flags ^ model.FlagResetPassNext | model.FlagPassNeverExpire
-		if err = u.Update("password", "salt", "flags"); err != nil {
-			jFailed(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		aLog(r, "修改管理员密码")
 
 	case "phone":
 
-		code := strings.TrimSpace(r.PostForm.Get("code"))
+		code := strings.TrimSpace(c.PostForm("code"))
 		if len(code) < 1 {
-			jFailed(w, http.StatusForbidden, "验证码非法")
+			c.Error(errors.ErrCapcha)
 			return
 		}
-		aLog(r, "绑定手机号")
 
 	default:
-		jFailed(w, http.StatusBadRequest, "操作非法")
+		c.Error(errors.ErrRequest)
 		return
 	}
 
-	sess.Values[userKey] = u
-	sess.Save(r, w)
-	jFailed(w, http.StatusOK, "修改成功")
+	c.JSON(http.StatusOK, errors.OK())
 }
 
 // Users 用户管理
-func Users(w http.ResponseWriter, r *http.Request) {
-	filter := func(db *gorm.DB) *gorm.DB {
-		if email := strings.TrimSpace(r.Form.Get("email")); len(email) > 0 {
-			db = db.Where("email = ?", strings.ToLower(email))
-		}
-		if group, err := strconv.ParseInt(r.Form.Get("group"), 10, 64); err == nil {
-			db = db.Where("group_id = ?", group)
-		}
-		return db
-	}
-	data := make(map[string]interface{})
+func Users(c *gin.Context) {
 	if groups, err := model.GetGroups(); err == nil {
-		data["Group"] = groups
+		c.Set("Group", groups)
 	}
 	// 获取用户总数
-	if nums, err := model.GetAdminNum(filter); err == nil && nums > 0 {
-		p := util.NewPaginator(r, nums)
-		if list, err := model.GetAdmins(func(db *gorm.DB) *gorm.DB {
-			return db.Offset(p.Offset()).Limit(p.PerPageNums)
-		}, filter); err == nil {
-			data["List"] = list
+	if nums, err := model.GetAdminNum(); err == nil && nums > 0 {
+		p := model.NewPaginator(c.Request.URL, nums)
+		if list, err := model.GetAdmins(p); err == nil {
+			c.Set("List", list)
 		}
-		data["Page"] = p
+		c.Set("Page", p)
 	}
-	rLayout(w, r, "users.tpl", data)
+	c.HTML(http.StatusOK, "users.html", c.Keys)
 }
 
 // UserAdd 用户添加
-func UserAdd(w http.ResponseWriter, r *http.Request) {
-	var user model.Admin
-	sess, err := store.Get(r, sessName)
+func UserAdd(c *gin.Context) {
+	var req struct {
+		Email string `form:"email" binding:"email,required"`
+		Group int64  `form:"group" binding:"required"`
+	}
+
+	err := c.MustBindWith(&req, binding.FormPost)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if user.Email = strings.ToLower(r.PostForm.Get("email")); len(user.Email) < 0 {
-		jFailed(w, http.StatusBadRequest, "邮箱非法")
+
+	u := c.MustGet(userKey).(*model.Admin)
+	if req.Group == u.GroupID {
+		c.Error(errors.ErrForbbiden)
 		return
 	}
-	if user.GroupID, err = strconv.ParseInt(r.PostForm.Get("group"), 10, 64); err != nil {
-		jFailed(w, http.StatusBadRequest, "用户组非法")
+
+	u = &model.Admin{Email: req.Email, GroupID: req.Group}
+	if err := model.NewAdmin(u); err != nil {
+		c.Error(err)
 		return
 	}
-	if user.GroupID == sess.Values[userKey].(*model.Admin).GroupID {
-		jFailed(w, http.StatusForbidden, "无权操作")
-		return
-	}
-	if err = user.Create(); err != nil {
-		jFailed(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	aLog(r, "添加管理员: %s", user.Email)
-	jSuccess(w, nil)
+	c.JSON(http.StatusOK, errors.OK())
 }
 
 // UserDelete 用户删除
-func UserDelete(w http.ResponseWriter, r *http.Request) {
-	var (
-		vars = mux.Vars(r)
-		user model.Admin
-		err  error
-	)
-	if user.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
-		jFailed(w, http.StatusBadRequest, err.Error())
+func UserDelete(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.Error(err).SetType(gin.ErrorTypeBind)
 		return
 	}
-	if err = user.Delete(); err != nil {
-		jFailed(w, http.StatusInternalServerError, err.Error())
+	if err = model.DeleteAdmin(&model.Admin{ID: id}); err != nil {
+		c.Error(err).SetType(gin.ErrorTypeBind)
 		return
 	}
-	aLog(r, "删除管理员: %d", user.ID)
-	jSuccess(w, nil)
+	c.JSON(http.StatusOK, errors.OK())
 }
 
 // GroupEdit 角色管理
-func GroupEdit(w http.ResponseWriter, r *http.Request) {
-	var group model.Group
-	vars := mux.Vars(r)
-	sess, err := store.Get(r, sessName)
+func GroupEdit(c *gin.Context) {
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		c.Error(err).SetType(gin.ErrorTypeBind)
 		return
 	}
-	if group.ID, err = strconv.ParseInt(vars["id"], 10, 64); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if r.Method == http.MethodGet {
-		if err = group.Select(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+
+	if c.Request.Method == http.MethodGet {
+		group, err := model.GetGroup(id)
+		if err != nil {
+			c.Error(err)
 			return
 		}
 		group.Nodes = model.GetNodes()
+		c.HTML(http.StatusOK, "group.html", group)
+		return
+	}
 
-		t.ExecuteTemplate(w, "group.tpl", group)
+	u := c.MustGet(userKey).(*model.Admin)
+	if id == u.GroupID {
+		c.Error(errors.ErrForbbiden)
 		return
 	}
-	if group.ID == sess.Values[userKey].(*model.Admin).GroupID {
-		jFailed(w, http.StatusForbidden, "无权操作")
+
+	group := new(model.Group)
+	err = c.MustBindWith(&group, binding.FormPost)
+	if err != nil {
 		return
 	}
-	if group.Name = strings.TrimSpace(r.PostForm.Get("name")); len(group.Name) <= 0 {
-		jFailed(w, http.StatusBadRequest, "用户组不能为空")
-		return
-	}
-	if nodes, exist := r.PostForm["node[]"]; exist {
+
+	if nodes, exist := c.GetQueryArray("node[]"); exist {
 		group.Nodes = make([]*model.Node, 0, len(nodes))
 		for _, id := range nodes {
 			var n model.Node
@@ -185,60 +153,43 @@ func GroupEdit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if err = group.Update(); err != nil {
-		jFailed(w, http.StatusInternalServerError, err.Error())
+		c.Error(err)
 		return
 	}
-	aLog(r, "修改角色: %s", group.Name)
-	jSuccess(w, nil)
+	c.JSON(http.StatusOK, errors.OK())
 }
 
 // GroupAdd 添加角色
-func GroupAdd(w http.ResponseWriter, r *http.Request) {
-	var g model.Group
+func GroupAdd(c *gin.Context) {
+	var group model.Group
 
-	if g.Name = strings.TrimSpace(r.PostForm.Get("name")); len(g.Name) <= 0 {
-		jFailed(w, http.StatusBadRequest, "用户组不能为空")
+	err := c.MustBindWith(&group, binding.FormPost)
+	if err != nil {
 		return
 	}
-	if err := g.Create(); err != nil {
-		jFailed(w, http.StatusInternalServerError, err.Error())
+	if err = group.Create(); err != nil {
+		c.Error(err)
 		return
 	}
-	aLog(r, "新增角色: %s", g.Name)
-	jSuccess(w, nil)
+	c.JSON(http.StatusOK, errors.OK())
 }
 
 // Logs 操作日志
-func Logs(w http.ResponseWriter, r *http.Request) {
-	filter := func(db *gorm.DB) *gorm.DB {
-		if id, err := strconv.ParseInt(r.Form.Get("id"), 10, 64); err == nil {
-			db = db.Where("admin_id = ?", id)
-		}
-		if from, err := time.Parse(dateFormate, r.Form.Get("from")); err == nil {
-			db = db.Where("created_at >= ?", from)
-		}
-		if to, err := time.Parse(dateFormate, r.Form.Get("to")); err == nil {
-			db = db.Where("created_at < ?", to.AddDate(0, 0, 1))
-		}
-		return db
-	}
-	data := make(map[string]interface{})
-	if _, exist := r.Form["export"]; exist {
-		if list, err := model.GetLogs(filter); err == nil {
-			data["日志列表"] = list
-		}
-		util.Excel(w, data, "操作日志 %s.xlsx", time.Now().Format(dateFormate))
+func Logs(c *gin.Context) {
+	req := new(model.DateRangeOpts)
+
+	if err := c.ShouldBindUri(req); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
+
 	// 获取用户总数
-	if nums, err := model.GetLogNum(filter); err == nil && nums > 0 {
-		p := util.NewPaginator(r, nums)
-		if list, err := model.GetLogs(func(db *gorm.DB) *gorm.DB {
-			return db.Offset(p.Offset()).Limit(p.PerPageNums)
-		}, filter); err == nil {
-			data["List"] = list
+	if nums, err := model.GetLogNum(req); err == nil && nums > 0 {
+		p := model.NewPaginator(c.Request.URL, nums)
+		if list, err := model.GetLogs(req, p); err == nil {
+			c.Set("List", list)
 		}
-		data["Page"] = p
+		c.Set("Page", p)
 	}
-	rLayout(w, r, "logs.tpl", data)
+	c.HTML(http.StatusOK, "logs.html", c.Keys)
 }

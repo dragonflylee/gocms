@@ -1,0 +1,27 @@
+{{- template "admin-header" .}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simplemde/1.11.2/simplemde.min.css" />
+<section class="content box-profile">
+  {{- with .Data }}
+  <form class="box" method="post">
+    <div class="box-footer form-inline">
+      <div class="form-group">
+        <label class="control-label">标题</label>
+        <input name="title" class="form-control" value="{{.Title}}" required>
+      </div>
+      <button type="submit" class="btn bg-orange pull-right">发布</button>
+    </div>
+    <div class="box-body">
+      <textarea name="content" id="md" rows="20" required>{{.Content}}</textarea>
+    </div>
+  </form>
+  {{- end }}
+</section>
+{{- template "admin-footer"}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplemde/1.11.2/simplemde.min.js"></script>
+<script>
+  var simplemde = new SimpleMDE({
+    element: document.getElementById('md'),
+    autoDownloadFontAwesome: false,
+    status: false
+  });
+</script>

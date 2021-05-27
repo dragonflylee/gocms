@@ -1,0 +1,11 @@
+{{- template "admin-header" .}}
+<section class="content">
+  {{- with .Data }}
+  <div class="box">
+    <div class="box-body table-responsive">
+      {{.}}
+    </div>
+  </div>
+  {{- end }}
+</section>
+{{- template "admin-footer"}}

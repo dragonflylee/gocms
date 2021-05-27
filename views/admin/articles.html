@@ -1,0 +1,42 @@
+{{- template "admin-header" .}}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">文章列表</h3>
+    <div class="card-tools">
+      <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse"><i class="fas fa-minus"></i></button>
+      <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+  {{- if .List}}
+  <div class="card-body p-0">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>标题</th>
+          <th>作者</th>
+          <th>注释</th>
+          <th>更新时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{- range .List}}
+        <tr>
+          <td>{{.ID}}</td>
+          <td><a href="/admin/article/{{.ID}}" target="_blank">{{.Title}}</a></td>
+          <td>{{.Admin}}</td>
+          <td></td>
+          <td>{{date .UpdatedAt}}</td>
+        </tr>
+        {{- end}}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer clearfix">
+    {{- template "paginator" .}}
+  </div>
+  {{- else}}
+    
+  {{- end}}
+</div>
+{{- template "admin-footer"}}

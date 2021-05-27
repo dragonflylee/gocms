@@ -1,13 +1,62 @@
-image: "golang:latest"
+stages:
+  - build
+  - release
+  - deploy
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - .cache
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == 'master'
 
 build:
+  image: $CI_REGISTRY/build/golang
+  stage: build
+  variables:
+    LDFLAGS: "-w -s -X 'gocms/pkg/version._Commit=$CI_COMMIT_SHORT_SHA'"
+  cache:
+    key: $CI_COMMIT_REF_NAME
+    paths:
+      - .cache
+      - .mod
+  before_script:
+    - go env -w GOMODCACHE=$CI_PROJECT_DIR/.mod GOCACHE=$CI_PROJECT_DIR/.cache GOPRIVATE=$CI_SERVER_HOST
+    - echo -e "machine $CI_SERVER_HOST\nlogin $CI_DEPENDENCY_PROXY_USER\npassword $CI_BUILD_TOKEN" > ~/.netrc
   script:
-    - mkdir -p .cache
-    - GOPATH="$CI_PROJECT_DIR/.cache" go build -v
+    - go build -v -ldflags "$LDFLAGS"
+  artifacts:
+    paths:
+      - gocms
+    name: $CI_PROJECT_NAME-$CI_COMMIT_SHORT_SHA
+    expire_in: 30 mins
   tags:
     - golang
+
+release:
+  image: docker:19.03
+  stage: release
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  services:
+    - docker:19.03-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  tags:
+    - docker
+
+deploy:
+  stage: deploy
+  when: manual
+  dependencies: []
+  only:
+    - master
+  script:
+    - subenv deploy/deployment.yml | kubectl apply -f -
+  tags:
+    - kubernetes
+    - staging
