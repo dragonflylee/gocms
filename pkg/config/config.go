@@ -32,7 +32,7 @@ var (
 )
 
 type HttpConfig struct {
-	Addr string `env:"HTTP_ADDR" default:"127.0.0.1:8081"`
+	Addr string `env:"HTTP_ADDR" default:"0.0.0.0:8081"`
 }
 
 type SessionConfig struct {
@@ -49,6 +49,7 @@ type UIConfig struct {
 type DBConfig struct {
 	Type   string `env:"DB_TYPE" form:"db_type" binding:"required" required:"true"`
 	Host   string `env:"DB_HOST" form:"db_host" binding:"required" required:"true"`
+	Port   int    `env:"DB_PORT" form:"db_port" binding:"required" required:"true"`
 	User   string `env:"DB_USER" form:"db_user" binding:"required" required:"true"`
 	Pass   string `env:"DB_PASS" form:"db_pass" binding:"required"`
 	Name   string `env:"DB_NAME" form:"db_name" binding:"required"`

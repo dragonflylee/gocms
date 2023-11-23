@@ -25,6 +25,12 @@
               </div>
             </div>
             <div class="input-group mb-3 has-validation">
+              <input type="text" name="db_port" class="form-control" placeholder="{{.i18n.Tr "install.db.port"}}" required>
+              <div class="input-group-append">
+                <div class="input-group-text"><span class="fab fa-port"></span></div>
+              </div>
+            </div>
+            <div class="input-group mb-3 has-validation">
               <input type="text" name="db_user" class="form-control" placeholder="{{.i18n.Tr "install.db.user"}}" required>
               <div class="input-group-append">
                 <div class="input-group-text"><span class="fas fa-terminal"></span></div>
@@ -91,8 +97,8 @@
   {{- template "footer"}}
   <script type="text/javascript">
     var options = {
-      'MySQL': { 'db_host': 'localhost:3306', 'db_user': 'root' },
-      'Postgres': { 'db_host': 'localhost:5432', 'db_user': 'postgres' },
+      'MySQL': { 'db_host': '127.0.0.1', 'db_port': 3306, 'db_user': 'root' },
+      'Postgres': { 'db_host': '127.0.0.1', 'db_port': 5432, 'db_user': 'postgres' },
       'SQLite3': { 'db_host': 'gocms.db', 'db_user': 'admin', 'db_name': null },
     };
     $(function () {

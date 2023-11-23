@@ -44,3 +44,11 @@ GO111MODULE=on go get -v github.com/dragonflylee/gocms
 ```html
 <span class="btn btn-xs bg-navy pull-right" data-href="/group/edit/1" data-target="#modal-node" data-toggle="modal"><i class="fa fa-edit"></i></span>
 ```
+
+```bash
+docker run --name postgres --restart=always --network host \
+  -e POSTGRES_PASSWORD=123456 -e POSTGRES_DB=registry -e TZ=UTC \
+  -v postgres:/var/lib/postgresql/data -d postgres:14-alpine
+
+docker run --rm --net host -it dbcliorg/pgcli -h 127.0.0.1 -p 5432 -u postgres -W
+```

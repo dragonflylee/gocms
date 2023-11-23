@@ -27,11 +27,11 @@ func Open() (err error) {
 
 	switch strings.ToLower(conf.Type) {
 	case "mysql":
-		dialect = mysql.Open(fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&allowOldPasswords=1",
-			conf.User, conf.Pass, conf.Host, conf.Name))
+		dialect = mysql.Open(fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&allowOldPasswords=1",
+			conf.User, conf.Pass, conf.Host, conf.Port, conf.Name))
 	case "postgres":
-		dialect = postgres.Open(fmt.Sprintf("%s:%s@tcp(%s)/%s?sslmode=disable",
-			conf.User, conf.Pass, conf.Host, conf.Name))
+		dialect = postgres.Open(fmt.Sprintf("user=%s password=%s host=%s port=%d database=%s sslmode=disable",
+			conf.User, conf.Pass, conf.Host, conf.Port, conf.Name))
 	case "sqlite3":
 		dialect = sqlite.Open(fmt.Sprintf("file:%s?_auth&_auth_user=%s&_auth_pass=%s",
 			conf.Host, conf.User, conf.Pass))

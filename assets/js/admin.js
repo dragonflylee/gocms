@@ -35,18 +35,19 @@ $(function () {
 
 $(document).on('submit', '.needs-validation', function (ev) {
   var url = $(ev.target).attr('action'), data = $(ev.target).serializeArray();
-  $.post(url, data, function (resp) {
-    if (resp.error !== 'OK') {
-      $(document).Toasts('create', {
-        class: 'bg-danger', title: document.title, body: resp.message
-      })
-    } else if (typeof resp.meta === 'string') {
-      window.location = resp.meta;
-    } else if (typeof resp.message === 'string') {
-      $(document).Toasts('create', {
-        class: 'bg-success', autohide: true, title: document.title, body: resp.message
-      })
-    }
-  })
+  fetch(url, {method: "POST", mode: "cors", body: data}).
+    then(data => data.json()).then(function(resp) {
+      if (resp.error !== 'OK') {
+        $(document).Toasts('create', {
+          class: 'bg-danger', title: document.title, body: resp.message
+        })
+      } else if (typeof resp.meta === 'string') {
+        window.location = resp.meta;
+      } else if (typeof resp.message === 'string') {
+        $(document).Toasts('create', {
+          class: 'bg-success', autohide: true, title: document.title, body: resp.message
+        })
+      }
+    });
   return false;
 })
